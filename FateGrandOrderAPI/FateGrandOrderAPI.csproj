@@ -7,6 +7,11 @@
     <Company>AzyIsCool</Company>
     <Authors>AzyIsCool</Authors>
     <Description>Just a simple Fate/Grand Order Api, grabbing infomation from https://fategrandorder.fandom.com/wiki/Fate/Grand_Order_Wikia</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
+    <PackageId>Azy.FateGrandOrderAPI</PackageId>
+    <Product>Fate/Grand Order API</Product>
+    <PackageTags>Fate/Grand Order, Api</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
