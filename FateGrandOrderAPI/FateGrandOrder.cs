@@ -278,35 +278,35 @@ namespace FateGrandOrderApi
                     #region Basic Infomation
                     if (s.Contains("|jname"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname = ", "");
+                        fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname = ", ""); ///Gives you the Japanese name of the servant
                     }
                     else if (s.Contains("|voicea"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.VoiceActor = s.Replace("|voicea = ", "");
+                        fateGrandOrderPerson.BasicInfomation.VoiceActor = s.Replace("|voicea = ", ""); ///Gives you the name of the servants voice actor
                     }
                     else if (s.Contains("|illus"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Illustrator = s.Replace("|illus = ", "");
+                        fateGrandOrderPerson.BasicInfomation.Illustrator = s.Replace("|illus = ", ""); ///Gives you the name of the illustrator
                     }
                     else if (s.Contains("|class "))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Class = s.Replace("|class = ", "");
+                        fateGrandOrderPerson.BasicInfomation.Class = s.Replace("|class = ", ""); ///Gives you the servants class
                     }
                     else if (s.Contains("|atk"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.ATK = s.Replace("|atk = ", "");
+                        fateGrandOrderPerson.BasicInfomation.ATK = s.Replace("|atk = ", ""); ///Gives you the basic ATK damage of the servant
                     }
                     else if (s.Contains("|hp"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.HP = s.Replace("|hp = ", "");
+                        fateGrandOrderPerson.BasicInfomation.HP = s.Replace("|hp = ", ""); ///Gives you the basic HP amount of the servant
                     }
                     else if (s.Contains("|gatk"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.GrailATK = s.Replace("|gatk = ", "");
+                        fateGrandOrderPerson.BasicInfomation.GrailATK = s.Replace("|gatk = ", ""); ///Gives you the max ATK after max ascension and after it's reached max level with grails
                     }
                     else if (s.Contains("|ghp"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.GrailHP = s.Replace("|ghp = ", "");
+                        fateGrandOrderPerson.BasicInfomation.GrailHP = s.Replace("|ghp = ", ""); ///Gives you the max HP amount after max ascension and after it's reached max level with grails
                     }
                     else if (s.Contains("|stars"))
                     {
@@ -314,7 +314,7 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|cost"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Cost = s.Replace("|cost = ", "");
+                        fateGrandOrderPerson.BasicInfomation.Cost = s.Replace("|cost = ", ""); ///Shows you the cost of the servant
                     }
                     else if (s.Contains("|cc"))
                     {
@@ -322,15 +322,15 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|mlevel"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.MaxLevel = s.Replace("|mlevel = ", "");
+                        fateGrandOrderPerson.BasicInfomation.MaxLevel = s.Replace("|mlevel = ", ""); ///Gives you the servant max level with ascension
                     }
                     else if (s.Contains("|id"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.ID = s.Replace("|id = ", "");
+                        fateGrandOrderPerson.BasicInfomation.ID = s.Replace("|id = ", ""); ///Returns the servants ID
                     }
                     else if (s.Contains("|attribute"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Attribute = s.Replace("|attribute = ", "");
+                        fateGrandOrderPerson.BasicInfomation.Attribute = s.Replace("|attribute = ", ""); ///Shows you their attribute (Man, Earth, Sky, Beast)
                     }
                     else if (s.Contains("|qhits"))
                     {
@@ -383,11 +383,11 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|gender"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "") == "f" ? "Female" : "Male";
+                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "") == "f" ? "Female" : "Male"; ///Returns the servants gender
                     }
                     else if (s.Contains("|alignment"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment = ", "");
+                        fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment = ", ""); //Returns the servants alignment (Lawful - Neutral - Chaotic | Good - Neutral - Evil)
                     }
                     else if (s == "== Passive Skills ==")
                     {
