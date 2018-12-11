@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
-    <Company>AzyIsCool</Company>
-    <Authors>AzyIsCool</Authors>
+    <Version>0.2.0</Version>
+    <Company>AzyIsCool, DatReki</Company>
+    <Authors>AzyIsCool, DatReki</Authors>
     <Description>Just a simple Fate/Grand Order Api, grabbing infomation from https://fategrandorder.fandom.com/wiki/Fate/Grand_Order_Wikia</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>

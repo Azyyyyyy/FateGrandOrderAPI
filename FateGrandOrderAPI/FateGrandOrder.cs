@@ -278,35 +278,35 @@ namespace FateGrandOrderApi
                     #region Basic Infomation
                     if (s.Contains("|jname"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname = ", ""); ///Gives you the Japanese name of the servant
+                        fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname = ", "");
                     }
                     else if (s.Contains("|voicea"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.VoiceActor = s.Replace("|voicea = ", ""); ///Gives you the name of the servants voice actor
+                        fateGrandOrderPerson.BasicInfomation.VoiceActor = s.Replace("|voicea = ", ""); 
                     }
                     else if (s.Contains("|illus"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Illustrator = s.Replace("|illus = ", ""); ///Gives you the name of the illustrator
+                        fateGrandOrderPerson.BasicInfomation.Illustrator = s.Replace("|illus = ", "");
                     }
                     else if (s.Contains("|class "))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Class = s.Replace("|class = ", ""); ///Gives you the servants class
+                        fateGrandOrderPerson.BasicInfomation.Class = s.Replace("|class = ", "");
                     }
                     else if (s.Contains("|atk"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.ATK = s.Replace("|atk = ", ""); ///Gives you the basic ATK damage of the servant
+                        fateGrandOrderPerson.BasicInfomation.ATK = s.Replace("|atk = ", "");
                     }
                     else if (s.Contains("|hp"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.HP = s.Replace("|hp = ", ""); ///Gives you the basic HP amount of the servant
+                        fateGrandOrderPerson.BasicInfomation.HP = s.Replace("|hp = ", "");
                     }
                     else if (s.Contains("|gatk"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.GrailATK = s.Replace("|gatk = ", ""); ///Gives you the max ATK after max ascension and after it's reached max level with grails
+                        fateGrandOrderPerson.BasicInfomation.GrailATK = s.Replace("|gatk = ", "");
                     }
                     else if (s.Contains("|ghp"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.GrailHP = s.Replace("|ghp = ", ""); ///Gives you the max HP amount after max ascension and after it's reached max level with grails
+                        fateGrandOrderPerson.BasicInfomation.GrailHP = s.Replace("|ghp = ", "");
                     }
                     else if (s.Contains("|stars"))
                     {
@@ -383,7 +383,7 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|gender"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "") == "f" ? "Female" : "Male"; ///Returns the servants gender
+                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "").ToLower()[0] == 'f' ? "Female" : "Male"; ///Returns the servants gender
                     }
                     else if (s.Contains("|alignment"))
                     {
@@ -407,7 +407,6 @@ namespace FateGrandOrderApi
                     }
                     #endregion
                 }
-                Debugger.Break();
             }
 
             if (fateGrandOrderPerson != null)
@@ -450,35 +449,35 @@ namespace FateGrandOrderApi
 
         public string EnglishName { get; private set; }
         /// <summary>
-        /// jname
+        /// Gives you the Japanese name of the servant (jname)
         /// </summary>
         public string JapaneseName { get; set; }
         /// <summary>
-        /// voicea
+        /// Gives you the name of the servants voice actor (voicea)
         /// </summary>
         public string VoiceActor { get; set; }
         /// <summary>
-        /// illus
+        /// Gives you the name of the illustrator (illus)
         /// </summary>
         public string Illustrator { get; set; }
         /// <summary>
-        /// class
+        /// Gives you the servants class (class)
         /// </summary>
         public string Class { get; set; }
         /// <summary>
-        /// atk
+        /// Gives you the basic ATK damage of the servant (atk)
         /// </summary>
         public string ATK { get; set; }
         /// <summary>
-        /// hp
+        /// Gives you the basic HP amount of the servant (hp)
         /// </summary>
         public string HP { get; set; }
         /// <summary>
-        /// gatk
+        /// Gives you the max ATK after max ascension and after it's reached max level with grails (gatk)
         /// </summary>
         public string GrailATK { get; set; }
         /// <summary>
-        /// ghp
+        /// Gives you the max HP amount after max ascension and after it's reached max level with grails (ghp)
         /// </summary>
         public string GrailHP { get; set; }
         /// <summary>
