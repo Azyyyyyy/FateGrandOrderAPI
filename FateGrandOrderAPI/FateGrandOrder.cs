@@ -1,15 +1,12 @@
 ﻿using HtmlAgilityPack;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace FateGrandOrderApi
 {
     public static class FateGrandOrderParsing
     {
-        public static Skills GetSkill(string skillName)
+        public static Skills GetSkill(string skillName, out string[] resultString)
         {
             Skills skill = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skillName}?action=edit").DocumentNode.SelectNodes("//textarea"))
@@ -20,7 +17,7 @@ namespace FateGrandOrderApi
                 else
                     skill = new Skills();
 
-                var resultString = Regex.Split(col.InnerText, @"\n");
+                resultString = Regex.Split(col.InnerText, @"\n");
 
                 foreach (string s in resultString)
                 {
@@ -48,111 +45,106 @@ namespace FateGrandOrderApi
                 else
                     return null;
             }
+            resultString = null;
             return skill;
         }
 
         public static ActiveSkills GetSkill(ActiveSkills skills)
         {
-            var skill = GetSkill(skills.Name);
+            var skill = GetSkill(skills.Name, out string[] resultString);
+            //For in case we put the person in wrong
+            if (resultString == null)
+                return skills;
 
-            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skills.Name}?action=edit").DocumentNode.SelectNodes("//textarea"))
+            foreach (string s in resultString)
             {
-                //For in case we put the person in wrong
-                if (string.IsNullOrEmpty(col.InnerText))
-                    break;
-
-                var resultString = Regex.Split(col.InnerText, @"\n");
-
-                foreach (string s in resultString)
+                if (s.Contains("|servanticons"))
                 {
-                    if (s.Contains("|servanticons"))
-                    {
-                        skills.ServantThatHaveThisSkill = s.Replace(@"{{", "").Replace(@"}}", "").Replace("|img = ", "").Split(',');
-                    }
-                    else if (s.Contains("|leveleffect"))
-                    {
-                        skills.LevelEffect = s.Replace("|leveleffect = ", "");
-                    }
-                    else if (s.Contains("|l1 "))
-                    {
-                        skills.Level1Effect.EffectStrength = s.Replace("|l1 = ", "");
-                    }
-                    else if (s.Contains("|l2"))
-                    {
-                        skills.Level2Effect.EffectStrength = s.Replace("|l2 = ", "");
-                    }
-                    else if (s.Contains("|l3"))
-                    {
-                        skills.Level3Effect.EffectStrength = s.Replace("|l3 = ", "");
-                    }
-                    else if (s.Contains("|l4"))
-                    {
-                        skills.Level4Effect.EffectStrength = s.Replace("|l4 = ", "");
-                    }
-                    else if (s.Contains("|l5"))
-                    {
-                        skills.Level5Effect.EffectStrength = s.Replace("|l5 = ", "");
-                    }
-                    else if (s.Contains("|l6"))
-                    {
-                        skills.Level6Effect.EffectStrength = s.Replace("|l6 = ", "");
-                    }
-                    else if (s.Contains("|l7"))
-                    {
-                        skills.Level7Effect.EffectStrength = s.Replace("|l7 = ", "");
-                    }
-                    else if (s.Contains("|l8"))
-                    {
-                        skills.Level8Effect.EffectStrength = s.Replace("|l8 = ", "");
-                    }
-                    else if (s.Contains("|l9"))
-                    {
-                        skills.Level9Effect.EffectStrength = s.Replace("|l9 = ", "");
-                    }
-                    else if (s.Contains("|l10"))
-                    {
-                        skills.Level10Effect.EffectStrength = s.Replace("|l10 = ", "");
-                    }
-                    else if (s.Contains("|c1 "))
-                    {
-                        skills.Level1Effect.Cooldown = s.Replace("|c1 = ", "");
-                    }
-                    else if (s.Contains("|c2"))
-                    {
-                        skills.Level2Effect.Cooldown = s.Replace("|c2 = ", "");
-                    }
-                    else if (s.Contains("|c3"))
-                    {
-                        skills.Level3Effect.Cooldown = s.Replace("|c3 = ", "");
-                    }
-                    else if (s.Contains("|c4"))
-                    {
-                        skills.Level4Effect.Cooldown = s.Replace("|c4 = ", "");
-                    }
-                    else if (s.Contains("|c5"))
-                    {
-                        skills.Level5Effect.Cooldown = s.Replace("|c5 = ", "");
-                    }
-                    else if (s.Contains("|c6"))
-                    {
-                        skills.Level6Effect.Cooldown = s.Replace("|c6 = ", "");
-                    }
-                    else if (s.Contains("|c7"))
-                    {
-                        skills.Level7Effect.Cooldown = s.Replace("|c7 = ", "");
-                    }
-                    else if (s.Contains("|c8"))
-                    {
-                        skills.Level8Effect.Cooldown = s.Replace("|c8 = ", "");
-                    }
-                    else if (s.Contains("|c9"))
-                    {
-                        skills.Level9Effect.Cooldown = s.Replace("|c9 = ", "");
-                    }
-                    else if (s.Contains("|c10"))
-                    {
-                        skills.Level10Effect.Cooldown = s.Replace("|c10 = ", "");
-                    }
+                    skills.ServantThatHaveThisSkill = s.Replace(@"{{", "").Replace(@"}}", "").Replace("|img = ", "").Split(',');
+                }
+                else if (s.Contains("|leveleffect"))
+                {
+                    skills.LevelEffect = s.Replace("|leveleffect = ", "");
+                }
+                else if (s.Contains("|l1 "))
+                {
+                    skills.Level1Effect.EffectStrength = s.Replace("|l1 = ", "");
+                }
+                else if (s.Contains("|l2"))
+                {
+                    skills.Level2Effect.EffectStrength = s.Replace("|l2 = ", "");
+                }
+                else if (s.Contains("|l3"))
+                {
+                    skills.Level3Effect.EffectStrength = s.Replace("|l3 = ", "");
+                }
+                else if (s.Contains("|l4"))
+                {
+                    skills.Level4Effect.EffectStrength = s.Replace("|l4 = ", "");
+                }
+                else if (s.Contains("|l5"))
+                {
+                    skills.Level5Effect.EffectStrength = s.Replace("|l5 = ", "");
+                }
+                else if (s.Contains("|l6"))
+                {
+                    skills.Level6Effect.EffectStrength = s.Replace("|l6 = ", "");
+                }
+                else if (s.Contains("|l7"))
+                {
+                    skills.Level7Effect.EffectStrength = s.Replace("|l7 = ", "");
+                }
+                else if (s.Contains("|l8"))
+                {
+                    skills.Level8Effect.EffectStrength = s.Replace("|l8 = ", "");
+                }
+                else if (s.Contains("|l9"))
+                {
+                    skills.Level9Effect.EffectStrength = s.Replace("|l9 = ", "");
+                }
+                else if (s.Contains("|l10"))
+                {
+                    skills.Level10Effect.EffectStrength = s.Replace("|l10 = ", "");
+                }
+                else if (s.Contains("|c1 "))
+                {
+                    skills.Level1Effect.Cooldown = s.Replace("|c1 = ", "");
+                }
+                else if (s.Contains("|c2"))
+                {
+                    skills.Level2Effect.Cooldown = s.Replace("|c2 = ", "");
+                }
+                else if (s.Contains("|c3"))
+                {
+                    skills.Level3Effect.Cooldown = s.Replace("|c3 = ", "");
+                }
+                else if (s.Contains("|c4"))
+                {
+                    skills.Level4Effect.Cooldown = s.Replace("|c4 = ", "");
+                }
+                else if (s.Contains("|c5"))
+                {
+                    skills.Level5Effect.Cooldown = s.Replace("|c5 = ", "");
+                }
+                else if (s.Contains("|c6"))
+                {
+                    skills.Level6Effect.Cooldown = s.Replace("|c6 = ", "");
+                }
+                else if (s.Contains("|c7"))
+                {
+                    skills.Level7Effect.Cooldown = s.Replace("|c7 = ", "");
+                }
+                else if (s.Contains("|c8"))
+                {
+                    skills.Level8Effect.Cooldown = s.Replace("|c8 = ", "");
+                }
+                else if (s.Contains("|c9"))
+                {
+                    skills.Level9Effect.Cooldown = s.Replace("|c9 = ", "");
+                }
+                else if (s.Contains("|c10"))
+                {
+                    skills.Level10Effect.Cooldown = s.Replace("|c10 = ", "");
                 }
             }
 
@@ -179,36 +171,35 @@ namespace FateGrandOrderApi
                 if (string.IsNullOrEmpty(col.InnerText))
                     break;
 
+                FateGrandOrderPerson PersonToRemoveFromCache = null;
+
                 if (FateGrandOrderPersonCache.FateGrandOrderPeople == null)
                     FateGrandOrderPersonCache.FateGrandOrderPeople = new List<FateGrandOrderPerson>();
-
                 if (fateGrandOrderPerson == null)
-                {
                     fateGrandOrderPerson = new FateGrandOrderPerson(col.InnerText, person.Replace("_", " "));
-                }
-                else
+
+                foreach (FateGrandOrderPerson fateGrandOrderPersonC in FateGrandOrderPersonCache.FateGrandOrderPeople)
                 {
-                    FateGrandOrderPerson PersonToRemoveFromCache = null;
-                    foreach (FateGrandOrderPerson fateGrandOrderPersonC in FateGrandOrderPersonCache.FateGrandOrderPeople)
+                    if (fateGrandOrderPersonC.GeneratedWith == fateGrandOrderPerson.GeneratedWith && fateGrandOrderPersonC.BasicInfomation.EnglishName == fateGrandOrderPerson.BasicInfomation.EnglishName)
                     {
-                        if (fateGrandOrderPersonC.GeneratedWith == fateGrandOrderPerson.GeneratedWith && fateGrandOrderPersonC.BasicInfomation.ID == fateGrandOrderPerson.BasicInfomation.ID)
-                        {
-                            GotPersonAlready = true;
-                            break;
-                        }
-                        else if (fateGrandOrderPersonC.GeneratedWith != fateGrandOrderPerson.GeneratedWith && fateGrandOrderPersonC.BasicInfomation.ID == fateGrandOrderPerson.BasicInfomation.ID)
-                        {
-                            PersonToRemoveFromCache = fateGrandOrderPersonC;
-                        }
-                    }
-                    if (GotPersonAlready)
-                    {
+                        GotPersonAlready = true;
+                        fateGrandOrderPerson = fateGrandOrderPersonC;
+#if DEBUG
+                        fateGrandOrderPersonC.FromCache = true;
+#endif
                         break;
                     }
-
-                    if (PersonToRemoveFromCache != null)
-                        FateGrandOrderPersonCache.FateGrandOrderPeople.Remove(PersonToRemoveFromCache);
+                    else if (fateGrandOrderPersonC.GeneratedWith != fateGrandOrderPerson.GeneratedWith && fateGrandOrderPersonC.BasicInfomation.EnglishName == fateGrandOrderPerson.BasicInfomation.EnglishName)
+                    {
+                        PersonToRemoveFromCache = fateGrandOrderPersonC;
+                        break;
+                    }
                 }
+
+                if (GotPersonAlready)
+                    break;
+                if (PersonToRemoveFromCache != null)
+                    FateGrandOrderPersonCache.FateGrandOrderPeople.Remove(PersonToRemoveFromCache);
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
@@ -314,7 +305,7 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|cost"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Cost = s.Replace("|cost = ", ""); ///Shows you the cost of the servant
+                        fateGrandOrderPerson.BasicInfomation.Cost = s.Replace("|cost = ", "");
                     }
                     else if (s.Contains("|cc"))
                     {
@@ -322,15 +313,15 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|mlevel"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.MaxLevel = s.Replace("|mlevel = ", ""); ///Gives you the servant max level with ascension
+                        fateGrandOrderPerson.BasicInfomation.MaxLevel = s.Replace("|mlevel = ", "");
                     }
                     else if (s.Contains("|id"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.ID = s.Replace("|id = ", ""); ///Returns the servants ID
+                        fateGrandOrderPerson.BasicInfomation.ID = s.Replace("|id = ", "");
                     }
                     else if (s.Contains("|attribute"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Attribute = s.Replace("|attribute = ", ""); ///Shows you their attribute (Man, Earth, Sky, Beast)
+                        fateGrandOrderPerson.BasicInfomation.Attribute = s.Replace("|attribute = ", "");
                     }
                     else if (s.Contains("|qhits"))
                     {
@@ -437,6 +428,9 @@ namespace FateGrandOrderApi
         public FateGrandOrderPersonBasic BasicInfomation { get; set; }
         public List<ActiveSkills> ActiveSkills { get; set; }
         public List<PassiveSkills> PassiveSkills { get; set; }
+#if DEBUG
+        public bool FromCache { get; set; }
+#endif
     }
 
     public class FateGrandOrderPersonBasic
@@ -446,7 +440,9 @@ namespace FateGrandOrderApi
 
         public FateGrandOrderPersonBasic(string englishName) { EnglishName = englishName; }
 
-
+        /// <summary>
+        /// Gives you the English name of the servant (gets assigned when class is made)
+        /// </summary>
         public string EnglishName { get; private set; }
         /// <summary>
         /// Gives you the Japanese name of the servant (jname)
@@ -485,7 +481,7 @@ namespace FateGrandOrderApi
         /// </summary>
         public string Stars { get; set; }
         /// <summary>
-        /// cost
+        /// Shows you the cost of the servant (cost)
         /// </summary>
         public string Cost { get; set; }
         /// <summary>
@@ -493,15 +489,15 @@ namespace FateGrandOrderApi
         /// </summary>
         public string QQQAB { get; set; }
         /// <summary>
-        /// mlevel
+        /// Gives you the servant max level with ascension (mlevel)
         /// </summary>
         public string MaxLevel { get; set; }
         /// <summary>
-        /// id
+        /// Returns the servants ID (id)
         /// </summary>
         public string ID { get; set; }
         /// <summary>
-        /// attribute
+        /// Shows you their attribute (Man, Earth, Sky, Beast) (attribute)
         /// </summary>
         public string Attribute { get; set; }
         /// <summary>
