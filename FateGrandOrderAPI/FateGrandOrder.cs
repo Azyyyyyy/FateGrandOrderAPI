@@ -243,13 +243,21 @@ namespace FateGrandOrderApi
                     #region Passive Skills
                     if (GettingPassiveSkills)
                     {
-                        if (s[s.Length - 1] == '=')
+                        if (s == "{{passiveskill")
+                        {
+                            if (fateGrandOrderPerson.PassiveSkills.Count == 0)
+                            {
+                                fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillsList());
+                                PassiveSkillsCount = 0;
+                            }
+                        }
+                        else if (!string.IsNullOrWhiteSpace(s) && s[s.Length - 1] == '=')
                         {
                             fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillsList());
                             fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category = s.Replace("=", "");
                             PassiveSkillsCount = 0;
                         }
-                        if (s.Contains("|img"))
+                        else if (s.Contains("|img"))
                         {
                             fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Add(new PassiveSkills());
                             PassiveSkillsCount++;
@@ -434,6 +442,10 @@ namespace FateGrandOrderApi
                     else if (GettingActiveSkills | GettingPassiveSkills && s == "&lt;/tabber>")
                     {
                         GettingActiveSkills = false;
+                        GettingPassiveSkills = false;
+                    }
+                    else if (GettingPassiveSkills && s == @"}}")
+                    {
                         GettingPassiveSkills = false;
                     }
                     #endregion
