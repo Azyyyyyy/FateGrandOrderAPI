@@ -51,7 +51,17 @@ namespace FateGrandOrderApi
 
         public static ActiveSkills GetSkill(ActiveSkills skills)
         {
+            string lastLevelEffect = "";
             var skill = GetSkill(skills.Name, out string[] resultString);
+
+            string GetStartPart()
+            {
+                if (string.IsNullOrWhiteSpace(lastLevelEffect))
+                    return "|";
+                else
+                    return $"|{lastLevelEffect[1]}";
+            }
+
             //For in case we put the person in wrong
             if (resultString == null)
                 return skills;
@@ -62,90 +72,115 @@ namespace FateGrandOrderApi
                 {
                     skills.ServantThatHaveThisSkill = s.Replace(@"{{", "").Replace(@"}}", "").Replace("|img = ", "").Split(',');
                 }
-                else if (s.Contains("|leveleffect"))
+                else if (s.Contains($"leveleffect"))
                 {
-                    skills.LevelEffect = s.Replace("|leveleffect = ", "");
+                    if (int.TryParse(s[1].ToString(), out int a))
+                        lastLevelEffect = s;
+
+                    skills.LevelEffects.Add(new LevelEffect { LevelEffectName = s.Replace($"{GetStartPart()}leveleffect = ", "") });
                 }
-                else if (s.Contains("|l1 "))
+                else if (s.Contains($"{GetStartPart()}l1 "))
                 {
-                    skills.Level1Effect.EffectStrength = s.Replace("|l1 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level1Effect.EffectStrength = s.Replace($"{GetStartPart()}l1 = ", "");
                 }
-                else if (s.Contains("|l2"))
+                else if (s.Contains($"{GetStartPart()}l2"))
                 {
-                    skills.Level2Effect.EffectStrength = s.Replace("|l2 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level2Effect.EffectStrength = s.Replace($"{GetStartPart()}l2 = ", "");
                 }
-                else if (s.Contains("|l3"))
+                else if (s.Contains($"{GetStartPart()}l3"))
                 {
-                    skills.Level3Effect.EffectStrength = s.Replace("|l3 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level3Effect.EffectStrength = s.Replace($"{GetStartPart()}l3 = ", "");
                 }
-                else if (s.Contains("|l4"))
+                else if (s.Contains($"{GetStartPart()}l4"))
                 {
-                    skills.Level4Effect.EffectStrength = s.Replace("|l4 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level4Effect.EffectStrength = s.Replace($"{GetStartPart()}l4 = ", "");
                 }
-                else if (s.Contains("|l5"))
+                else if (s.Contains($"{GetStartPart()}l5"))
                 {
-                    skills.Level5Effect.EffectStrength = s.Replace("|l5 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level5Effect.EffectStrength = s.Replace($"{GetStartPart()}l5 = ", "");
                 }
-                else if (s.Contains("|l6"))
+                else if (s.Contains($"{GetStartPart()}l6"))
                 {
-                    skills.Level6Effect.EffectStrength = s.Replace("|l6 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level6Effect.EffectStrength = s.Replace($"{GetStartPart()}l6 = ", "");
                 }
-                else if (s.Contains("|l7"))
+                else if (s.Contains($"{GetStartPart()}l7"))
                 {
-                    skills.Level7Effect.EffectStrength = s.Replace("|l7 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level7Effect.EffectStrength = s.Replace($"{GetStartPart()}l7 = ", "");
                 }
-                else if (s.Contains("|l8"))
+                else if (s.Contains($"{GetStartPart()}l8"))
                 {
-                    skills.Level8Effect.EffectStrength = s.Replace("|l8 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level8Effect.EffectStrength = s.Replace($"{GetStartPart()}l8 = ", "");
                 }
-                else if (s.Contains("|l9"))
+                else if (s.Contains($"{GetStartPart()}l9"))
                 {
-                    skills.Level9Effect.EffectStrength = s.Replace("|l9 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level9Effect.EffectStrength = s.Replace($"{GetStartPart()}l9 = ", "");
                 }
-                else if (s.Contains("|l10"))
+                else if (s.Contains($"{GetStartPart()}l10"))
                 {
-                    skills.Level10Effect.EffectStrength = s.Replace("|l10 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level10Effect.EffectStrength = s.Replace($"{GetStartPart()}l10 = ", "");
                 }
                 else if (s.Contains("|c1 "))
                 {
-                    skills.Level1Effect.Cooldown = s.Replace("|c1 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level1Effect.Cooldown = s.Replace("|c1 = ", "");
                 }
                 else if (s.Contains("|c2"))
                 {
-                    skills.Level2Effect.Cooldown = s.Replace("|c2 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level2Effect.Cooldown = s.Replace("|c2 = ", "");
                 }
                 else if (s.Contains("|c3"))
                 {
-                    skills.Level3Effect.Cooldown = s.Replace("|c3 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level3Effect.Cooldown = s.Replace("|c3 = ", "");
                 }
                 else if (s.Contains("|c4"))
                 {
-                    skills.Level4Effect.Cooldown = s.Replace("|c4 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level4Effect.Cooldown = s.Replace("|c4 = ", "");
                 }
                 else if (s.Contains("|c5"))
                 {
-                    skills.Level5Effect.Cooldown = s.Replace("|c5 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level5Effect.Cooldown = s.Replace("|c5 = ", "");
                 }
                 else if (s.Contains("|c6"))
                 {
-                    skills.Level6Effect.Cooldown = s.Replace("|c6 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level6Effect.Cooldown = s.Replace("|c6 = ", "");
                 }
                 else if (s.Contains("|c7"))
                 {
-                    skills.Level7Effect.Cooldown = s.Replace("|c7 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level7Effect.Cooldown = s.Replace("|c7 = ", "");
                 }
                 else if (s.Contains("|c8"))
                 {
-                    skills.Level8Effect.Cooldown = s.Replace("|c8 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level8Effect.Cooldown = s.Replace("|c8 = ", "");
                 }
                 else if (s.Contains("|c9"))
                 {
-                    skills.Level9Effect.Cooldown = s.Replace("|c9 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level9Effect.Cooldown = s.Replace("|c9 = ", "");
                 }
                 else if (s.Contains("|c10"))
                 {
-                    skills.Level10Effect.Cooldown = s.Replace("|c10 = ", "");
+                    skills.LevelEffects[skills.LevelEffects.Count - 1].Level10Effect.Cooldown = s.Replace("|c10 = ", "");
                 }
+                else if (s == @"}}")
+                {
+                    //This is becasuse there can be pages with different ranks, we just want the first one
+                    break;
+                }
+            }
+
+            foreach (LevelEffect le in skills.LevelEffects)
+            {
+                if (skills.LevelEffects[skills.LevelEffects.Count - 1].Level10Effect == le.Level10Effect)
+                    break;
+
+                le.Level10Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level10Effect.Cooldown;
+                le.Level9Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level9Effect.Cooldown;
+                le.Level8Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level8Effect.Cooldown;
+                le.Level7Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level7Effect.Cooldown;
+                le.Level6Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level6Effect.Cooldown;
+                le.Level5Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level5Effect.Cooldown;
+                le.Level4Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level4Effect.Cooldown;
+                le.Level3Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level3Effect.Cooldown;
+                le.Level2Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level2Effect.Cooldown;
+                le.Level1Effect.Cooldown = skills.LevelEffects[skills.LevelEffects.Count - 1].Level1Effect.Cooldown;
             }
 
             if (skill != null)
@@ -208,51 +243,59 @@ namespace FateGrandOrderApi
                     #region Passive Skills
                     if (GettingPassiveSkills)
                     {
+                        if (s[s.Length - 1] == '=')
+                        {
+                            fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillsList());
+                            fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category = s.Replace("=", "");
+                            PassiveSkillsCount = 0;
+                        }
                         if (s.Contains("|img"))
                         {
-                            fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkills());
+                            fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Add(new PassiveSkills());
                             PassiveSkillsCount++;
                             if (PassiveSkillsCount == 1)
                             {
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Image.Name = s.Replace("|img = ", "");
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Image.Uri = fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Image.Name;
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name = s.Replace("|img = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Uri = fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name;
                             }
                             else
                             {
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Image.Name = s.Replace($"|img{PassiveSkillsCount} = ", "");
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Image.Uri = fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Image.Name;
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name = s.Replace($"|img{PassiveSkillsCount} = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Uri = fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name;
                             }
                         }
                         else if (s.Contains("|name"))
                         {
                             if (PassiveSkillsCount == 1)
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Name = s.Replace("|name = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = s.Replace("|name = ", "");
                             else
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Name = s.Replace($"|name{PassiveSkillsCount} = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = s.Replace($"|name{PassiveSkillsCount} = ", "");
                         }
                         else if (s.Contains("|rank"))
                         {
                             if (PassiveSkillsCount == 1)
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Rank = s.Replace("|rank = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = s.Replace("|rank = ", "");
                             else
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Rank = s.Replace($"|rank{PassiveSkillsCount} = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = s.Replace($"|rank{PassiveSkillsCount} = ", "");
                         }
                         else if (s.Contains("|effect"))
                         {
                             if (PassiveSkillsCount == 1)
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Effect = s.Replace("|effect = ", "").Split(',');
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = s.Replace("|effect = ", "").Split(',');
                             else
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Effect = s.Replace($"|effect{PassiveSkillsCount} = ", "").Split(',');
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = s.Replace($"|effect{PassiveSkillsCount} = ", "").Split(',');
                         }
                     }
                     #endregion
 
                     #region Active Skills
-                        if (GettingActiveSkills)
+                    if (GettingActiveSkills)
                     {
                         if (s[s.Length - 1] == '=')
                         {
                             fateGrandOrderPerson.ActiveSkills.Add(new ActiveSkills());
+                            if (s.Contains("NPC"))
+                                fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1].ForNPC = true;
                         }
                         else if (s.Contains("{{unlock|"))
                         {
@@ -366,7 +409,7 @@ namespace FateGrandOrderApi
                     else if (s.Contains("|aka"))
                     {
                         //String[0] becomes {{nihongo|Innocent Murderer|無垢なる殺人鬼|Mukunaru Satsujinki}}&lt;br/>切り裂きジャックand me is confusion
-                        fateGrandOrderPerson.BasicInfomation.AKA = s.Replace("|aka = ", "").Replace("&lt;br/>", " ").Split(',');
+                        fateGrandOrderPerson.BasicInfomation.AKA = s.Replace("|aka = ", "").Replace("&lt;br/>", " ").Replace("'''","").Replace("''", "").Split(',');
                     }
                     else if (s.Contains("|traits"))
                     {
@@ -384,17 +427,14 @@ namespace FateGrandOrderApi
                     {
                         GettingPassiveSkills = true;
                     }
-                    else if (GettingPassiveSkills && s == "}}")
-                    {
-                        GettingPassiveSkills = false;
-                    }
                     else if (s == "== Active Skills ==")
                     {
                         GettingActiveSkills = true;
                     }
-                    else if (GettingActiveSkills && s == "&lt;/tabber>")
+                    else if (GettingActiveSkills | GettingPassiveSkills && s == "&lt;/tabber>")
                     {
                         GettingActiveSkills = false;
+                        GettingPassiveSkills = false;
                     }
                     #endregion
                 }
@@ -420,14 +460,14 @@ namespace FateGrandOrderApi
     public class FateGrandOrderPerson
     {
         //Got to at least instantiate them even without them (do some warnings if you want to)
-        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkills>(); PassiveSkills = new List<PassiveSkills>(); }
+        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkills>(); PassiveSkills = new List<PassiveSkillsList>(); }
 
-        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkills>(); PassiveSkills = new List<PassiveSkills>(); }
+        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkills>(); PassiveSkills = new List<PassiveSkillsList>(); }
 
         public string GeneratedWith { get; private set; }
         public FateGrandOrderPersonBasic BasicInfomation { get; set; }
         public List<ActiveSkills> ActiveSkills { get; set; }
-        public List<PassiveSkills> PassiveSkills { get; set; }
+        public List<PassiveSkillsList> PassiveSkills { get; set; }
 #if DEBUG
         public bool FromCache { get; set; }
 #endif
@@ -568,7 +608,7 @@ namespace FateGrandOrderApi
         public string Uri { get; set; }
     }
 
-    public class LevelEffect
+    public class LevelEffectCore
     {
         /// <summary>
         /// l{level number}
@@ -610,16 +650,7 @@ namespace FateGrandOrderApi
     {
         public ActiveSkills()
         {
-            Level1Effect = new LevelEffect();
-            Level2Effect = new LevelEffect();
-            Level3Effect = new LevelEffect();
-            Level4Effect = new LevelEffect();
-            Level5Effect = new LevelEffect();
-            Level6Effect = new LevelEffect();
-            Level7Effect = new LevelEffect();
-            Level8Effect = new LevelEffect();
-            Level9Effect = new LevelEffect();
-            Level10Effect = new LevelEffect();
+            LevelEffects = new List<LevelEffect>();
         }
 
         /// <summary>
@@ -631,50 +662,82 @@ namespace FateGrandOrderApi
         /// servant
         /// </summary>
         public string[] ServantThatHaveThisSkill { get; set; }
+
+        public List<LevelEffect> LevelEffects { get; set; }
+        public bool ForNPC { get; set; }
+    }
+
+    public class LevelEffect
+    {
+        public LevelEffect()
+        {
+            Level1Effect = new LevelEffectCore();
+            Level2Effect = new LevelEffectCore();
+            Level3Effect = new LevelEffectCore();
+            Level4Effect = new LevelEffectCore();
+            Level5Effect = new LevelEffectCore();
+            Level6Effect = new LevelEffectCore();
+            Level7Effect = new LevelEffectCore();
+            Level8Effect = new LevelEffectCore();
+            Level9Effect = new LevelEffectCore();
+            Level10Effect = new LevelEffectCore();
+        }
+
         /// <summary>
         /// leveleffect
         /// </summary>
-        public string LevelEffect { get; set; }
+        public string LevelEffectName { get; set; }
         /// <summary>
         /// l1 and c1
         /// </summary>
-        public LevelEffect Level1Effect { get; set; }
+        public LevelEffectCore Level1Effect { get; set; }
         /// <summary>
         /// l2 and c2
         /// </summary>
-        public LevelEffect Level2Effect { get; set; }
+        public LevelEffectCore Level2Effect { get; set; }
         /// <summary>
         /// l3 and c3
         /// </summary>
-        public LevelEffect Level3Effect { get; set; }
+        public LevelEffectCore Level3Effect { get; set; }
         /// <summary>
         /// l4 and c4
         /// </summary>
-        public LevelEffect Level4Effect { get; set; }
+        public LevelEffectCore Level4Effect { get; set; }
         /// <summary>
         /// l5 and c5
         /// </summary>
-        public LevelEffect Level5Effect { get; set; }
+        public LevelEffectCore Level5Effect { get; set; }
         /// <summary>
         /// l6 and c6
         /// </summary>
-        public LevelEffect Level6Effect { get; set; }
+        public LevelEffectCore Level6Effect { get; set; }
         /// <summary>
         /// l7 and c7
         /// </summary>
-        public LevelEffect Level7Effect { get; set; }
+        public LevelEffectCore Level7Effect { get; set; }
         /// <summary>
         /// l8 and c8
         /// </summary>
-        public LevelEffect Level8Effect { get; set; }
+        public LevelEffectCore Level8Effect { get; set; }
         /// <summary>
         /// l9 and c9
         /// </summary>
-        public LevelEffect Level9Effect { get; set; }
+        public LevelEffectCore Level9Effect { get; set; }
         /// <summary>
         /// l10 and c10
         /// </summary>
-        public LevelEffect Level10Effect { get; set; }
+        public LevelEffectCore Level10Effect { get; set; }
+    }
+
+    public class PassiveSkillsList
+    {
+        public PassiveSkillsList()
+        {
+            PassiveSkills = new List<PassiveSkills>();
+        }
+
+        public string Category { get; set; }
+        public List<PassiveSkills> PassiveSkills { get; set; }
     }
 
     public class PassiveSkills : Skills
