@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FateGrandOrderAPI", "FateGrandOrderAPI\FateGrandOrderAPI.csproj", "{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FateGrandOrderApi", "FateGrandOrderAPI\FateGrandOrderApi.csproj", "{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTest", "ApiTest\ApiTest.csproj", "{82F9FAC2-647C-470C-BC7F-01CF0FD68125}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTest", "ApiTest\ApiTest.csproj", "{82F9FAC2-647C-470C-BC7F-01CF0FD68125}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

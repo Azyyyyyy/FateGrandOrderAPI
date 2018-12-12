@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FateGrandOrderAPI\FateGrandOrderAPI.csproj" />
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <ProjectReference Include="..\FateGrandOrderAPI\FateGrandOrderApi.csproj" />
   </ItemGroup>
 
 </Project>
