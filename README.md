@@ -5,7 +5,6 @@ Usage:
 StringBuilder Servant = new StringBuilder();
 var person = FateGrandOrderParsing.GetPerson("Jack_the_Ripper");
 Servant.AppendLine($"Name: {person.BasicInfomation.EnglishName}");
-Servant.AppendLine($"Jap name: {person.BasicInfomation.JapaneseName}");
 Servant.AppendLine($"Gender: {person.BasicInfomation.Gender}");
 Servant.AppendLine($"ATK: {person.BasicInfomation.ATK}");
 Servant.AppendLine($"Class: {person.BasicInfomation.Class}");
@@ -15,4 +14,10 @@ Console.WriteLine(Servant);
 ```
 
 Output:
-Will be added soon
+```
+Name: Jack the Ripper
+Gender: Female
+ATK: 1,786/11,557
+Class: Assassin
+Cost: 16
+```
