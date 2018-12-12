@@ -16,6 +16,10 @@
     <AssemblyVersion>0.2.2.0</AssemblyVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Users\aaron\source\repos\FateGrandOrderAPI\FateGrandOrderAPI\FateGrandOrderApi.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.8.11" />
   </ItemGroup>

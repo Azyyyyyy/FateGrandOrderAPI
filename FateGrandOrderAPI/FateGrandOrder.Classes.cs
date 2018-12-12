@@ -2,22 +2,42 @@
 
 namespace FateGrandOrderApi.Classes
 {
+    /// <summary>
+    /// Your Fate/Grand Order person
+    /// </summary>
     public class FateGrandOrderPerson
     {
         //Got to at least instantiate them even without them (do some warnings if you want to)
-        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkills>(); PassiveSkills = new List<PassiveSkillsList>(); }
+        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); }
 
-        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkills>(); PassiveSkills = new List<PassiveSkillsList>(); }
-
+        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); }
+        /// <summary>
+        /// The string that was used when generating this person class
+        /// </summary>
         public string GeneratedWith { get; private set; }
+        /// <summary>
+        /// The basic infomation about this person (.e.g. Name, HP, ATK etc...)
+        /// </summary>
         public FateGrandOrderPersonBasic BasicInfomation { get; set; }
-        public List<ActiveSkills> ActiveSkills { get; set; }
-        public List<PassiveSkillsList> PassiveSkills { get; set; }
+        /// <summary>
+        /// All the Active Skills this person has
+        /// </summary>
+        public List<ActiveSkill> ActiveSkills { get; set; }
+        /// <summary>
+        /// All the Passive Skills this person has
+        /// </summary>
+        public List<PassiveSkillList> PassiveSkills { get; set; }
 #if DEBUG
+        /// <summary>
+        /// If the person is in cache
+        /// </summary>
         public bool FromCache { get; set; }
 #endif
     }
 
+    /// <summary>
+    /// Basic infomation about your Fate/Grand Order person
+    /// </summary>
     public class FateGrandOrderPersonBasic
     {
         //Got to at least instantiate them even without them (do some warnings if you want to)
@@ -62,7 +82,7 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string GrailHP { get; set; }
         /// <summary>
-        /// stars
+        /// (stars)
         /// </summary>
         public string Stars { get; set; }
         /// <summary>
@@ -70,7 +90,7 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string Cost { get; set; }
         /// <summary>
-        /// cc
+        /// (cc)
         /// </summary>
         public string QQQAB { get; set; }
         /// <summary>
@@ -86,51 +106,51 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string Attribute { get; set; }
         /// <summary>
-        /// qhits
+        /// (qhits)
         /// </summary>
         public string QuickHits { get; set; }
         /// <summary>
-        /// ahits
+        /// (ahits)
         /// </summary>
         public string ArtsHits { get; set; }
         /// <summary>
-        /// bhits
+        /// (bhits)
         /// </summary>
         public string BusterHits { get; set; }
         /// <summary>
-        /// ehits
+        /// (ehits)
         /// </summary>
         public string ExtraHits { get; set; }
         /// <summary>
-        /// deathrate 
+        /// (deathrate)
         /// </summary>
         public string DeathRate { get; set; }
         /// <summary>
-        /// starabsorption
+        /// (starabsorption)
         /// </summary>
         public string StarAbsorption { get; set; }
         /// <summary>
-        /// stargeneration 
+        /// (stargeneration)
         /// </summary>
         public string StarGeneration { get; set; }
         /// <summary>
-        /// npchargeatk
+        /// (npchargeatk)
         /// </summary>
         public string NPChargeATK { get; set; }
         /// <summary>
-        /// npchargedef 
+        /// (npchargedef)
         /// </summary>
         public string NPChargeDEF { get; set; }
         /// <summary>
-        /// growthc
+        /// (growthc)
         /// </summary>
         public string GrowthCurve { get; set; }
         /// <summary>
-        /// aka
+        /// (aka)
         /// </summary>
         public string[] AKA { get; set; }
         /// <summary>
-        /// traits
+        /// (traits)
         /// </summary>
         public string[] Traits { get; set; }
         /// <summary>
@@ -142,76 +162,102 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string Alignment { get; set; }
         /// <summary>
-        /// image
+        /// (image)
         /// </summary>
         public List<ImageInfomation> Images { get; set; }
     }
 
+    /// <summary>
+    /// Image name and Uri
+    /// </summary>
     public class ImageInfomation
     {
+        /// <summary>
+        /// Returns image name (img)
+        /// </summary>
         public string Name { get; set; }
+        /// <summary>
+        /// Returns image Uri (img)
+        /// </summary>
         public string Uri { get; set; }
     }
 
+    /// <summary>
+    /// The core part of the Level Effects
+    /// </summary>
     public class LevelEffectCore
     {
         /// <summary>
-        /// l{level number}
+        /// Gives you the effect's strength (l{level number})
         /// </summary>
         public string EffectStrength { get; set; }
         /// <summary>
-        /// c{level number}
+        /// Gives you the cooldown period of this effect (c{level number})
         /// </summary>
         public string Cooldown { get; set; }
     }
 
     #region Skills
-    public class Skills
+    /// <summary>
+    /// The core part of a skill
+    /// </summary>
+    public class Skill
     {
-        public Skills()
+        public Skill()
         {
             Image = new ImageInfomation();
         }
 
         /// <summary>
-        /// img 
+        /// Returns the image infomation of this skill (img) 
         /// </summary>
         public ImageInfomation Image { get; set; }
         /// <summary>
-        /// name
+        /// Gives you skill's name (name)
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// rank 
+        /// Gives you what rank this skill is at (rank)
         /// </summary>
         public string Rank { get; set; }
         /// <summary>
-        /// effect 
+        /// Gives you what effect's the skill does (effect) 
         /// </summary>
         public string[] Effect { get; set; }
     }
 
-    public class ActiveSkills : Skills
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ActiveSkill : Skill
     {
-        public ActiveSkills()
+        public ActiveSkill()
         {
             LevelEffects = new List<LevelEffect>();
         }
 
         /// <summary>
-        /// When Skill Gets unlocked through Ascension
+        /// Returns when the skill gets unlocked through Ascension ({{unlock|)
         /// </summary>
         public string WhenSkillUnlocks { get; set; }
 
         /// <summary>
-        /// servant
+        /// Gives you what servant's have this skill (servant)
         /// </summary>
         public string[] ServantThatHaveThisSkill { get; set; }
-
+        /// <summary>
+        /// Gives you all the cooldown and effects strength
+        /// </summary>
         public List<LevelEffect> LevelEffects { get; set; }
+        /// <summary>
+        /// Returns if this ActiveSkill is for an NPC
+        /// </summary>
         public bool ForNPC { get; set; }
     }
 
+    /// <summary>
+    /// Contains all the infomation about the level effect
+    /// </summary>
     public class LevelEffect
     {
         public LevelEffect()
@@ -229,64 +275,76 @@ namespace FateGrandOrderApi.Classes
         }
 
         /// <summary>
-        /// leveleffect
+        /// Gives you the name of this LevelEffect (leveleffect)
         /// </summary>
         public string LevelEffectName { get; set; }
         /// <summary>
-        /// l1 and c1
+        /// The Level Effect when the Level is Level 1 (l1 and c1)
         /// </summary>
         public LevelEffectCore Level1Effect { get; set; }
         /// <summary>
-        /// l2 and c2
+        /// The Level Effect when the Level is Level 2 (l2 and c2)
         /// </summary>
         public LevelEffectCore Level2Effect { get; set; }
         /// <summary>
-        /// l3 and c3
+        /// The Level Effect when the Level is Level 1 (l3 and c3)
         /// </summary>
         public LevelEffectCore Level3Effect { get; set; }
         /// <summary>
-        /// l4 and c4
+        /// The Level Effect when the Level is Level 1 (l4 and c4)
         /// </summary>
         public LevelEffectCore Level4Effect { get; set; }
         /// <summary>
-        /// l5 and c5
+        /// The Level Effect when the Level is Level 1 (l5 and c5)
         /// </summary>
         public LevelEffectCore Level5Effect { get; set; }
         /// <summary>
-        /// l6 and c6
+        /// The Level Effect when the Level is Level 1 (l6 and c6)
         /// </summary>
         public LevelEffectCore Level6Effect { get; set; }
         /// <summary>
-        /// l7 and c7
+        /// The Level Effect when the Level is Level 1 (l7 and c7)
         /// </summary>
         public LevelEffectCore Level7Effect { get; set; }
         /// <summary>
-        /// l8 and c8
+        /// The Level Effect when the Level is Level 1 (l8 and c8)
         /// </summary>
         public LevelEffectCore Level8Effect { get; set; }
         /// <summary>
-        /// l9 and c9
+        /// The Level Effect when the Level is Level 1 (l9 and c9)
         /// </summary>
         public LevelEffectCore Level9Effect { get; set; }
         /// <summary>
-        /// l10 and c10
+        /// The Level Effect when the Level is Level 1 (l10 and c10)
         /// </summary>
         public LevelEffectCore Level10Effect { get; set; }
     }
 
+    /// <summary>
+    /// The Passive Skills class with an Category string
+    /// </summary>
     #region Passive Skills
-    public class PassiveSkillsList
+    public class PassiveSkillList
     {
-        public PassiveSkillsList()
+        public PassiveSkillList()
         {
             PassiveSkills = new List<PassiveSkills>();
         }
 
+        /// <summary>
+        /// Gives you what category these passive skills belongs too ({CategoryName}=)
+        /// </summary>
         public string Category { get; set; }
+        /// <summary>
+        /// All the passive skills that this list has
+        /// </summary>
         public List<PassiveSkills> PassiveSkills { get; set; }
     }
 
-    public class PassiveSkills : Skills
+    /// <summary>
+    /// Just an emtpy class named PassiveSkills which inheritances from Skill lol
+    /// </summary>
+    public class PassiveSkills : Skill
     {
         //In case there something I'm missing from a passiveskill
     }
