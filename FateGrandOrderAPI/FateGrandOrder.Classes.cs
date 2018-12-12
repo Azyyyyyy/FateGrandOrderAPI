@@ -3,7 +3,7 @@
 namespace FateGrandOrderApi.Classes
 {
     /// <summary>
-    /// Your Fate/Grand Order person
+    /// Your Fate/Grand Order servant
     /// </summary>
     public class FateGrandOrderPerson
     {
@@ -12,31 +12,31 @@ namespace FateGrandOrderApi.Classes
 
         public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); }
         /// <summary>
-        /// The string that was used when generating this person class
+        /// The string that was used when generating this servants class
         /// </summary>
         public string GeneratedWith { get; private set; }
         /// <summary>
-        /// The basic infomation about this person (.e.g. Name, HP, ATK etc...)
+        /// The basic infomation about this servant (.e.g. Name, HP, ATK etc...)
         /// </summary>
         public FateGrandOrderPersonBasic BasicInfomation { get; set; }
         /// <summary>
-        /// All the Active Skills this person has
+        /// All the Active Skills this servant has
         /// </summary>
         public List<ActiveSkill> ActiveSkills { get; set; }
         /// <summary>
-        /// All the Passive Skills this person has
+        /// All the Passive Skills this servant has
         /// </summary>
         public List<PassiveSkillList> PassiveSkills { get; set; }
 #if DEBUG
         /// <summary>
-        /// If the person is in cache
+        /// If the servant is in cache
         /// </summary>
         public bool FromCache { get; set; }
 #endif
     }
 
     /// <summary>
-    /// Basic infomation about your Fate/Grand Order person
+    /// Basic infomation about your Fate/Grand Order servant
     /// </summary>
     public class FateGrandOrderPersonBasic
     {
@@ -66,11 +66,11 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string Class { get; set; }
         /// <summary>
-        /// Gives you the basic ATK damage of the servant (atk)
+        /// Gives both the basic and max level ATK of the servant (atk)
         /// </summary>
         public string ATK { get; set; }
         /// <summary>
-        /// Gives you the basic HP amount of the servant (hp)
+        /// Gives both the basic and max level HP of the servant (hp)
         /// </summary>
         public string HP { get; set; }
         /// <summary>
@@ -122,35 +122,35 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string ExtraHits { get; set; }
         /// <summary>
-        /// (deathrate)
+        /// Chances of this servant being killed by the Instant-Kill effect (deathrate)
         /// </summary>
         public string DeathRate { get; set; }
         /// <summary>
-        /// (starabsorption)
+        /// How many critical stars this servant gets when the stars are distributed (starabsorption)
         /// </summary>
         public string StarAbsorption { get; set; }
         /// <summary>
-        /// (stargeneration)
+        /// Shows how many critical stars this servant generates when attacking (stargeneration)
         /// </summary>
         public string StarGeneration { get; set; }
         /// <summary>
-        /// (npchargeatk)
+        /// Shows how much the NP Gauge is increased by when attacking enemies (npchargeatk)
         /// </summary>
         public string NPChargeATK { get; set; }
         /// <summary>
-        /// (npchargedef)
+        /// Shows how much the NP Gauge is increased by when being attacked (npchargedef)
         /// </summary>
         public string NPChargeDEF { get; set; }
         /// <summary>
-        /// (growthc)
+        /// Shows the servants growth curve which relates to the stats gained per level (growthc)
         /// </summary>
         public string GrowthCurve { get; set; }
         /// <summary>
-        /// (aka)
+        /// Also known as. This will show what other names the servant is also known by (aka)
         /// </summary>
         public string[] AKA { get; set; }
         /// <summary>
-        /// (traits)
+        /// Shows you the trait(s) of the servant (traits)
         /// </summary>
         public string[] Traits { get; set; }
         /// <summary>
