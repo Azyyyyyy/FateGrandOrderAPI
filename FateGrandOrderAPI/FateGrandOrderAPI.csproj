@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
     <Company>AzyIsCool, DatReki</Company>
     <Authors>AzyIsCool, DatReki</Authors>
     <Description>Just a simple Fate/Grand Order Api, grabbing infomation from https://fategrandorder.fandom.com/wiki/Fate/Grand_Order_Wikia</Description>
