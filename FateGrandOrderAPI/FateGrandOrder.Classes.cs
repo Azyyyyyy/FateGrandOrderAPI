@@ -134,11 +134,11 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string[] Traits { get; set; }
         /// <summary>
-        /// gender
+        /// Returns the servants gender (gender)
         /// </summary>
         public string Gender { get; set; }
         /// <summary>
-        /// alignment
+        /// Returns the servants alignment (Lawful - Neutral - Chaotic | Good - Neutral - Evil) (alignment)
         /// </summary>
         public string Alignment { get; set; }
         /// <summary>

@@ -7,9 +7,14 @@ using FateGrandOrderApi.Caching;
 namespace FateGrandOrderApi
 {
     public static class FateGrandOrderParsing
-    {
+    {	
         public static Skills GetSkill(string skillName, out string[] resultString)
         {
+			private static string FixString(string s)
+			{
+				s.Replace("&lt;","<").Replace("&lt;","<");
+			}
+			
             Skills skill = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skillName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
@@ -38,7 +43,7 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|effect"))
                     {
-                        skill.Effect = s.Replace("|effect = ", "").Replace("&lt;br/>", ",").Split(',');
+                        skill.Effect = FixString(s).Replace("|effect = ", "").Replace("<br/>", ",").Split(',');
                     }
                 }
 
@@ -418,8 +423,8 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|aka"))
                     {
-                        //String[0] becomes {{nihongo|Innocent Murderer|無垢なる殺人鬼|Mukunaru Satsujinki}}&lt;br/>切り裂きジャックand me is confusion
-                        fateGrandOrderPerson.BasicInfomation.AKA = s.Replace("|aka = ", "").Replace("&lt;br/>", " ").Replace("'''","").Replace("''", "").Split(',');
+                        //String[0] becomes {{nihongo|Innocent Murderer|無垢なる殺人鬼|Mukunaru Satsujinki}}&lt;br/>切り裂きジャック and me is confusion
+                        fateGrandOrderPerson.BasicInfomation.AKA = FixString(s).Replace("|aka = ", "").Replace("<br/>", " ").Replace("'''","").Replace("''", "").Split(',');
                     }
                     else if (s.Contains("|traits"))
                     {
@@ -427,11 +432,11 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|gender"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "").ToLower()[0] == 'f' ? "Female" : "Male"; ///Returns the servants gender
+                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "").ToLower()[0] == 'f' ? "Female" : "Male";
                     }
                     else if (s.Contains("|alignment"))
                     {
-                        fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment = ", ""); //Returns the servants alignment (Lawful - Neutral - Chaotic | Good - Neutral - Evil)
+                        fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment = ", "");
                     }
                     else if (s == "== Passive Skills ==")
                     {
@@ -441,7 +446,7 @@ namespace FateGrandOrderApi
                     {
                         GettingActiveSkills = true;
                     }
-                    else if (GettingActiveSkills | GettingPassiveSkills && s == "&lt;/tabber>")
+                    else if (GettingActiveSkills | GettingPassiveSkills && FixString(s) == "</tabber>")
                     {
                         GettingActiveSkills = false;
                         GettingPassiveSkills = false;
