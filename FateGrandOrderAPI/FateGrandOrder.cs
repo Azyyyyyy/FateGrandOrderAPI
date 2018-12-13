@@ -108,7 +108,7 @@ namespace FateGrandOrderApi
                     if (int.TryParse(s[1].ToString(), out int a))
                         lastLevelEffect = s;
 
-                    skill.LevelEffects.Add(new LevelEffect { LevelEffectName = s.Replace($"{GetStartPart()}leveleffect = ", "") });
+                    skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = s.Replace($"{GetStartPart()}leveleffect = ", "") });
                 }
                 else if (s.Contains($"{GetStartPart()}l1 "))
                 {
@@ -197,7 +197,7 @@ namespace FateGrandOrderApi
                 }
             }
 
-            foreach (LevelEffect le in skill.LevelEffects)
+            foreach (LevelEffect10 le in skill.LevelEffects)
             {
                 if (skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect == le.Level10Effect)
                     break;
@@ -234,6 +234,7 @@ namespace FateGrandOrderApi
             bool GotPersonAlready = false;
             bool GettingActiveSkills = false;
             bool GettingPassiveSkills = false;
+            bool GettingNoblePhantasm = false;
             int PassiveSkillsCount = 0;
 
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{person}?action=edit").DocumentNode.SelectNodes("//textarea"))
@@ -353,6 +354,12 @@ namespace FateGrandOrderApi
                     }
                     #endregion
 
+                    #region Noble Phantasm
+                    if (GettingNoblePhantasm)
+                    {
+                    }
+                    #endregion
+
                     #region Basic Infomation
                     if (s.Contains("|jname"))
                     {
@@ -467,6 +474,7 @@ namespace FateGrandOrderApi
                     {
                         fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment = ", "");
                     }
+#region Trigger Skills Logic
                     else if (s == "== Passive Skills ==")
                     {
                         GettingPassiveSkills = true;
@@ -479,12 +487,18 @@ namespace FateGrandOrderApi
                     {
                         GettingActiveSkills = false;
                         GettingPassiveSkills = false;
+                        GettingNoblePhantasm = false;
                     }
                     else if (GettingPassiveSkills && s == @"}}")
                     {
                         GettingPassiveSkills = false;
                     }
-                    #endregion
+                    else if (s == " == Noble Phantasm ==")
+                    {
+                        GettingNoblePhantasm = true;
+                    }
+#endregion
+#endregion
                 }
             }
 

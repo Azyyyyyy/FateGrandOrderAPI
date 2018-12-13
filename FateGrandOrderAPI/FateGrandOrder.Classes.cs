@@ -233,7 +233,7 @@ namespace FateGrandOrderApi.Classes
     {
         public ActiveSkill()
         {
-            LevelEffects = new List<LevelEffect>();
+            LevelEffects = new List<LevelEffect10>();
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace FateGrandOrderApi.Classes
         /// <summary>
         /// Gives you all the cooldown and effects strength
         /// </summary>
-        public List<LevelEffect> LevelEffects { get; set; }
+        public List<LevelEffect10> LevelEffects { get; set; }
         /// <summary>
         /// Returns if this ActiveSkill is for an NPC
         /// </summary>
@@ -256,22 +256,17 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// Contains all the infomation about the level effect
+    /// Contains all the infomation about the level effect that has 5 levels
     /// </summary>
-    public class LevelEffect
+    public class LevelEffect5
     {
-        public LevelEffect()
+        public LevelEffect5()
         {
             Level1Effect = new LevelEffectCore();
             Level2Effect = new LevelEffectCore();
             Level3Effect = new LevelEffectCore();
             Level4Effect = new LevelEffectCore();
             Level5Effect = new LevelEffectCore();
-            Level6Effect = new LevelEffectCore();
-            Level7Effect = new LevelEffectCore();
-            Level8Effect = new LevelEffectCore();
-            Level9Effect = new LevelEffectCore();
-            Level10Effect = new LevelEffectCore();
         }
 
         /// <summary>
@@ -287,35 +282,51 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public LevelEffectCore Level2Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l3 and c3)
+        /// The Level Effect when the Level is Level 3 (l3 and c3)
         /// </summary>
         public LevelEffectCore Level3Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l4 and c4)
+        /// The Level Effect when the Level is Level 4 (l4 and c4)
         /// </summary>
         public LevelEffectCore Level4Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l5 and c5)
+        /// The Level Effect when the Level is Level 6 (l5 and c5)
         /// </summary>
         public LevelEffectCore Level5Effect { get; set; }
+    }
+
+    /// <summary>
+    /// Contains all the infomation about the level effect that has 10 levels
+    /// </summary>
+    public class LevelEffect10 : LevelEffect5 
+    {
+        public LevelEffect10()
+        {
+            Level6Effect = new LevelEffectCore();
+            Level7Effect = new LevelEffectCore();
+            Level8Effect = new LevelEffectCore();
+            Level9Effect = new LevelEffectCore();
+            Level10Effect = new LevelEffectCore();
+        }
+
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l6 and c6)
+        /// The Level Effect when the Level is Level 6 (l6 and c6)
         /// </summary>
         public LevelEffectCore Level6Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l7 and c7)
+        /// The Level Effect when the Level is Level 7 (l7 and c7)
         /// </summary>
         public LevelEffectCore Level7Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l8 and c8)
+        /// The Level Effect when the Level is Level 8 (l8 and c8)
         /// </summary>
         public LevelEffectCore Level8Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l9 and c9)
+        /// The Level Effect when the Level is Level 9 (l9 and c9)
         /// </summary>
         public LevelEffectCore Level9Effect { get; set; }
         /// <summary>
-        /// The Level Effect when the Level is Level 1 (l10 and c10)
+        /// The Level Effect when the Level is Level 10 (l10 and c10)
         /// </summary>
         public LevelEffectCore Level10Effect { get; set; }
     }
@@ -339,6 +350,33 @@ namespace FateGrandOrderApi.Classes
         /// All the passive skills that this list has
         /// </summary>
         public List<PassiveSkills> PassiveSkills { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class NoblePhantasm
+    {
+        /// <summary>
+        /// Gives you what category these passive skills belongs too ({CategoryName}=)
+        /// </summary>
+        public string Category { get; set; }
+        /// <summary>
+        /// The noble phantasm name (name)
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// The noble phantasm rank (rank)
+        /// </summary>
+        public string Rank { get; set; }
+        /// <summary>
+        /// The noble phantasm rank (rank)
+        /// </summary>
+        public string classification { get; set; }
+        /// <summary>
+        /// Gives you all the cooldown and effects strength
+        /// </summary>
+        public LevelEffect5 LevelEffect { get; set; }
     }
 
     /// <summary>
