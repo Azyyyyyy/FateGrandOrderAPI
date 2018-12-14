@@ -3,17 +3,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.3</Version>
+    <Version>0.2.4</Version>
     <Company>AzyIsCool, DatReki</Company>
     <Authors>AzyIsCool, DatReki</Authors>
     <Description>Just a simple Fate/Grand Order Api, grabbing infomation from https://fategrandorder.fandom.com/wiki/Fate/Grand_Order_Wikia</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
     <PackageId>Azy.FateGrandOrderAPI</PackageId>
-    <Product>Fate/Grand Order API</Product>
-    <PackageTags>Fate/Grand Order,Api,WIP</PackageTags>
-    <PackageReleaseNotes>Once upon a time there was a person called aaron, he didn't double check his code and messed up Jack the ripper (oops)</PackageReleaseNotes>
-    <AssemblyVersion>0.2.2.0</AssemblyVersion>
+    <Product>Fate/Grand Order, API</Product>
+    <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
+    <PackageReleaseNotes>Noble Phantasm are now a thing™
+Also fixes here and there</PackageReleaseNotes>
+    <AssemblyVersion>0.2.4.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

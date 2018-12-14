@@ -8,9 +8,9 @@ namespace FateGrandOrderApi.Classes
     public class FateGrandOrderPerson
     {
         //Got to at least instantiate them even without them (do some warnings if you want to)
-        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); }
+        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); NoblePhantasms = new List<NoblePhantasmList>(); }
 
-        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); }
+        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); NoblePhantasms = new List<NoblePhantasmList>(); }
         /// <summary>
         /// The string that was used when generating this servants class
         /// </summary>
@@ -27,6 +27,10 @@ namespace FateGrandOrderApi.Classes
         /// All the Passive Skills this servant has
         /// </summary>
         public List<PassiveSkillList> PassiveSkills { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<NoblePhantasmList> NoblePhantasms { get; set; }
 #if DEBUG
         /// <summary>
         /// If the servant is in cache
@@ -180,6 +184,13 @@ namespace FateGrandOrderApi.Classes
         /// Returns image Uri (img)
         /// </summary>
         public string Uri { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class VideoInfomation : ImageInfomation
+    {
     }
 
     /// <summary>
@@ -352,15 +363,18 @@ namespace FateGrandOrderApi.Classes
         public List<PassiveSkills> PassiveSkills { get; set; }
     }
 
+    public class NoblePhantasmList
+    {
+        public NoblePhantasmList() { NoblePhantasm = new NoblePhantasm(); }
+        public string Category { get; set; }
+        public NoblePhantasm NoblePhantasm { get; set; }
+    }
+
     /// <summary>
     /// 
     /// </summary>
     public class NoblePhantasm
     {
-        /// <summary>
-        /// Gives you what category these passive skills belongs too ({CategoryName}=)
-        /// </summary>
-        public string Category { get; set; }
         /// <summary>
         /// The noble phantasm name (name)
         /// </summary>
@@ -370,13 +384,76 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string Rank { get; set; }
         /// <summary>
-        /// The noble phantasm rank (rank)
+        /// The noble phantasm classification (classification)
         /// </summary>
-        public string classification { get; set; }
+        public string Classification { get; set; }
         /// <summary>
-        /// Gives you all the cooldown and effects strength
+        /// The noble phantasm type (type)
         /// </summary>
-        public LevelEffect5 LevelEffect { get; set; }
+        public string Type { get; set; }
+        /// <summary>
+        /// The noble phantasm hitcount (hitcount)
+        /// </summary>
+        public string HitCount { get; set; }
+        /// <summary>
+        /// The noble phantasm effects (effect)
+        /// </summary>
+        public string[] Effects { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string[] OverChargeEffect { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public LevelEffect LevelEffect { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ChargeEffect ChargeEffect { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsVideo { get; set; }
+        public VideoInfomation VideoInfomation { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ChargeEffect : LevelEffect
+    {
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class LevelEffect
+    {
+        /// <summary>
+        /// (leveleffect)
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// NP Level 1
+        /// </summary>
+        public string NPLevel1 { get; set; }
+        /// <summary>
+        /// NP Level 2
+        /// </summary>
+        public string NPLevel2 { get; set; }
+        /// <summary>
+        /// NP Level 3
+        /// </summary>
+        public string NPLevel3 { get; set; }
+        /// <summary>
+        /// NP Level 4
+        /// </summary>
+        public string NPLevel4 { get; set; }
+        /// <summary>
+        /// NP Level 5
+        /// </summary>
+        public string NPLevel5 { get; set; }
     }
 
     /// <summary>

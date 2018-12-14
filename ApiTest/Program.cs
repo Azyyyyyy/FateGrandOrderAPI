@@ -28,7 +28,6 @@ namespace ApiTest
 #if DEBUG
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Jeanne d'Arc (Alter) data again (Is cached: {Person2.FromCache})");
 #endif
-
             StringBuilder Servant = new StringBuilder();
             Console.WriteLine("Getting Jack the Ripper data");
             var person = FateGrandOrderParsing.GetPerson("Jack_the_Ripper");

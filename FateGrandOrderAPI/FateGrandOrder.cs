@@ -13,7 +13,7 @@ namespace FateGrandOrderApi
     {
         private static string FixString(string s)
         {
-            return s.Replace("&lt;", "<").Replace("&lt;", "<");
+            return s.Replace("&lt;", "<").Replace("%27", "'");
         }
 
         /// <summary>
@@ -39,20 +39,20 @@ namespace FateGrandOrderApi
                 {
                     if (s.Contains("|img"))
                     {
-                        skill.Image.Name = s.Replace("|img = ","");
+                        skill.Image.Name = s.Replace("|img =", "").TrimStart(' ');
                         skill.Image.Uri = skill.Image.Name;
                     }
                     else if (s.Contains("|name"))
                     {
-                        skill.Name = s.Replace("|name = ", "");
+                        skill.Name = s.Replace("|name =", "").TrimStart(' ');
                     }
                     else if (s.Contains("|rank"))
                     {
-                        skill.Rank = s.Replace("|rank = ", "");
+                        skill.Rank = s.Replace("|rank =", "").TrimStart(' ');
                     }
                     else if (s.Contains("|effect"))
                     {
-                        skill.Effect = FixString(s).Replace("|effect = ", "").Replace("<br/>", ",").Split(',');
+                        skill.Effect = FixString(s).Replace("|effect =", "").TrimStart(' ').Replace("<br/>", ",").Replace(", ",",").Split(',');
                     }
                 }
 
@@ -101,94 +101,94 @@ namespace FateGrandOrderApi
             {
                 if (s.Contains("|servanticons"))
                 {
-                    skill.ServantThatHaveThisSkill = s.Replace(@"{{", "").Replace(@"}}", "").Replace("|img = ", "").Split(',');
+                    skill.ServantThatHaveThisSkill = s.Replace(@"{{", "").Replace(@"}}", "").Replace("|img =", "").TrimStart(' ').Replace(", ",",").Split(',');
                 }
                 else if (s.Contains($"leveleffect"))
                 {
                     if (int.TryParse(s[1].ToString(), out int a))
                         lastLevelEffect = s;
 
-                    skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = s.Replace($"{GetStartPart()}leveleffect = ", "") });
+                    skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = s.Replace($"{GetStartPart()}leveleffect =", "").TrimStart(' ') });
                 }
                 else if (s.Contains($"{GetStartPart()}l1 "))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.EffectStrength = s.Replace($"{GetStartPart()}l1 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.EffectStrength = s.Replace($"{GetStartPart()}l1 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l2"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.EffectStrength = s.Replace($"{GetStartPart()}l2 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.EffectStrength = s.Replace($"{GetStartPart()}l2 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l3"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.EffectStrength = s.Replace($"{GetStartPart()}l3 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.EffectStrength = s.Replace($"{GetStartPart()}l3 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l4"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.EffectStrength = s.Replace($"{GetStartPart()}l4 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.EffectStrength = s.Replace($"{GetStartPart()}l4 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l5"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.EffectStrength = s.Replace($"{GetStartPart()}l5 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.EffectStrength = s.Replace($"{GetStartPart()}l5 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l6"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.EffectStrength = s.Replace($"{GetStartPart()}l6 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.EffectStrength = s.Replace($"{GetStartPart()}l6 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l7"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.EffectStrength = s.Replace($"{GetStartPart()}l7 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.EffectStrength = s.Replace($"{GetStartPart()}l7 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l8"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.EffectStrength = s.Replace($"{GetStartPart()}l8 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.EffectStrength = s.Replace($"{GetStartPart()}l8 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l9"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.EffectStrength = s.Replace($"{GetStartPart()}l9 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.EffectStrength = s.Replace($"{GetStartPart()}l9 =", "").TrimStart(' ');
                 }
                 else if (s.Contains($"{GetStartPart()}l10"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.EffectStrength = s.Replace($"{GetStartPart()}l10 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.EffectStrength = s.Replace($"{GetStartPart()}l10 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c1 "))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.Cooldown = s.Replace("|c1 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.Cooldown = s.Replace("|c1 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c2"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.Cooldown = s.Replace("|c2 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.Cooldown = s.Replace("|c2 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c3"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.Cooldown = s.Replace("|c3 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.Cooldown = s.Replace("|c3 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c4"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.Cooldown = s.Replace("|c4 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.Cooldown = s.Replace("|c4 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c5"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.Cooldown = s.Replace("|c5 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.Cooldown = s.Replace("|c5 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c6"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.Cooldown = s.Replace("|c6 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.Cooldown = s.Replace("|c6 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c7"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.Cooldown = s.Replace("|c7 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.Cooldown = s.Replace("|c7 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c8"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.Cooldown = s.Replace("|c8 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.Cooldown = s.Replace("|c8 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c9"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.Cooldown = s.Replace("|c9 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.Cooldown = s.Replace("|c9 =", "").TrimStart(' ');
                 }
                 else if (s.Contains("|c10"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.Cooldown = s.Replace("|c10 = ", "");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.Cooldown = s.Replace("|c10 =", "").TrimStart(' ');
                 }
                 else if (s == @"}}")
                 {
@@ -300,35 +300,35 @@ namespace FateGrandOrderApi
                             PassiveSkillsCount++;
                             if (PassiveSkillsCount == 1)
                             {
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name = s.Replace("|img = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name = s.Replace("|img =", "").TrimStart(' ');
                                 fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Uri = fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name;
                             }
                             else
                             {
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name = s.Replace($"|img{PassiveSkillsCount} = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name = s.Replace($"|img{PassiveSkillsCount} =", "").TrimStart(' ');
                                 fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Uri = fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image.Name;
                             }
                         }
                         else if (s.Contains("|name"))
                         {
                             if (PassiveSkillsCount == 1)
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = s.Replace("|name = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = s.Replace("|name =", "").TrimStart(' ');
                             else
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = s.Replace($"|name{PassiveSkillsCount} = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = s.Replace($"|name{PassiveSkillsCount} =", "").TrimStart(' ');
                         }
                         else if (s.Contains("|rank"))
                         {
                             if (PassiveSkillsCount == 1)
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = s.Replace("|rank = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = s.Replace("|rank =", "").TrimStart(' ');
                             else
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = s.Replace($"|rank{PassiveSkillsCount} = ", "");
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = s.Replace($"|rank{PassiveSkillsCount} =", "").TrimStart(' ');
                         }
                         else if (s.Contains("|effect"))
                         {
                             if (PassiveSkillsCount == 1)
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = s.Replace("|effect = ", "").Split(',');
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = s.Replace("|effect =", "").TrimStart(' ').Split(',');
                             else
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = s.Replace($"|effect{PassiveSkillsCount} = ", "").Split(',');
+                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = s.Replace($"|effect{PassiveSkillsCount} =", "").TrimStart(' ').Replace(", ",",").Split(',');
                         }
                     }
                     #endregion
@@ -357,125 +357,114 @@ namespace FateGrandOrderApi
                     #region Noble Phantasm
                     if (GettingNoblePhantasm)
                     {
+                        if (!string.IsNullOrWhiteSpace(s) && s[s.Length - 1] == '=')
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].Category = s.Replace("=", "");
+                        }
+                        if (s.Contains("[[File:"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation = new VideoInfomation
+                            {
+                                Name = s.Replace("[[File:", ""),
+                            };
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name = fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name.Remove(fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name.ToLower().LastIndexOf("c") - 1);
+                            if (fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name.LastIndexOf("|") != -1) { fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name = fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name.Remove(fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name.ToLower().LastIndexOf("|")); }
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Uri = fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation.Name;
+                        }
+                        else if (s == "|-|")
+                        {
+                            fateGrandOrderPerson.NoblePhantasms.Add(new NoblePhantasmList());
+                        }
+                        else if (s.Contains("|name"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Name = FixString(s).Replace("|name =", "").TrimStart(' ').Replace("<br/>","\n");
+                            if (s.Contains("Video"))
+                            {
+                                fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
+                                fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInfomation = new VideoInfomation();
+                            }
+                        }
+                        else if (s.Contains("|rank"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Rank = s.Replace("|rank =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|classification"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Classification = s.Replace("|classification =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|type"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Type = s.Replace("|type =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|hitcount"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.HitCount = s.Replace("|hitcount =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|effect"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Effects = FixString(s).Replace("|effect =", "").TrimStart(' ').Replace("<br/>", "").Replace(", ",",").Split(',');
+                        }
+                        else if (s.Contains("|overchargeeffect"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.OverChargeEffect = FixString(s).Replace("|overchargeeffect =", "").TrimStart(' ').Replace("<br/>", "").Replace(", ",",").Split(',');
+                        }
+                        else if (s.Contains("|leveleffect"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect = new LevelEffect();
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.Name = s.Replace("|leveleffect =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|l1"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel1 = s.Replace("|l1 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|l2"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel2 = s.Replace("|l2 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|l3"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel3 = s.Replace("|l3 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|l4"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel4 = s.Replace("|l4 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|l5"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel5 = s.Replace("|l5 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|chargeeffect"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect = new ChargeEffect();
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name = s.Replace("|chargeeffect =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|c1"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel1 = s.Replace("|c1 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|c2"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel2 = s.Replace("|c2 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|c3"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel3 = s.Replace("|c3 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|c4"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel4 = s.Replace("|c4 =", "").TrimStart(' ');
+                        }
+                        else if (s.Contains("|c5"))
+                        {
+                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel5 = s.Replace("|c5 =", "").TrimStart(' ');
+                        }
                     }
                     #endregion
 
                     #region Basic Infomation
-                    if (s.Contains("|jname"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname = ", "");
-                    }
-                    else if (s.Contains("|voicea"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.VoiceActor = s.Replace("|voicea = ", ""); 
-                    }
-                    else if (s.Contains("|illus"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Illustrator = s.Replace("|illus = ", "");
-                    }
-                    else if (s.Contains("|class "))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Class = s.Replace("|class = ", "");
-                    }
-                    else if (s.Contains("|atk"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.ATK = s.Replace("|atk = ", "");
-                    }
-                    else if (s.Contains("|hp"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.HP = s.Replace("|hp = ", "");
-                    }
-                    else if (s.Contains("|gatk"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.GrailATK = s.Replace("|gatk = ", "");
-                    }
-                    else if (s.Contains("|ghp"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.GrailHP = s.Replace("|ghp = ", "");
-                    }
-                    else if (s.Contains("|stars"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Stars = s.Replace("|stars = ", "");
-                    }
-                    else if (s.Contains("|cost"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Cost = s.Replace("|cost = ", "");
-                    }
-                    else if (s.Contains("|cc"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.QQQAB = s.Replace("|cc = ", "");
-                    }
-                    else if (s.Contains("|mlevel"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.MaxLevel = s.Replace("|mlevel = ", "");
-                    }
-                    else if (s.Contains("|id"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.ID = s.Replace("|id = ", "");
-                    }
-                    else if (s.Contains("|attribute"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Attribute = s.Replace("|attribute = ", "");
-                    }
-                    else if (s.Contains("|qhits"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.QuickHits = s.Replace("|qhits = ", "");
-                    }
-                    else if (s.Contains("|ahits"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.ArtsHits = s.Replace("|ahits = ", "");
-                    }
-                    else if (s.Contains("|bhits"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.BusterHits = s.Replace("|bhits = ", "");
-                    }
-                    else if (s.Contains("|ehits"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.ExtraHits = s.Replace("|ehits = ", "");
-                    }
-                    else if (s.Contains("|deathrate"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.DeathRate = s.Replace("|deathrate = ", "");
-                    }
-                    else if (s.Contains("|starabsorption"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.StarAbsorption = s.Replace("|starabsorption = ", "");
-                    }
-                    else if (s.Contains("|stargeneration"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.StarGeneration = s.Replace("|stargeneration = ", "");
-                    }
-                    else if (s.Contains("|npchargeatk"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.NPChargeATK = s.Replace("|npchargeatk = ", "");
-                    }
-                    else if (s.Contains("|npchargedef"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.NPChargeDEF = s.Replace("|npchargedef = ", "");
-                    }
-                    else if (s.Contains("|growthc"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.GrowthCurve = s.Replace("|growthc = ", "");
-                    }
-                    else if (s.Contains("|aka"))
-                    {
-                        //String[0] becomes {{nihongo|Innocent Murderer|無垢なる殺人鬼|Mukunaru Satsujinki}}&lt;br/>切り裂きジャック and me is confusion
-                        fateGrandOrderPerson.BasicInfomation.AKA = FixString(s).Replace("|aka = ", "").Replace("<br/>", " ").Replace("'''","").Replace("''", "").Split(',');
-                    }
-                    else if (s.Contains("|traits"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Traits = s.Replace("|traits = ", "").Split(',');
-                    }
-                    else if (s.Contains("|gender"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Gender = s.Replace("|gender = ", "").ToLower()[0] == 'f' ? "Female" : "Male";
-                    }
-                    else if (s.Contains("|alignment"))
-                    {
-                        fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment = ", "");
-                    }
-#region Trigger Skills Logic
-                    else if (s == "== Passive Skills ==")
+                    #region Trigger Skills Logic
+                    if (s == "== Passive Skills ==")
                     {
                         GettingPassiveSkills = true;
                     }
@@ -483,7 +472,7 @@ namespace FateGrandOrderApi
                     {
                         GettingActiveSkills = true;
                     }
-                    else if (GettingActiveSkills | GettingPassiveSkills && FixString(s) == "</tabber>")
+                    else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm && FixString(s) == "</tabber>")
                     {
                         GettingActiveSkills = false;
                         GettingPassiveSkills = false;
@@ -493,12 +482,129 @@ namespace FateGrandOrderApi
                     {
                         GettingPassiveSkills = false;
                     }
-                    else if (s == " == Noble Phantasm ==")
+                    else if (s == "== Noble Phantasm ==" || s == "==Noble Phantasm==")
                     {
                         GettingNoblePhantasm = true;
+                        fateGrandOrderPerson.NoblePhantasms.Add(new NoblePhantasmList());
                     }
-#endregion
-#endregion
+                    #endregion
+                    else if (s.Contains("|jname"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|voicea"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.VoiceActor = s.Replace("|voicea =", "").TrimStart(' '); 
+                    }
+                    else if (s.Contains("|illus"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Illustrator = s.Replace("|illus =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|class "))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Class = s.Replace("|class =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|atk"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.ATK = s.Replace("|atk =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|hp"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.HP = s.Replace("|hp =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|gatk"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.GrailATK = s.Replace("|gatk =", "").TrimStart(' ').TrimStart(' ');
+                    }
+                    else if (s.Contains("|ghp"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.GrailHP = s.Replace("|ghp =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|stars"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Stars = s.Replace("|stars =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|cost"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Cost = s.Replace("|cost =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|cc"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.QQQAB = s.Replace("|cc =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|mlevel"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.MaxLevel = s.Replace("|mlevel =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|id"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.ID = s.Replace("|id =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|attribute"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Attribute = s.Replace("|attribute =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|qhits"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.QuickHits = s.Replace("|qhits =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|ahits"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.ArtsHits = s.Replace("|ahits =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|bhits"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.BusterHits = s.Replace("|bhits =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|ehits"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.ExtraHits = s.Replace("|ehits =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|deathrate"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.DeathRate = s.Replace("|deathrate =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|starabsorption"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.StarAbsorption = s.Replace("|starabsorption =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|stargeneration"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.StarGeneration = s.Replace("|stargeneration =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|npchargeatk"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.NPChargeATK = s.Replace("|npchargeatk =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|npchargedef"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.NPChargeDEF = s.Replace("|npchargedef =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|growthc"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.GrowthCurve = s.Replace("|growthc =", "").TrimStart(' ');
+                    }
+                    else if (s.Contains("|aka"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.AKA = FixString(s).Replace("|aka =", "").TrimStart(' ').Replace("<br/>", " ").Replace("'''","").Replace("''", "").Replace(", ",",").Replace(", ",",").Split(',');
+                    }
+                    else if (s.Contains("|traits"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Traits = s.Replace("|traits =", "").TrimStart(' ').Replace(", ",",").Split(',');
+                    }
+                    else if (s.Contains("|gender"))
+                    {
+                        var gender = s.Replace("|gender =", "").TrimStart(' ').ToLower();
+                        if (gender[0] == 'f') { fateGrandOrderPerson.BasicInfomation.Gender = "Female"; }
+                        else if (gender[0] == 'm') { fateGrandOrderPerson.BasicInfomation.Gender = "Male"; }
+                        else { fateGrandOrderPerson.BasicInfomation.Gender = gender; }
+                        gender = null;
+                    }
+                    else if (s.Contains("|alignment"))
+                    {
+                        fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment =", "").TrimStart(' ');
+                    }
+                    #endregion
                 }
             }
 

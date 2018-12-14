@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azy.FateGrandOrderAPI" Version="0.2.2" />
+    <PackageReference Include="Azy.FateGrandOrderAPI" Version="0.2.4" />
   </ItemGroup>
 
 </Project>

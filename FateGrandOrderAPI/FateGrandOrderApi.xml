@@ -29,6 +29,11 @@
             All the Passive Skills this servant has
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.NoblePhantasms">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.FromCache">
             <summary>
             If the servant is in cache
@@ -204,6 +209,11 @@
             Returns image Uri (img)
             </summary>
         </member>
+        <member name="T:FateGrandOrderApi.Classes.VideoInfomation">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.LevelEffectCore">
             <summary>
             The core part of the Level Effects
@@ -269,64 +279,69 @@
             Returns if this ActiveSkill is for an NPC
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.LevelEffect">
+        <member name="T:FateGrandOrderApi.Classes.LevelEffect5">
             <summary>
-            Contains all the infomation about the level effect
+            Contains all the infomation about the level effect that has 5 levels
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.LevelEffectName">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect5.LevelEffectName">
             <summary>
             Gives you the name of this LevelEffect (leveleffect)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level1Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect5.Level1Effect">
             <summary>
             The Level Effect when the Level is Level 1 (l1 and c1)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level2Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect5.Level2Effect">
             <summary>
             The Level Effect when the Level is Level 2 (l2 and c2)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level3Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect5.Level3Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l3 and c3)
+            The Level Effect when the Level is Level 3 (l3 and c3)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level4Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect5.Level4Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l4 and c4)
+            The Level Effect when the Level is Level 4 (l4 and c4)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level5Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect5.Level5Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l5 and c5)
+            The Level Effect when the Level is Level 6 (l5 and c5)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level6Effect">
+        <member name="T:FateGrandOrderApi.Classes.LevelEffect10">
             <summary>
-            The Level Effect when the Level is Level 1 (l6 and c6)
+            Contains all the infomation about the level effect that has 10 levels
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level7Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect10.Level6Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l7 and c7)
+            The Level Effect when the Level is Level 6 (l6 and c6)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level8Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect10.Level7Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l8 and c8)
+            The Level Effect when the Level is Level 7 (l7 and c7)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level9Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect10.Level8Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l9 and c9)
+            The Level Effect when the Level is Level 8 (l8 and c8)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Level10Effect">
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect10.Level9Effect">
             <summary>
-            The Level Effect when the Level is Level 1 (l10 and c10)
+            The Level Effect when the Level is Level 9 (l9 and c9)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect10.Level10Effect">
+            <summary>
+            The Level Effect when the Level is Level 10 (l10 and c10)
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.PassiveSkillList">
@@ -342,6 +357,101 @@
         <member name="P:FateGrandOrderApi.Classes.PassiveSkillList.PassiveSkills">
             <summary>
             All the passive skills that this list has
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.NoblePhantasm">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.Name">
+            <summary>
+            The noble phantasm name (name)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.Rank">
+            <summary>
+            The noble phantasm rank (rank)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.Classification">
+            <summary>
+            The noble phantasm classification (classification)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.Type">
+            <summary>
+            The noble phantasm type (type)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.HitCount">
+            <summary>
+            The noble phantasm hitcount (hitcount)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.Effects">
+            <summary>
+            The noble phantasm effects (effect)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.OverChargeEffect">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.LevelEffect">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.ChargeEffect">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.IsVideo">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.ChargeEffect">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.LevelEffect">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect.Name">
+            <summary>
+            (leveleffect)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect.NPLevel1">
+            <summary>
+            NP Level 1
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect.NPLevel2">
+            <summary>
+            NP Level 2
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect.NPLevel3">
+            <summary>
+            NP Level 3
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect.NPLevel4">
+            <summary>
+            NP Level 4
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffect.NPLevel5">
+            <summary>
+            NP Level 5
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.PassiveSkills">
