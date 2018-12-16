@@ -235,6 +235,8 @@ namespace FateGrandOrderApi
             bool GettingActiveSkills = false;
             bool GettingPassiveSkills = false;
             bool GettingNoblePhantasm = false;
+            bool GettingAscension = false;
+            bool GettingSkillReinforcement = false;
             int PassiveSkillsCount = 0;
 
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{person}?action=edit").DocumentNode.SelectNodes("//textarea"))
@@ -280,15 +282,7 @@ namespace FateGrandOrderApi
                     #region Passive Skills
                     if (GettingPassiveSkills)
                     {
-                        if (s == "{{passiveskill")
-                        {
-                            if (fateGrandOrderPerson.PassiveSkills.Count == 0)
-                            {
-                                fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillList());
-                                PassiveSkillsCount = 0;
-                            }
-                        }
-                        else if (!string.IsNullOrWhiteSpace(s) && s[s.Length - 1] == '=')
+                        if (!string.IsNullOrWhiteSpace(s) && s[s.Length - 1] == '=')
                         {
                             fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillList());
                             fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category = s.Replace("=", "");
@@ -462,15 +456,37 @@ namespace FateGrandOrderApi
                     }
                     #endregion
 
-                    #region Basic Infomation
-                    #region Trigger Skills Logic
-                    if (s == "== Passive Skills ==")
+                    #region Ascension
+                    if (GettingAscension)
                     {
+                        //I will do this on monday CBA XD
+                    }
+                    #endregion
+
+                    #region Active Skills
+                    if (GettingSkillReinforcement)
+                    {
+                        //I will do this on monday CBA XD
+                    }
+                    #endregion
+
+                    #region Trigger Skills Logic
+                    if (s == "== Passive Skills ==" || s == "==Passive Skills==")
+                    {
+                        fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillList());
                         GettingPassiveSkills = true;
                     }
-                    else if (s == "== Active Skills ==")
+                    else if (s == "== Active Skills ==" || s == "==Active Skills==")
                     {
                         GettingActiveSkills = true;
+                    }
+                    else if (s == "== Ascension ==" || s == "==Ascension==")
+                    {
+                        GettingAscension = true;
+                    }
+                    else if (s == "== Skill Reinforcement ==" || s == "==Skill Reinforcement==")
+                    {
+                        GettingSkillReinforcement = true;
                     }
                     else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm && FixString(s) == "</tabber>")
                     {
@@ -478,16 +494,19 @@ namespace FateGrandOrderApi
                         GettingPassiveSkills = false;
                         GettingNoblePhantasm = false;
                     }
-                    else if (GettingPassiveSkills && s == @"}}")
+                    else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement && s == @"}}")
                     {
                         GettingPassiveSkills = false;
+                        GettingAscension = false;
+                        GettingSkillReinforcement = false;
                     }
                     else if (s == "== Noble Phantasm ==" || s == "==Noble Phantasm==")
                     {
                         GettingNoblePhantasm = true;
                         fateGrandOrderPerson.NoblePhantasms.Add(new NoblePhantasmList());
                     }
-                    #endregion
+#endregion
+#region Basic Infomation
                     else if (s.Contains("|jname"))
                     {
                         fateGrandOrderPerson.BasicInfomation.JapaneseName = s.Replace("|jname =", "").TrimStart(' ');
@@ -604,7 +623,7 @@ namespace FateGrandOrderApi
                     {
                         fateGrandOrderPerson.BasicInfomation.Alignment = s.Replace("|alignment =", "").TrimStart(' ');
                     }
-                    #endregion
+#endregion
                 }
             }
 

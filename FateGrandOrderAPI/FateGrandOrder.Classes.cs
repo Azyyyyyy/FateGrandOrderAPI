@@ -186,6 +186,35 @@ namespace FateGrandOrderApi.Classes
         public string Uri { get; set; }
     }
 
+    public class AscensionSkillReinforcement
+    {
+        public string AscensionNumber { get; set; }
+        public string Item1 { get; set; }
+        public string Item2 { get; set; }
+        public string Item3 { get; set; }
+        public string Item4 { get; set; }
+        public string QP { get; set; }
+    }
+
+    public class Ascension
+    {
+        public Ascension() { Ascension1 = new AscensionSkillReinforcement(); Ascension2 = new AscensionSkillReinforcement(); Ascension3 = new AscensionSkillReinforcement(); Ascension4 = new AscensionSkillReinforcement(); }
+        public AscensionSkillReinforcement Ascension1 { get; set; }
+        public AscensionSkillReinforcement Ascension2 { get; set; }
+        public AscensionSkillReinforcement Ascension3 { get; set; }
+        public AscensionSkillReinforcement Ascension4 { get; set; }
+    }
+
+    public class SkillReinforcement : AscensionSkillReinforcement
+    {
+        public SkillReinforcement() { Ascension5 = new AscensionSkillReinforcement(); Ascension6 = new AscensionSkillReinforcement(); Ascension7 = new AscensionSkillReinforcement(); Ascension8 = new AscensionSkillReinforcement(); Ascension9 = new AscensionSkillReinforcement(); }
+        public AscensionSkillReinforcement Ascension5 { get; set; }
+        public AscensionSkillReinforcement Ascension6 { get; set; }
+        public AscensionSkillReinforcement Ascension7 { get; set; }
+        public AscensionSkillReinforcement Ascension8 { get; set; }
+        public AscensionSkillReinforcement Ascension9 { get; set; }
+    }
+
     /// <summary>
     /// 
     /// </summary>
