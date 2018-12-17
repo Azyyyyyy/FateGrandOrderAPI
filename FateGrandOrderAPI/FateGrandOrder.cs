@@ -302,7 +302,7 @@ namespace FateGrandOrderApi
                     else if (s.Contains("|image"))
                     {
                         item.ItemImage = new ImageInfomation();
-                        item.ItemImage.Name = s.Replace("||image", "").Replace("=", "").TrimStart(' ');
+                        item.ItemImage.Name = s.Replace("|image", "").Replace("=", "").TrimStart(' ');
                         item.ItemImage.Uri = item.ItemImage.Name;
                     }
                     else if (s.Contains("|enemy"))
