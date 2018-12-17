@@ -47,6 +47,30 @@ namespace ApiTest
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Lancelot (Saber) data (Is cached: {Person3.FromCache})");
 #endif
             stopwatch.Restart();
+            Console.WriteLine("------------------------");
+            Console.WriteLine("Getting Sigurd");
+            stopwatch.Start();
+            var Person4 = FateGrandOrderParsing.GetPerson("Sigurd");
+            stopwatch.Stop();
+#if !DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Sigurd data");
+#endif
+#if DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Sigurd data (Is cached: {Person4.FromCache})");
+#endif
+            stopwatch.Restart();
+            Console.WriteLine("------------------------");
+            Console.WriteLine("Getting Artoria Pendragon (Alter)");
+            stopwatch.Start();
+            var Person5 = FateGrandOrderParsing.GetPerson("Artoria Pendragon (Alter)");
+            stopwatch.Stop();
+#if !DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Artoria Pendragon (Alter) data");
+#endif
+#if DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Artoria Pendragon (Alter) data (Is cached: {Person5.FromCache})");
+#endif
+            stopwatch.Restart();
             Console.WriteLine("----------------------------");
             Console.WriteLine("Getting Jack the Ripper data");
             stopwatch.Start();

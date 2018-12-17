@@ -13,4 +13,8 @@
     <PackageReference Include="Azy.FateGrandOrderAPI" Version="0.2.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FateGrandOrderAPI\FateGrandOrderApi.csproj" />
+  </ItemGroup>
+
 </Project>

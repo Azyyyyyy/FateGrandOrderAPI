@@ -31,6 +31,8 @@ namespace FateGrandOrderApi.Classes
         /// 
         /// </summary>
         public List<NoblePhantasmList> NoblePhantasms { get; set; }
+        public Ascension Ascension { get; set; }
+        public SkillReinforcement SkillReinforcement { get; set; }
 #if DEBUG
         /// <summary>
         /// If the servant is in cache
@@ -189,26 +191,24 @@ namespace FateGrandOrderApi.Classes
     public class AscensionSkillReinforcement
     {
         public string AscensionNumber { get; set; }
-        public string Item1 { get; set; }
-        public string Item2 { get; set; }
-        public string Item3 { get; set; }
-        public string Item4 { get; set; }
+        public Item Item1 { get; set; }
+        public Item Item2 { get; set; }
+        public Item Item3 { get; set; }
+        public Item Item4 { get; set; }
         public string QP { get; set; }
     }
 
     public class Ascension
     {
-        public Ascension() { Ascension1 = new AscensionSkillReinforcement(); Ascension2 = new AscensionSkillReinforcement(); Ascension3 = new AscensionSkillReinforcement(); Ascension4 = new AscensionSkillReinforcement(); }
         public AscensionSkillReinforcement Ascension1 { get; set; }
         public AscensionSkillReinforcement Ascension2 { get; set; }
         public AscensionSkillReinforcement Ascension3 { get; set; }
         public AscensionSkillReinforcement Ascension4 { get; set; }
+        public AscensionSkillReinforcement Ascension5 { get; set; }
     }
 
-    public class SkillReinforcement : AscensionSkillReinforcement
+    public class SkillReinforcement : Ascension
     {
-        public SkillReinforcement() { Ascension5 = new AscensionSkillReinforcement(); Ascension6 = new AscensionSkillReinforcement(); Ascension7 = new AscensionSkillReinforcement(); Ascension8 = new AscensionSkillReinforcement(); Ascension9 = new AscensionSkillReinforcement(); }
-        public AscensionSkillReinforcement Ascension5 { get; set; }
         public AscensionSkillReinforcement Ascension6 { get; set; }
         public AscensionSkillReinforcement Ascension7 { get; set; }
         public AscensionSkillReinforcement Ascension8 { get; set; }
@@ -284,7 +284,7 @@ namespace FateGrandOrderApi.Classes
         /// <summary>
         /// Gives you what servant's have this skill (servant)
         /// </summary>
-        public string[] ServantThatHaveThisSkill { get; set; }
+        public string[] ServantsThatHaveThisSkill { get; set; }
         /// <summary>
         /// Gives you all the cooldown and effects strength
         /// </summary>
@@ -369,6 +369,41 @@ namespace FateGrandOrderApi.Classes
         /// The Level Effect when the Level is Level 10 (l10 and c10)
         /// </summary>
         public LevelEffectCore Level10Effect { get; set; }
+    }
+
+    public class ItemDropLocationList
+    {
+        public ItemDropLocationList() { DropLocations = new List<ItemDropLocation>(); }
+        public string Category { get; set; }
+        public List<ItemDropLocation> DropLocations { get; set; }
+    }
+
+    public class ItemDropLocation
+    {
+        public string Location { get; set; }
+        public string PossibleDrops { get; set; }
+        public string APCost { get; set; }
+    }
+
+    public class Enemy
+    {
+    }
+
+    public class Item
+    {
+        public Item() { GeneratedWith = ""; }
+        public Item(string generatedWith, string englishName) { GeneratedWith = generatedWith; EnglishName = englishName; }
+        public string GeneratedWith { get; private set; }
+        public string EnglishName { get; set; }
+        public string JapaneseName { get; set; }
+        public ImageInfomation ItemImage { get; set; }
+        public string EnglishDescription { get; set; }
+        public string JapaneseDescription { get; set; }
+        public List<Enemy> EnemiesThatDroppedThis { get; set; }
+        public List<ItemDropLocationList> DropLocations { get; set; }
+#if DEBUG
+        public bool FromCache { get; set; }
+#endif
     }
 
     /// <summary>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.5</Version>
+    <Version>0.2.6</Version>
     <Company>AzyIsCool, DatReki</Company>
     <Authors>AzyIsCool, DatReki</Authors>
     <Description>Just a simple Fate/Grand Order Api, grabbing infomation from https://fategrandorder.fandom.com/wiki/Fate/Grand_Order_Wikia</Description>
@@ -12,8 +12,9 @@
     <PackageId>Azy.FateGrandOrderAPI</PackageId>
     <Product>Fate/Grand Order, API</Product>
     <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
-    <PackageReleaseNotes>bug fix</PackageReleaseNotes>
-    <AssemblyVersion>0.2.4.0</AssemblyVersion>
+    <PackageReleaseNotes>Ascension is now a thing and with that Items are now a thing™
+(I still need to add Enemy but hey stuff takes time)</PackageReleaseNotes>
+    <AssemblyVersion>0.2.6.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

@@ -264,7 +264,7 @@
             Returns when the skill gets unlocked through Ascension ({{unlock|)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.ActiveSkill.ServantThatHaveThisSkill">
+        <member name="P:FateGrandOrderApi.Classes.ActiveSkill.ServantsThatHaveThisSkill">
             <summary>
             Gives you what servant's have this skill (servant)
             </summary>

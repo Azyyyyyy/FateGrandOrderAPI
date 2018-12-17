@@ -13,5 +13,6 @@ namespace FateGrandOrderApi.Caching
         /// People that are currently in the cache
         /// </summary>
         public static List<FateGrandOrderPerson> FateGrandOrderPeople { get; set; }
+        public static List<Item> Items { get; set; }
     }
 }
