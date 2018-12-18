@@ -11,6 +11,7 @@
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
     <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
     <PackageReleaseNotes>Enemies now get (mostly) filled up with data, you can now choose what parts you want the API to look for so no need to be waiting for information that your never going to use and fixes here and there</PackageReleaseNotes>
+    <PackageId>Azy.FateGrandOrderAPI</PackageId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
