@@ -2,6 +2,7 @@
 using FateGrandOrderApi;
 using System.Diagnostics;
 using System.Text;
+using FateGrandOrderApi.Classes;
 
 namespace ApiTest
 {
@@ -14,7 +15,7 @@ namespace ApiTest
             Console.WriteLine("----------------");
             Console.WriteLine("Getting Jeanne d'Arc (Alter)");
             stopwatch.Start();
-            var Person1 = FateGrandOrderParsing.GetPerson("Jeanne d'Arc (Alter)");
+            var Person1 = FateGrandOrderParsing.GetPerson("Jeanne d'Arc (Alter)", presetsForInfomation: PresetsForInfomation.BasicInfomation);
             stopwatch.Stop();
 #if !DEBUG
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Jeanne d'Arc (Alter) data");
@@ -84,6 +85,18 @@ namespace ApiTest
 #endif
             stopwatch.Reset();
             Console.WriteLine("----------------------------");
+            Console.WriteLine("Getting Diarmuid Ua Duibhne (Saber) data");
+            stopwatch.Start();
+            var Person7 = FateGrandOrderParsing.GetPerson("Diarmuid Ua Duibhne (Saber)");
+            stopwatch.Stop();
+#if !DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Diarmuid Ua Duibhne (Saber) data");
+#endif
+#if DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Medb Diarmuid Ua Duibhne (Saber) data (Is cached: {Person7.FromCache})");
+#endif
+            stopwatch.Reset();
+            Console.WriteLine("----------------------------");
             Console.WriteLine("Getting Jack the Ripper data");
             stopwatch.Start();
             var person = FateGrandOrderParsing.GetPerson("Jack_the_Ripper");
@@ -106,14 +119,14 @@ namespace ApiTest
             Console.ReadKey();
         }
     }
-    static class People
-    {
-        static FateGrandOrderApi.Classes.FateGrandOrderPerson JackTheRipper = new FateGrandOrderApi.Classes.FateGrandOrderPerson
-        {
-            BasicInfomation = new FateGrandOrderApi.Classes.FateGrandOrderPersonBasic
-            {
-                //Cost = 
-            }
-        };
-    }
+    //static class People
+    //{
+    //    static FateGrandOrderApi.Classes.FateGrandOrderPerson JackTheRipper = new FateGrandOrderApi.Classes.FateGrandOrderPerson
+    //    {
+    //        BasicInfomation = new FateGrandOrderApi.Classes.FateGrandOrderPersonBasic
+    //        {
+    //            //Cost = 
+    //        }
+    //    };
+    //}
 }

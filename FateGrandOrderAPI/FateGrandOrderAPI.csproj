@@ -3,18 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.2.6</Version>
-    <Company>AzyIsCool, DatReki</Company>
+    <Version>0.2.7</Version>
+    <PackageIconUrl>https://raw.githubusercontent.com/AzyIsCool/FateGrandOrderAPI/master/FateGrandOrderApi/Assets/Icon.png</PackageIconUrl>
     <Authors>AzyIsCool, DatReki</Authors>
-    <Description>Just a simple Fate/Grand Order Api, grabbing infomation from https://fategrandorder.fandom.com/wiki/Fate/Grand_Order_Wikia</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Company />
+    <Description>The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order</Description>
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
-    <PackageId>Azy.FateGrandOrderAPI</PackageId>
-    <Product>Fate/Grand Order, API</Product>
     <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
-    <PackageReleaseNotes>Ascension is now a thing and with that Items are now a thing™
-(I still need to add Enemy but hey stuff takes time)</PackageReleaseNotes>
-    <AssemblyVersion>0.2.6.0</AssemblyVersion>
+    <PackageReleaseNotes>Enemies now get (mostly) filled up with data, you can now choose what parts you want the API to look for so no need to be waiting for information that your never going to use and fixes here and there</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

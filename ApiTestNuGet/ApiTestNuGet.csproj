@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Description>This will grab a load of people to see of any of them fail, Uses NuGet version and not the local project</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,11 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azy.FateGrandOrderAPI" Version="0.2.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FateGrandOrderAPI\FateGrandOrderApi.csproj" />
+    <PackageReference Include="Azy.FateGrandOrderAPI" Version="0.2.7" />
   </ItemGroup>
 
 </Project>

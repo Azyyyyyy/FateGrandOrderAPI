@@ -459,6 +459,11 @@
             Just an emtpy class named PassiveSkills which inheritances from Skill lol
             </summary>
         </member>
+        <member name="T:FateGrandOrderApi.Classes.PresetsForInfomation">
+            <summary>
+            Presets for what infomation to get
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing">
             <summary>
             Class containing parsing logic (this is where you get your people and skills from)
@@ -486,7 +491,7 @@
             <param name="skill">The ActiveSkill to put all the content into</param>
             <returns></returns>
         </member>
-        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String)">
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInfomation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             This will return the person from the persons name (will return null if we are unable to find the person)
             </summary>

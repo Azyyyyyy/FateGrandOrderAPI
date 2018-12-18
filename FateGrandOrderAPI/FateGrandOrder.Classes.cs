@@ -387,6 +387,19 @@ namespace FateGrandOrderApi.Classes
 
     public class Enemy
     {
+        public Enemy() { EnemyImage = new List<ImageInfomation>(); EnglishName = ""; }
+        public Enemy(string englishName) { EnemyImage = new List<ImageInfomation>(); EnglishName = englishName; }
+        public List<ImageInfomation> EnemyImage { get; set; }
+        public string[] Class { get; set; }
+        public string[] Areas { get; set; }
+        public string JapaneseName { get; set; }
+        public string EnglishName { get; set; }
+        public string Rank { get; set; }
+        public string Gender { get; set; }
+        public string Attribute { get; set; }
+        public string[] Traits { get; set; }
+        public List<Item> WhatThisEnemyDrops { get; set; }
+        //public string[] RecommendedServants { get; set; }
     }
 
     public class Item
@@ -526,6 +539,16 @@ namespace FateGrandOrderApi.Classes
     public class PassiveSkills : Skill
     {
         //In case there something I'm missing from a passiveskill
+    }
+
+    /// <summary>
+    /// Presets for what infomation to get
+    /// </summary>
+    public enum PresetsForInfomation
+    {
+        AllInfomation,
+        BasicInfomation,
+        NotSet
     }
     #endregion
     #endregion

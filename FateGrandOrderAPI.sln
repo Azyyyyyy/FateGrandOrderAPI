@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FateGrandOrderApi", "FateGrandOrderAPI\FateGrandOrderApi.csproj", "{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTest", "ApiTest\ApiTest.csproj", "{82F9FAC2-647C-470C-BC7F-01CF0FD68125}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiTestNuGet", "ApiTestNuGet\ApiTestNuGet.csproj", "{46897C3A-0A30-4DE4-91B1-CBFC874E8A42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTestNuGet", "ApiTestNuGet\ApiTestNuGet.csproj", "{46897C3A-0A30-4DE4-91B1-CBFC874E8A42}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FateGrandOrderApi", "FateGrandOrderApi\FateGrandOrderApi.csproj", "{B798E0F1-B2ED-4C88-B331-F1333642A9B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5C56EC83-DAE5-471D-AD72-9B2CD3734E22}.Release|Any CPU.Build.0 = Release|Any CPU
 		{82F9FAC2-647C-470C-BC7F-01CF0FD68125}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82F9FAC2-647C-470C-BC7F-01CF0FD68125}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82F9FAC2-647C-470C-BC7F-01CF0FD68125}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +23,10 @@ Global
 		{46897C3A-0A30-4DE4-91B1-CBFC874E8A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46897C3A-0A30-4DE4-91B1-CBFC874E8A42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46897C3A-0A30-4DE4-91B1-CBFC874E8A42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B798E0F1-B2ED-4C88-B331-F1333642A9B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B798E0F1-B2ED-4C88-B331-F1333642A9B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B798E0F1-B2ED-4C88-B331-F1333642A9B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B798E0F1-B2ED-4C88-B331-F1333642A9B5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
