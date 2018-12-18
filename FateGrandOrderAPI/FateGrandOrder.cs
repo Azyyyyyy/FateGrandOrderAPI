@@ -228,7 +228,6 @@ namespace FateGrandOrderApi
 
         public static Item GetItem(string itemName, Enemy enemyToNotLookFor = null)
         {
-            Console.WriteLine($"Getting Item {itemName}");
             bool DoingLocationLogic = false;
             Item item = null;
             Item ItemToRemoveFromCache = null;
