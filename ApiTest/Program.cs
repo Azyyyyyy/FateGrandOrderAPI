@@ -12,7 +12,7 @@ namespace ApiTest
             Stopwatch stopwatch = new Stopwatch();
             Console.WriteLine("   Api Tester   ");
             Console.WriteLine("----------------");
-            Console.WriteLine("Getting Jeanne d'Arc (Alter) data");
+            Console.WriteLine("Getting Jeanne d'Arc (Alter)");
             stopwatch.Start();
             var Person1 = FateGrandOrderParsing.GetPerson("Jeanne d'Arc (Alter)");
             stopwatch.Stop();
@@ -34,7 +34,7 @@ namespace ApiTest
 #if DEBUG
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Jeanne d'Arc (Alter) data again (Is cached: {Person2.FromCache})");
 #endif
-            stopwatch.Restart();
+            stopwatch.Reset();
             Console.WriteLine("------------------------");
             Console.WriteLine("Getting Lancelot (Saber)");
             stopwatch.Start();
@@ -46,7 +46,7 @@ namespace ApiTest
 #if DEBUG
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Lancelot (Saber) data (Is cached: {Person3.FromCache})");
 #endif
-            stopwatch.Restart();
+            stopwatch.Reset();
             Console.WriteLine("------------------------");
             Console.WriteLine("Getting Sigurd");
             stopwatch.Start();
@@ -58,7 +58,7 @@ namespace ApiTest
 #if DEBUG
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Sigurd data (Is cached: {Person4.FromCache})");
 #endif
-            stopwatch.Restart();
+            stopwatch.Reset();
             Console.WriteLine("------------------------");
             Console.WriteLine("Getting Artoria Pendragon (Alter)");
             stopwatch.Start();
@@ -70,7 +70,19 @@ namespace ApiTest
 #if DEBUG
             Console.WriteLine($"It took {stopwatch.Elapsed} to get Artoria Pendragon (Alter) data (Is cached: {Person5.FromCache})");
 #endif
-            stopwatch.Restart();
+            stopwatch.Reset();
+            Console.WriteLine("----------------------------");
+            Console.WriteLine("Getting Medb (Saber) data");
+            stopwatch.Start();
+            var Person6 = FateGrandOrderParsing.GetPerson("Medb_(Saber)");
+            stopwatch.Stop();
+#if !DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Medb (Saber) data");
+#endif
+#if DEBUG
+            Console.WriteLine($"It took {stopwatch.Elapsed} to get Medb (Saber) data (Is cached: {Person6.FromCache})");
+#endif
+            stopwatch.Reset();
             Console.WriteLine("----------------------------");
             Console.WriteLine("Getting Jack the Ripper data");
             stopwatch.Start();
