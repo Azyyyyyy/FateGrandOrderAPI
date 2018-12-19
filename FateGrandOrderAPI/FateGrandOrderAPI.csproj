@@ -6,7 +6,7 @@
     <Version>0.2.8</Version>
     <PackageIconUrl>https://raw.githubusercontent.com/AzyIsCool/FateGrandOrderAPI/master/FateGrandOrderApi/Assets/Icon.png</PackageIconUrl>
     <Authors>AzyIsCool, DatReki</Authors>
-    <Company />
+    <Company>AzyIsCool, DatReki</Company>
     <Description>The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order</Description>
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
     <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
