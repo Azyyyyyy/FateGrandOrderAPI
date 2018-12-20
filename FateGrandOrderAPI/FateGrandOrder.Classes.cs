@@ -8,17 +8,16 @@ namespace FateGrandOrderApi.Classes
     public class FateGrandOrderPerson
     {
         //Got to at least instantiate them even without them (do some warnings if you want to)
-        public FateGrandOrderPerson() { GeneratedWith = ""; BasicInfomation = new FateGrandOrderPersonBasic(""); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); NoblePhantasms = new List<NoblePhantasmList>(); }
-
-        public FateGrandOrderPerson(string generatedWith, string englishName) { GeneratedWith = generatedWith; BasicInfomation = new FateGrandOrderPersonBasic(englishName); ActiveSkills = new List<ActiveSkill>(); PassiveSkills = new List<PassiveSkillList>(); NoblePhantasms = new List<NoblePhantasmList>(); }
+        public FateGrandOrderPerson(string generatedWith, string englishNamePassed) { GeneratedWith = generatedWith; EnglishNamePassed = englishNamePassed; }
         /// <summary>
         /// The string that was used when generating this servants class
         /// </summary>
         public string GeneratedWith { get; private set; }
+        public string EnglishNamePassed { get; private set; }
         /// <summary>
-        /// The basic infomation about this servant (.e.g. Name, HP, ATK etc...)
+        /// The basic information about this servant (.e.g. Name, HP, ATK etc...)
         /// </summary>
-        public FateGrandOrderPersonBasic BasicInfomation { get; set; }
+        public FateGrandOrderPersonBasic BasicInformation { get; set; }
         /// <summary>
         /// All the Active Skills this servant has
         /// </summary>
@@ -42,7 +41,7 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// Basic infomation about your Fate/Grand Order servant
+    /// Basic information about your Fate/Grand Order servant
     /// </summary>
     public class FateGrandOrderPersonBasic
     {
@@ -170,13 +169,13 @@ namespace FateGrandOrderApi.Classes
         /// <summary>
         /// (image)
         /// </summary>
-        public List<ImageInfomation> Images { get; set; }
+        public List<ImageInformation> Images { get; set; }
     }
 
     /// <summary>
     /// Image name and Uri
     /// </summary>
-    public class ImageInfomation
+    public class ImageInformation
     {
         /// <summary>
         /// Returns image name (img)
@@ -218,7 +217,7 @@ namespace FateGrandOrderApi.Classes
     /// <summary>
     /// 
     /// </summary>
-    public class VideoInfomation : ImageInfomation
+    public class VideoInformation : ImageInformation
     {
     }
 
@@ -245,13 +244,13 @@ namespace FateGrandOrderApi.Classes
     {
         public Skill()
         {
-            Image = new ImageInfomation();
+            Image = new ImageInformation();
         }
 
         /// <summary>
-        /// Returns the image infomation of this skill (img) 
+        /// Returns the image information of this skill (img) 
         /// </summary>
-        public ImageInfomation Image { get; set; }
+        public ImageInformation Image { get; set; }
         /// <summary>
         /// Gives you skill's name (name)
         /// </summary>
@@ -296,7 +295,7 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// Contains all the infomation about the level effect that has 5 levels
+    /// Contains all the information about the level effect that has 5 levels
     /// </summary>
     public class LevelEffect5
     {
@@ -336,7 +335,7 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// Contains all the infomation about the level effect that has 10 levels
+    /// Contains all the information about the level effect that has 10 levels
     /// </summary>
     public class LevelEffect10 : LevelEffect5 
     {
@@ -387,9 +386,9 @@ namespace FateGrandOrderApi.Classes
 
     public class Enemy
     {
-        public Enemy() { EnemyImage = new List<ImageInfomation>(); EnglishName = ""; }
-        public Enemy(string englishName) { EnemyImage = new List<ImageInfomation>(); EnglishName = englishName; }
-        public List<ImageInfomation> EnemyImage { get; set; }
+        public Enemy() { EnemyImage = new List<ImageInformation>(); EnglishName = ""; WhatThisEnemyDrops = new List<Item>(); }
+        public Enemy(string englishName) { EnemyImage = new List<ImageInformation>(); EnglishName = englishName; WhatThisEnemyDrops = new List<Item>(); }
+        public List<ImageInformation> EnemyImage { get; set; }
         public string[] Class { get; set; }
         public string[] Areas { get; set; }
         public string JapaneseName { get; set; }
@@ -409,7 +408,7 @@ namespace FateGrandOrderApi.Classes
         public string GeneratedWith { get; private set; }
         public string EnglishName { get; set; }
         public string JapaneseName { get; set; }
-        public ImageInfomation ItemImage { get; set; }
+        public ImageInformation ItemImage { get; set; }
         public string EnglishDescription { get; set; }
         public string JapaneseDescription { get; set; }
         public List<Enemy> EnemiesThatDroppedThis { get; set; }
@@ -492,7 +491,7 @@ namespace FateGrandOrderApi.Classes
         /// 
         /// </summary>
         public bool IsVideo { get; set; }
-        public VideoInfomation VideoInfomation { get; set; }
+        public VideoInformation VideoInformation { get; set; }
     }
 
     /// <summary>
@@ -542,12 +541,12 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// Presets for what infomation to get
+    /// Presets for what information to get
     /// </summary>
-    public enum PresetsForInfomation
+    public enum PresetsForInformation
     {
-        AllInfomation,
-        BasicInfomation,
+        AllInformation,
+        BasicInformation,
         NotSet
     }
     #endregion

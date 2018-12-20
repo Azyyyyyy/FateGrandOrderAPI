@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.2.9</Version>
+    <PackageIconUrl>https://raw.githubusercontent.com/AzyIsCool/FateGrandOrderAPI/master/FateGrandOrderAPI/Assets/Icon.png</PackageIconUrl>
+    <Authors>AzyIsCool, DatReki</Authors>
+    <Company>AzyIsCool, DatReki</Company>
+    <Description>The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order</Description>
+    <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
+    <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
+    <PackageReleaseNotes>Umm so the last two uploads were not the most stable things in the world so I gone and fixed parts as well adding try and catch's where it's likely to be unstable meaning more data for me to be able to fix and so your programs don't crash/break as much as they should</PackageReleaseNotes>
+    <PackageId>Azy.FateGrandOrderAPI</PackageId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>FateGrandOrderApi.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DocumentationFile>FateGrandOrderApi.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HtmlAgilityPack" Version="1.8.11" />
+  </ItemGroup>
+
+</Project>

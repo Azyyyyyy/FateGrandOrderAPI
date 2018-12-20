@@ -14,9 +14,9 @@
             The string that was used when generating this servants class
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.BasicInfomation">
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.BasicInformation">
             <summary>
-            The basic infomation about this servant (.e.g. Name, HP, ATK etc...)
+            The basic information about this servant (.e.g. Name, HP, ATK etc...)
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.ActiveSkills">
@@ -41,7 +41,7 @@
         </member>
         <member name="T:FateGrandOrderApi.Classes.FateGrandOrderPersonBasic">
             <summary>
-            Basic infomation about your Fate/Grand Order servant
+            Basic information about your Fate/Grand Order servant
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPersonBasic.EnglishName">
@@ -194,22 +194,22 @@
             (image)
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.ImageInfomation">
+        <member name="T:FateGrandOrderApi.Classes.ImageInformation">
             <summary>
             Image name and Uri
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.ImageInfomation.Name">
+        <member name="P:FateGrandOrderApi.Classes.ImageInformation.Name">
             <summary>
             Returns image name (img)
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.ImageInfomation.Uri">
+        <member name="P:FateGrandOrderApi.Classes.ImageInformation.Uri">
             <summary>
             Returns image Uri (img)
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.VideoInfomation">
+        <member name="T:FateGrandOrderApi.Classes.VideoInformation">
             <summary>
             
             </summary>
@@ -236,7 +236,7 @@
         </member>
         <member name="P:FateGrandOrderApi.Classes.Skill.Image">
             <summary>
-            Returns the image infomation of this skill (img) 
+            Returns the image information of this skill (img) 
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.Skill.Name">
@@ -281,7 +281,7 @@
         </member>
         <member name="T:FateGrandOrderApi.Classes.LevelEffect5">
             <summary>
-            Contains all the infomation about the level effect that has 5 levels
+            Contains all the information about the level effect that has 5 levels
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.LevelEffect5.LevelEffectName">
@@ -316,7 +316,7 @@
         </member>
         <member name="T:FateGrandOrderApi.Classes.LevelEffect10">
             <summary>
-            Contains all the infomation about the level effect that has 10 levels
+            Contains all the information about the level effect that has 10 levels
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.LevelEffect10.Level6Effect">
@@ -459,9 +459,9 @@
             Just an emtpy class named PassiveSkills which inheritances from Skill lol
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.PresetsForInfomation">
+        <member name="T:FateGrandOrderApi.Classes.PresetsForInformation">
             <summary>
-            Presets for what infomation to get
+            Presets for what information to get
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing">
@@ -474,7 +474,7 @@
             This will return a Skill (will return null if the skill isn't found)
             </summary>
             <param name="skillName">The Skill name to look for</param>
-            <param name="resultString">String[] we use to make the Skill (this is exposed for other Skill types as it will contain the infomation needed to make them too)</param>
+            <param name="resultString">String[] we use to make the Skill (this is exposed for other Skill types as it will contain the Information needed to make them too)</param>
             <returns></returns>
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkills(System.String)">
@@ -491,7 +491,7 @@
             <param name="skill">The ActiveSkill to put all the content into</param>
             <returns></returns>
         </member>
-        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInfomation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             This will return the person from the persons name (will return null if we are unable to find the person)
             </summary>

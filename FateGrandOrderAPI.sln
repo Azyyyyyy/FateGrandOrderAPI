@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTest", "ApiTest\ApiTest.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiTestNuGet", "ApiTestNuGet\ApiTestNuGet.csproj", "{46897C3A-0A30-4DE4-91B1-CBFC874E8A42}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FateGrandOrderApi", "FateGrandOrderApi\FateGrandOrderApi.csproj", "{B798E0F1-B2ED-4C88-B331-F1333642A9B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FateGrandOrderApi", "FateGrandOrderAPI\FateGrandOrderApi.csproj", "{B798E0F1-B2ED-4C88-B331-F1333642A9B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
