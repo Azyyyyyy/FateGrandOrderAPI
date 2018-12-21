@@ -1,4 +1,5 @@
 # The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order
+[![Discord](https://discordapp.com/api/guilds/525688264250753025/widget.png)](https://discord.gg/F5RhrBs)
 
 Usage: 
 ```cs
