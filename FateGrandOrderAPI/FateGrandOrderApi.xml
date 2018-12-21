@@ -469,7 +469,7 @@
             Class containing parsing logic (this is where you get your people and skills from)
             </summary>
         </member>
-        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkill(System.String,System.String[]@)">
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkill(System.String)">
             <summary>
             This will return a Skill (will return null if the skill isn't found)
             </summary>
@@ -493,9 +493,9 @@
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
-            This will return the person from the persons name (will return null if we are unable to find the person)
+            This will return the servant from the servant name (will return null if we are unable to find the person)
             </summary>
-            <param name="person">The persons name</param>
+            <param name="ServantName">The persons name</param>
             <returns></returns>
         </member>
         <member name="T:FateGrandOrderApi.Caching.FateGrandOrderPersonCache">

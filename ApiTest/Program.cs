@@ -21,7 +21,7 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = FateGrandOrderParsing.GetPerson(servant);
+                var persondata = FateGrandOrderParsing.GetPerson(servant).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {person} data");
@@ -40,8 +40,21 @@ namespace ApiTest
                 Console.Write(servantInfo);
                 ServantsParsed.Add(persondata);
             }
-            Console.WriteLine($"Has cache cached all servants: {ServantsParsed == FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople}");
+            Console.WriteLine(Line($"Has cache cached all servants: {EverythingCached()}"));
+            Console.WriteLine($"Has cache cached all servants: {EverythingCached()}");
             Console.ReadLine();
+        }
+
+        public static bool EverythingCached()
+        {
+            int Count = 0;
+            while(Count + 1 != FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople.Count)
+            {
+                if (FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople[Count] != ServantsParsed[Count])
+                    return false;
+                Count++;
+            }
+            return true;
         }
 
         static string Line(string person)
@@ -54,6 +67,7 @@ namespace ApiTest
             return b.ToString();
         }
         
-        static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper" };
+        static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
+        //static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)" };
     }
 }

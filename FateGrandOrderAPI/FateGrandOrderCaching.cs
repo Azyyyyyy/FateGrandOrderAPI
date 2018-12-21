@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using FateGrandOrderApi.Classes;
-using System;
+﻿using FateGrandOrderApi.Classes;
+using System.Collections.Generic;
 
 namespace FateGrandOrderApi.Caching
 {
