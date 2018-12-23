@@ -66,8 +66,8 @@ namespace ApiTest
             }
             return b.ToString();
         }
-        
-        static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
-        //static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)" };
+
+        //static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
+        static string[] Servants = { "Jeanne d'Arc (Alter)" };//, "Lancelot (Saber)" };
     }
 }

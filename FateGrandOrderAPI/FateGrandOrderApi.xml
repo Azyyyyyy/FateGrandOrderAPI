@@ -14,6 +14,11 @@
             The string that was used when generating this servants class
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.EnglishNamePassed">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.BasicInformation">
             <summary>
             The basic information about this servant (.e.g. Name, HP, ATK etc...)
@@ -30,6 +35,46 @@
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.NoblePhantasms">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.Ascension">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.SkillReinforcement">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.Stats">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.BondLevels">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.Biography">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.Availability">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.Trivia">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.FateGrandOrderPerson.Images">
             <summary>
             
             </summary>
@@ -194,6 +239,76 @@
             (image)
             </summary>
         </member>
+        <member name="T:FateGrandOrderApi.Classes.Enemy">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.EnemyImage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.Class">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.Areas">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.JapaneseName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.EnglishName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.Rank">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.Gender">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.Attribute">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.Traits">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.WhatThisEnemyDrops">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.RecommendedServants">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.GeneratedWith">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.FromCache">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.ImageInformation">
             <summary>
             Image name and Uri
@@ -209,24 +324,109 @@
             Returns image Uri (img)
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.ImageInformation.ImageHash">
+            <summary>
+            This is the image hash from MD5, used to make the uri link
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ImageInformation.FileName">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.VideoInformation">
             <summary>
             
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.LevelEffectCore">
+        <member name="T:FateGrandOrderApi.Classes.AscensionSkillReinforcement">
             <summary>
-            The core part of the Level Effects
+            
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffectCore.EffectStrength">
+        <member name="P:FateGrandOrderApi.Classes.AscensionSkillReinforcement.AscensionNumber">
             <summary>
-            Gives you the effect's strength (l{level number})
+            
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.LevelEffectCore.Cooldown">
+        <member name="P:FateGrandOrderApi.Classes.AscensionSkillReinforcement.Item1">
             <summary>
-            Gives you the cooldown period of this effect (c{level number})
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.AscensionSkillReinforcement.Item2">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.AscensionSkillReinforcement.Item3">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.AscensionSkillReinforcement.Item4">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.AscensionSkillReinforcement.QP">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.Ascension">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Ascension.Ascension1">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Ascension.Ascension2">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Ascension.Ascension3">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Ascension.Ascension4">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Ascension.Ascension5">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.SkillReinforcement">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.SkillReinforcement.Ascension6">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.SkillReinforcement.Ascension7">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.SkillReinforcement.Ascension8">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.SkillReinforcement.Ascension9">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.Skill">
@@ -244,6 +444,11 @@
             Gives you skill's name (name)
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.Skill.NamePassed">
+            <summary>
+            Gives you skill's
+            </summary>
+        </member>
         <member name="P:FateGrandOrderApi.Classes.Skill.Rank">
             <summary>
             Gives you what rank this skill is at (rank)
@@ -252,6 +457,16 @@
         <member name="P:FateGrandOrderApi.Classes.Skill.Effect">
             <summary>
             Gives you what effect's the skill does (effect) 
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Skill.GeneratedWith">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Skill.FromCache">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.ActiveSkill">
@@ -277,6 +492,76 @@
         <member name="P:FateGrandOrderApi.Classes.ActiveSkill.ForNPC">
             <summary>
             Returns if this ActiveSkill is for an NPC
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.PassiveSkills">
+            <summary>
+            Just an emtpy class named PassiveSkills which inheritances from Skill lol
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.PassiveSkillList">
+            <summary>
+            The Passive Skills class with an Category string
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.PassiveSkillList.Category">
+            <summary>
+            Gives you what category these passive skills belongs too ({CategoryName}=)
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.PassiveSkillList.PassiveSkills">
+            <summary>
+            All the passive skills that this list has
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.ItemDropLocationList">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDropLocationList.Category">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDropLocationList.DropLocations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.ItemDropLocation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDropLocation.Location">
+            <summary>
+            Will Get replaced with a location class soon™
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDropLocation.PossibleDrops">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDropLocation.APCost">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.LevelEffectCore">
+            <summary>
+            The core part of the Level Effects
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffectCore.EffectStrength">
+            <summary>
+            Gives you the effect's strength (l{level number})
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.LevelEffectCore.Cooldown">
+            <summary>
+            Gives you the cooldown period of this effect (c{level number})
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.LevelEffect5">
@@ -344,21 +629,6 @@
             The Level Effect when the Level is Level 10 (l10 and c10)
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.PassiveSkillList">
-            <summary>
-            The Passive Skills class with an Category string
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Classes.PassiveSkillList.Category">
-            <summary>
-            Gives you what category these passive skills belongs too ({CategoryName}=)
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Classes.PassiveSkillList.PassiveSkills">
-            <summary>
-            All the passive skills that this list has
-            </summary>
-        </member>
         <member name="T:FateGrandOrderApi.Classes.NoblePhantasm">
             <summary>
             
@@ -414,6 +684,26 @@
             
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasm.VideoInformation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.NoblePhantasmList">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasmList.Category">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.NoblePhantasmList.NoblePhantasm">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.ChargeEffect">
             <summary>
             
@@ -454,14 +744,269 @@
             NP Level 5
             </summary>
         </member>
-        <member name="T:FateGrandOrderApi.Classes.PassiveSkills">
+        <member name="T:FateGrandOrderApi.Classes.Stats">
             <summary>
-            Just an emtpy class named PassiveSkills which inheritances from Skill lol
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Stats.Strength">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Stats.Endurance">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Stats.Agility">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Stats.Mana">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Stats.Luck">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Stats.NP">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.Status">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Status.Grade">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Status.BarNumber">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.BondLevels">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel1">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel2">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel3">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel4">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel5">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel6">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel7">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel8">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel9">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.BondLevel10">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevels.Bond10Reward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.BondLevel">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevel.BondRequired">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BondLevel.TotalBond">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.Bond10Reward">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Bond10Reward.Image">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Bond10Reward.Effect">
+            <summary>
+            To be replaced with a Craft Essence class
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.Biography">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Default">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Bond1">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Bond2">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Bond3">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Bond4">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Bond5">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Biography.Extra">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.BiographyPart">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BiographyPart.JapaneseText">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.BiographyPart.EnglishText">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.PresetsForInformation">
             <summary>
             Presets for what information to get
+            </summary>
+        </member>
+        <member name="F:FateGrandOrderApi.Classes.PresetsForInformation.AllInformation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:FateGrandOrderApi.Classes.PresetsForInformation.BasicInformation">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:FateGrandOrderApi.Classes.PresetsForInformation.NotSet">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.Item">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.GeneratedWith">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.EnglishName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.JapaneseName">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.EnglishDescription">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.JapaneseDescription">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.ItemImage">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.EnemiesThatDroppedThis">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.DropLocations">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.FromCache">
+            <summary>
+            
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing">
@@ -474,7 +1019,6 @@
             This will return a Skill (will return null if the skill isn't found)
             </summary>
             <param name="skillName">The Skill name to look for</param>
-            <param name="resultString">String[] we use to make the Skill (this is exposed for other Skill types as it will contain the Information needed to make them too)</param>
             <returns></returns>
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkills(System.String)">
@@ -491,11 +1035,110 @@
             <param name="skill">The ActiveSkill to put all the content into</param>
             <returns></returns>
         </member>
-        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetItem(System.String,FateGrandOrderApi.Classes.Enemy)">
+            <summary>
+            
+            </summary>
+            <param name="itemName"></param>
+            <param name="enemyToNotLookFor"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetEnemy(System.String,FateGrandOrderApi.Classes.Item)">
+            <summary>
+            
+            </summary>
+            <param name="enemyName"></param>
+            <param name="itemToNotLookFor"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             This will return the servant from the servant name (will return null if we are unable to find the person)
             </summary>
-            <param name="ServantName">The persons name</param>
+            <param name="ServantName"></param>
+            <param name="presetsForInformation"></param>
+            <param name="GetBasicInformation"></param>
+            <param name="GetActiveSkills"></param>
+            <param name="GetPassiveSkills"></param>
+            <param name="GetNoblePhantasm"></param>
+            <param name="GetAscension"></param>
+            <param name="GetSkillReinforcement"></param>
+            <param name="GetStats"></param>
+            <param name="GetBondLevel"></param>
+            <param name="GetBiography"></param>
+            <param name="GetAvailability"></param>
+            <param name="GetTrivia"></param>
+            <param name="GetImages"></param>
+            <returns></returns>
+        </member>
+        <member name="T:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.GenericArrayAssigning(System.String,System.String,System.Char,System.String[],System.String[][])">
+            <summary>
+            
+            </summary>
+            <param name="s"></param>
+            <param name="Assigning"></param>
+            <param name="CharToSplitWith"></param>
+            <param name="OtherPartsToRemove"></param>
+            <param name="PartsToReplace"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.GenericAssigning(System.String,System.String,System.String[],System.String[][])">
+            <summary>
+            
+            </summary>
+            <param name="s"></param>
+            <param name="Assigning"></param>
+            <param name="OtherPartsToRemove"></param>
+            <param name="PartsToReplace"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.Gender(System.String,System.Object)">
+            <summary>
+            
+            </summary>
+            <param name="s"></param>
+            <param name="WhatToFill"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.Image(System.String,System.String,System.String[])">
+            <summary>
+            
+            </summary>
+            <param name="s"></param>
+            <param name="ImageKeyword"></param>
+            <param name="OtherPartsToRemove"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.GetMd5Hash(System.Security.Cryptography.MD5,System.String)">
+            <summary>
+            From https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.md5?view=netframework-4.7.2
+            </summary>
+            <param name="md5Hash">The MD5Hash Class</param>
+            <param name="input">Our string which will make the hash</param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.Video(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="VideoName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent.Item(System.String,System.Object,System.String,System.Boolean,System.String,System.Object)">
+            <summary>
+            
+            </summary>
+            <param name="s"></param>
+            <param name="WhatToFill"></param>
+            <param name="ItemNumber"></param>
+            <param name="MakeAscensionSkillReinforcement"></param>
+            <param name="AscensionSkillReinforcementNumber"></param>
+            <param name="AscensionToMake"></param>
             <returns></returns>
         </member>
         <member name="T:FateGrandOrderApi.Caching.FateGrandOrderPersonCache">
@@ -506,6 +1149,26 @@
         <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople">
             <summary>
             People that are currently in the cache
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Items">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Enemies">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.ActiveSkills">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Skills">
+            <summary>
+            
             </summary>
         </member>
     </members>

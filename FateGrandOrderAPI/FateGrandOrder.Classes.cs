@@ -2,17 +2,21 @@
 
 namespace FateGrandOrderApi.Classes
 {
+
+    #region Servants and Enemy
     /// <summary>
     /// Your Fate/Grand Order servant
     /// </summary>
     public class FateGrandOrderPerson
     {
-        //Got to at least instantiate them even without them (do some warnings if you want to)
-        public FateGrandOrderPerson(string generatedWith, string englishNamePassed) { GeneratedWith = generatedWith; EnglishNamePassed = englishNamePassed; }
+        public FateGrandOrderPerson(string generatedWith, string englishNamePassed) { GeneratedWith = generatedWith; EnglishNamePassed = englishNamePassed; Images = new List<ImageInformation>(); }
         /// <summary>
         /// The string that was used when generating this servants class
         /// </summary>
         public string GeneratedWith { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public string EnglishNamePassed { get; private set; }
         /// <summary>
         /// The basic information about this servant (.e.g. Name, HP, ATK etc...)
@@ -30,8 +34,38 @@ namespace FateGrandOrderApi.Classes
         /// 
         /// </summary>
         public List<NoblePhantasmList> NoblePhantasms { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public Ascension Ascension { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public SkillReinforcement SkillReinforcement { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Stats Stats { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevels BondLevels { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Biography Biography { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string[] Availability { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string[] Trivia { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<ImageInformation> Images { get; set; }
 #if DEBUG
         /// <summary>
         /// If the servant is in cache
@@ -46,9 +80,9 @@ namespace FateGrandOrderApi.Classes
     public class FateGrandOrderPersonBasic
     {
         //Got to at least instantiate them even without them (do some warnings if you want to)
-        public FateGrandOrderPersonBasic() { EnglishName = ""; }
+        public FateGrandOrderPersonBasic() { EnglishName = ""; Images = new List<ImageInformation>(); }
 
-        public FateGrandOrderPersonBasic(string englishName) { EnglishName = englishName; }
+        public FateGrandOrderPersonBasic(string englishName) { EnglishName = englishName; Images = new List<ImageInformation>(); }
 
         /// <summary>
         /// Gives you the English name of the servant (gets assigned when class is made)
@@ -173,6 +207,71 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    public class Enemy
+    {
+        public Enemy() { EnemyImage = new List<ImageInformation>(); EnglishName = ""; WhatThisEnemyDrops = new List<Item>(); }
+        public Enemy(string englishName, string generatedWith) { EnemyImage = new List<ImageInformation>(); EnglishName = englishName; WhatThisEnemyDrops = new List<Item>(); GeneratedWith = generatedWith; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<ImageInformation> EnemyImage { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string[] Class { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string[] Areas { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string JapaneseName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string EnglishName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Rank { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Gender { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Attribute { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string[] Traits { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<Item> WhatThisEnemyDrops { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<FateGrandOrderPerson> RecommendedServants { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string GeneratedWith { get; set; }
+#if DEBUG
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool FromCache { get; set; }
+#endif
+    }
+    #endregion
+
+    #region Image and Video
+    /// <summary>
     /// Image name and Uri
     /// </summary>
     public class ImageInformation
@@ -185,33 +284,14 @@ namespace FateGrandOrderApi.Classes
         /// Returns image Uri (img)
         /// </summary>
         public string Uri { get; set; }
-    }
-
-    public class AscensionSkillReinforcement
-    {
-        public string AscensionNumber { get; set; }
-        public Item Item1 { get; set; }
-        public Item Item2 { get; set; }
-        public Item Item3 { get; set; }
-        public Item Item4 { get; set; }
-        public string QP { get; set; }
-    }
-
-    public class Ascension
-    {
-        public AscensionSkillReinforcement Ascension1 { get; set; }
-        public AscensionSkillReinforcement Ascension2 { get; set; }
-        public AscensionSkillReinforcement Ascension3 { get; set; }
-        public AscensionSkillReinforcement Ascension4 { get; set; }
-        public AscensionSkillReinforcement Ascension5 { get; set; }
-    }
-
-    public class SkillReinforcement : Ascension
-    {
-        public AscensionSkillReinforcement Ascension6 { get; set; }
-        public AscensionSkillReinforcement Ascension7 { get; set; }
-        public AscensionSkillReinforcement Ascension8 { get; set; }
-        public AscensionSkillReinforcement Ascension9 { get; set; }
+        /// <summary>
+        /// This is the image hash from MD5, used to make the uri link
+        /// </summary>
+        public string ImageHash { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string FileName { get; set; }
     }
 
     /// <summary>
@@ -220,21 +300,88 @@ namespace FateGrandOrderApi.Classes
     public class VideoInformation : ImageInformation
     {
     }
+    #endregion
 
+    #region Ascension and Skill Reinforcement
     /// <summary>
-    /// The core part of the Level Effects
+    /// 
     /// </summary>
-    public class LevelEffectCore
+    public class AscensionSkillReinforcement
     {
         /// <summary>
-        /// Gives you the effect's strength (l{level number})
+        /// 
         /// </summary>
-        public string EffectStrength { get; set; }
+        public string AscensionNumber { get; set; }
         /// <summary>
-        /// Gives you the cooldown period of this effect (c{level number})
+        /// 
         /// </summary>
-        public string Cooldown { get; set; }
+        public Item Item1 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Item Item2 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Item Item3 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Item Item4 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string QP { get; set; }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Ascension
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension1 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension2 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension3 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension4 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension5 { get; set; }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SkillReinforcement : Ascension
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension6 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension7 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension8 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public AscensionSkillReinforcement Ascension9 { get; set; }
+    }
+    #endregion
 
     #region Skills
     /// <summary>
@@ -242,6 +389,13 @@ namespace FateGrandOrderApi.Classes
     /// </summary>
     public class Skill
     {
+        public Skill (string skillName, string generatedWith)
+        {
+            Image = new ImageInformation();
+            GeneratedWith = generatedWith;
+            NamePassed = skillName;
+        }
+
         public Skill()
         {
             Image = new ImageInformation();
@@ -256,6 +410,10 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string Name { get; set; }
         /// <summary>
+        /// Gives you skill's
+        /// </summary>
+        public string NamePassed { get; set; }
+        /// <summary>
         /// Gives you what rank this skill is at (rank)
         /// </summary>
         public string Rank { get; set; }
@@ -263,6 +421,16 @@ namespace FateGrandOrderApi.Classes
         /// Gives you what effect's the skill does (effect) 
         /// </summary>
         public string[] Effect { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string GeneratedWith { get; set; }
+#if DEBUG
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool FromCache { get; set; }
+#endif
     }
 
     /// <summary>
@@ -270,6 +438,12 @@ namespace FateGrandOrderApi.Classes
     /// </summary>
     public class ActiveSkill : Skill
     {
+        public ActiveSkill(string skillName, string generatedWith)
+        {
+            GeneratedWith = generatedWith;
+            NamePassed = skillName;
+            LevelEffects = new List<LevelEffect10>();
+        }
         public ActiveSkill()
         {
             LevelEffects = new List<LevelEffect10>();
@@ -283,7 +457,7 @@ namespace FateGrandOrderApi.Classes
         /// <summary>
         /// Gives you what servant's have this skill (servant)
         /// </summary>
-        public string[] ServantsThatHaveThisSkill { get; set; }
+        public List<FateGrandOrderPerson> ServantsThatHaveThisSkill { get; set; }
         /// <summary>
         /// Gives you all the cooldown and effects strength
         /// </summary>
@@ -292,6 +466,88 @@ namespace FateGrandOrderApi.Classes
         /// Returns if this ActiveSkill is for an NPC
         /// </summary>
         public bool ForNPC { get; set; }
+    }
+
+    /// <summary>
+    /// Just an emtpy class named PassiveSkills which inheritances from Skill lol
+    /// </summary>
+    public class PassiveSkills : Skill
+    {
+        //In case there something I'm missing from a passiveskill
+    }
+
+    /// <summary>
+    /// The Passive Skills class with an Category string
+    /// </summary>
+    public class PassiveSkillList
+    {
+        public PassiveSkillList()
+        {
+            PassiveSkills = new List<PassiveSkills>();
+        }
+
+        /// <summary>
+        /// Gives you what category these passive skills belongs too ({CategoryName}=)
+        /// </summary>
+        public string Category { get; set; }
+        /// <summary>
+        /// All the passive skills that this list has
+        /// </summary>
+        public List<PassiveSkills> PassiveSkills { get; set; }
+    }
+    #endregion
+
+    #region Item Drop Location
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ItemDropLocationList
+    {
+        public ItemDropLocationList() { DropLocations = new List<ItemDropLocation>(); }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Category { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<ItemDropLocation> DropLocations { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ItemDropLocation
+    {
+        /// <summary>
+        /// Will Get replaced with a location class soon™
+        /// </summary>
+        public string Location { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string PossibleDrops { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string APCost { get; set; }
+    }
+    #endregion
+
+    #region Level Effect
+    /// <summary>
+    /// The core part of the Level Effects
+    /// </summary>
+    public class LevelEffectCore
+    {
+        /// <summary>
+        /// Gives you the effect's strength (l{level number})
+        /// </summary>
+        public string EffectStrength { get; set; }
+        /// <summary>
+        /// Gives you the cooldown period of this effect (c{level number})
+        /// </summary>
+        public string Cooldown { get; set; }
     }
 
     /// <summary>
@@ -369,83 +625,9 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public LevelEffectCore Level10Effect { get; set; }
     }
+    #endregion
 
-    public class ItemDropLocationList
-    {
-        public ItemDropLocationList() { DropLocations = new List<ItemDropLocation>(); }
-        public string Category { get; set; }
-        public List<ItemDropLocation> DropLocations { get; set; }
-    }
-
-    public class ItemDropLocation
-    {
-        public string Location { get; set; }
-        public string PossibleDrops { get; set; }
-        public string APCost { get; set; }
-    }
-
-    public class Enemy
-    {
-        public Enemy() { EnemyImage = new List<ImageInformation>(); EnglishName = ""; WhatThisEnemyDrops = new List<Item>(); }
-        public Enemy(string englishName) { EnemyImage = new List<ImageInformation>(); EnglishName = englishName; WhatThisEnemyDrops = new List<Item>(); }
-        public List<ImageInformation> EnemyImage { get; set; }
-        public string[] Class { get; set; }
-        public string[] Areas { get; set; }
-        public string JapaneseName { get; set; }
-        public string EnglishName { get; set; }
-        public string Rank { get; set; }
-        public string Gender { get; set; }
-        public string Attribute { get; set; }
-        public string[] Traits { get; set; }
-        public List<Item> WhatThisEnemyDrops { get; set; }
-        //public string[] RecommendedServants { get; set; }
-    }
-
-    public class Item
-    {
-        public Item() { GeneratedWith = ""; }
-        public Item(string generatedWith, string englishName) { GeneratedWith = generatedWith; EnglishName = englishName; }
-        public string GeneratedWith { get; private set; }
-        public string EnglishName { get; set; }
-        public string JapaneseName { get; set; }
-        public ImageInformation ItemImage { get; set; }
-        public string EnglishDescription { get; set; }
-        public string JapaneseDescription { get; set; }
-        public List<Enemy> EnemiesThatDroppedThis { get; set; }
-        public List<ItemDropLocationList> DropLocations { get; set; }
-#if DEBUG
-        public bool FromCache { get; set; }
-#endif
-    }
-
-    /// <summary>
-    /// The Passive Skills class with an Category string
-    /// </summary>
-    #region Passive Skills
-    public class PassiveSkillList
-    {
-        public PassiveSkillList()
-        {
-            PassiveSkills = new List<PassiveSkills>();
-        }
-
-        /// <summary>
-        /// Gives you what category these passive skills belongs too ({CategoryName}=)
-        /// </summary>
-        public string Category { get; set; }
-        /// <summary>
-        /// All the passive skills that this list has
-        /// </summary>
-        public List<PassiveSkills> PassiveSkills { get; set; }
-    }
-
-    public class NoblePhantasmList
-    {
-        public NoblePhantasmList() { NoblePhantasm = new NoblePhantasm(); }
-        public string Category { get; set; }
-        public NoblePhantasm NoblePhantasm { get; set; }
-    }
-
+    #region Noble Phantasm
     /// <summary>
     /// 
     /// </summary>
@@ -491,9 +673,29 @@ namespace FateGrandOrderApi.Classes
         /// 
         /// </summary>
         public bool IsVideo { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public VideoInformation VideoInformation { get; set; }
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    public class NoblePhantasmList
+    {
+        public NoblePhantasmList() { NoblePhantasm = new NoblePhantasm(); }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Category { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public NoblePhantasm NoblePhantasm { get; set; }
+    }
+    #endregion
 
+    #region Effects
     /// <summary>
     /// 
     /// </summary>
@@ -531,24 +733,259 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string NPLevel5 { get; set; }
     }
+    #endregion
 
+    #region Stats
     /// <summary>
-    /// Just an emtpy class named PassiveSkills which inheritances from Skill lol
+    /// 
     /// </summary>
-    public class PassiveSkills : Skill
+    public class Stats
     {
-        //In case there something I'm missing from a passiveskill
+        public Stats() { Strength = new Status(); Endurance = new Status(); Agility = new Status(); Mana = new Status(); Luck = new Status(); NP = new Status(); }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Status Strength { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Status Endurance { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Status Agility { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Status Mana { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Status Luck { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Status NP { get; set; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Status
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Grade { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string BarNumber { get; set; }
+    }
+    #endregion
+
+    #region Bond Level
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BondLevels
+    {
+        public BondLevels() { BondLevel1 = new BondLevel(); BondLevel2 = new BondLevel(); BondLevel3 = new BondLevel(); BondLevel4 = new BondLevel(); BondLevel5 = new BondLevel(); BondLevel6 = new BondLevel(); BondLevel7 = new BondLevel(); BondLevel8 = new BondLevel(); BondLevel9 = new BondLevel(); BondLevel10 = new BondLevel(); Bond10Reward = new Bond10Reward(); }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel1 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel2 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel3 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel4 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel5 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel6 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel7 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel8 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel9 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BondLevel BondLevel10 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public Bond10Reward Bond10Reward { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BondLevel
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public string BondRequired { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string TotalBond { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Bond10Reward
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public ImageInformation Image { get; set; }
+        /// <summary>
+        /// To be replaced with a Craft Essence class
+        /// </summary>
+        public string Effect { get; set; }
+    }
+    #endregion
+
+    #region Biography
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Biography
+    {
+        public Biography() { Default = new BiographyPart(); Bond1 = new BiographyPart(); Bond2 = new BiographyPart(); Bond3 = new BiographyPart(); Bond4 = new BiographyPart(); Bond5 = new BiographyPart(); Extra = new BiographyPart(); }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Default { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Bond1 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Bond2 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Bond3 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Bond4 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Bond5 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public BiographyPart Extra { get; set; }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class BiographyPart
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public string JapaneseText { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string EnglishText { get; set; }
+    }
+    #endregion
+
+    #region Other
     /// <summary>
     /// Presets for what information to get
     /// </summary>
     public enum PresetsForInformation
     {
+        /// <summary>
+        /// 
+        /// </summary>
         AllInformation,
+        /// <summary>
+        /// 
+        /// </summary>
         BasicInformation,
+        /// <summary>
+        /// 
+        /// </summary>
         NotSet
     }
-    #endregion
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class Item
+    {
+        public Item() { GeneratedWith = ""; }
+        public Item(string generatedWith, string englishName) { GeneratedWith = generatedWith; EnglishName = englishName; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string GeneratedWith { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string EnglishName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string JapaneseName { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string EnglishDescription { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string JapaneseDescription { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public ImageInformation ItemImage { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<Enemy> EnemiesThatDroppedThis { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<ItemDropLocationList> DropLocations { get; set; }
+#if DEBUG
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool FromCache { get; set; }
+#endif
+    }
     #endregion
 }
