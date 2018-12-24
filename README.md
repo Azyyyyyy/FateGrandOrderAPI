@@ -4,6 +4,7 @@
 Usage: 
 ```cs
 string name = "Jack_the_Ripper"; //It doesn't matter if the servant name has the _ for spaces but it's a good idea to have them
+var persondata = await FateGrandOrderParsing.GetPerson(name, PresetsForInformation.BasicInformation);
 StringBuilder servantInfo = new StringBuilder();
 servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
 servantInfo.AppendLine($"Jap name: {persondata.BasicInformation.JapaneseName}");
