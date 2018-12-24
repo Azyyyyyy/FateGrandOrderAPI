@@ -21,7 +21,11 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = FateGrandOrderParsing.GetPerson(servant, presetsForInformation: PresetsForInformation.BasicInformation, GetImages: true).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = FateGrandOrderParsing.GetPerson(servant, GetImages: true).ConfigureAwait(true).GetAwaiter().GetResult();
+                foreach (ImageInformation image in persondata.Images)
+                {
+                    Console.WriteLine($"{image.Name} Uri: {image.Uri}");
+                }
                 stopwatch.Stop();
 #if !DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {person} data");

@@ -123,7 +123,7 @@ namespace FateGrandOrderApi
 
                 if (skillToRemoveFromCache != null)
                     FateGrandOrderPersonCache.Skills.Remove(skillToRemoveFromCache);
-                if (!FateGrandOrderPersonCache.Skills.Contains(skill) && skill != null)
+                if (skill != null && !FateGrandOrderPersonCache.Skills.Contains(skill))
                     FateGrandOrderPersonCache.Skills.Add(skill);
                 if (skill != null)
                     return Tuple.Create(skill, resultString);
@@ -395,7 +395,7 @@ namespace FateGrandOrderApi
             }
             if (skillToRemoveFromCache != null)
                 FateGrandOrderPersonCache.ActiveSkills.Remove(skillToRemoveFromCache);
-            if (!FateGrandOrderPersonCache.ActiveSkills.Contains(skill) && skill != null)
+            if (skill != null && !FateGrandOrderPersonCache.ActiveSkills.Contains(skill))
                 FateGrandOrderPersonCache.ActiveSkills.Add(skill);
             return skill;
         }
@@ -550,7 +550,7 @@ namespace FateGrandOrderApi
             }
             if (ItemToRemoveFromCache != null)
                 FateGrandOrderPersonCache.Items.Remove(ItemToRemoveFromCache);
-            if (!FateGrandOrderPersonCache.Items.Contains(item) && item != null)
+            if (item != null && !FateGrandOrderPersonCache.Items.Contains(item))
                 FateGrandOrderPersonCache.Items.Add(item);
             return item;
         }
@@ -565,7 +565,7 @@ namespace FateGrandOrderApi
         {
             bool GettingImages = false;
             Enemy enemy = null;
-            Enemy EnemyToRemoveFromCache = new Enemy();
+            Enemy EnemyToRemoveFromCache = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{enemyName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 //For in case we put the person in wrong or it doesn't have a webpage
@@ -696,7 +696,7 @@ namespace FateGrandOrderApi
 
             if (EnemyToRemoveFromCache != null)
                 FateGrandOrderPersonCache.Enemies.Remove(EnemyToRemoveFromCache);
-            if (!FateGrandOrderPersonCache.Enemies.Contains(enemy) && enemy != null)
+            if (enemy != null && !FateGrandOrderPersonCache.Enemies.Contains(enemy))
                 FateGrandOrderPersonCache.Enemies.Add(enemy);
             return enemy;
         }
@@ -1930,7 +1930,7 @@ namespace FateGrandOrderApi
                     }
                     else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement | GettingStats | GettingBondLevel | GettingBiography | GettingBasicInformation && s == @"}}")
                     {
-                        if (fateGrandOrderPerson.PassiveSkills != null && fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category == null)
+                        if (fateGrandOrderPerson.PassiveSkills != null && fateGrandOrderPerson.PassiveSkills.Count > 0 && fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category == null)
                             GettingPassiveSkills = false;
                         GettingAscension = false;
                         GettingSkillReinforcement = false;
