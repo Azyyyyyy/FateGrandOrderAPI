@@ -3,23 +3,24 @@
 
 Usage: 
 ```cs
-string name = "Jack_the_Ripper";
-StringBuilder Servant = new StringBuilder();
-var servant = await FateGrandOrderParsing.GetPerson(name, PresetsForInformation.BasicInformation);
-Servant.AppendLine($"Name: {servant.BasicInformation.EnglishName}");
-Servant.AppendLine($"Gender: {servant.BasicInformation.Gender}");
-Servant.AppendLine($"ATK: {servant.BasicInformation.ATK}");
-Servant.AppendLine($"NP Class: {servant.BasicInformation.Class}");
-Servant.AppendLine($"Cost: {servant.BasicInformation.Cost}");
-Console.WriteLine(Servant);
+string name = "Jack_the_Ripper"; //It doesn't matter if the servant name has the _ for spaces but it's a good idea to have them
+StringBuilder servantInfo = new StringBuilder();
+servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
+servantInfo.AppendLine($"Jap name: {persondata.BasicInformation.JapaneseName}");
+servantInfo.AppendLine($"Gender: {persondata.BasicInformation.Gender}");
+servantInfo.AppendLine($"ATK: {persondata.BasicInformation.ATK}");
+servantInfo.AppendLine($"Class: {persondata.BasicInformation.Class}");
+servantInfo.AppendLine($"Cost: {persondata.BasicInformation.Cost}");
+Console.Write(servantInfo);
 //Keep in mind there are many more things it can do than just this. This is just a small example
 ```
 
 Output:
 ```
 Name: Jack the Ripper
+Jap name: ジャック・ザ・リッパー
 Gender: Female
 ATK: 1,786/11,557
-NP Class: Anti-Unit
+Class: Assassin
 Cost: 16
 ```

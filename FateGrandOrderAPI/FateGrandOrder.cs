@@ -719,7 +719,7 @@ namespace FateGrandOrderApi
         /// <param name="GetTrivia"></param>
         /// <param name="GetImages"></param>
         /// <returns></returns>
-        public static async Task<FateGrandOrderPerson> GetPerson(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.NotSet, bool GetBasicInformation = true, bool GetActiveSkills = true, bool GetPassiveSkills = true, bool GetNoblePhantasm = true, bool GetAscension = true, bool GetSkillReinforcement = true, bool GetStats = true, bool GetBondLevel = true, bool GetBiography = true, bool GetAvailability = true, bool GetTrivia = true, bool GetImages = true)
+        public static async Task<FateGrandOrderPerson> GetPerson(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, bool GetBasicInformation = false, bool GetActiveSkills = false, bool GetPassiveSkills = false, bool GetNoblePhantasm = false, bool GetAscension = false, bool GetSkillReinforcement = false, bool GetStats = false, bool GetBondLevel = false, bool GetBiography = false, bool GetAvailability = false, bool GetTrivia = false, bool GetImages = false)
         {
             FateGrandOrderPerson fateGrandOrderPerson = null;
             FateGrandOrderPerson PersonToRemoveFromCache = null;
@@ -728,17 +728,21 @@ namespace FateGrandOrderApi
             if (presetsForInformation == PresetsForInformation.BasicInformation)
             {
                 GetBasicInformation = true;
-                GetActiveSkills = false;
-                GetPassiveSkills = false;
-                GetNoblePhantasm = false;
-                GetAscension = false;
-                GetSkillReinforcement = false;
-                GetStats = false;
-                GetBondLevel = false;
-                GetBiography = false;
-                GetAvailability = false;
-                GetTrivia = false;
-                GetImages = false;
+            }
+            else if (presetsForInformation == PresetsForInformation.AllInformation)
+            {
+                GetBasicInformation = true;
+                GetActiveSkills = true;
+                GetPassiveSkills = true;
+                GetNoblePhantasm = true;
+                GetAscension = true;
+                GetSkillReinforcement = true;
+                GetStats = true;
+                GetBondLevel = true;
+                GetBiography = true;
+                GetAvailability = true;
+                GetTrivia = true;
+                GetImages = true;
             }
             #endregion
 
@@ -1917,16 +1921,16 @@ namespace FateGrandOrderApi
                     {
                         GettingImages = true;
                     }
-                    else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm && FixString(s) == "</tabber>")
+                    else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm | GettingImages && FixString(s) == "</tabber>")
                     {
                         GettingActiveSkills = false;
                         GettingPassiveSkills = false;
                         GettingNoblePhantasm = false;
                         GettingImages = false;
                     }
-                    else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement | GettingStats | GettingBondLevel | GettingBiography && s == @"}}")
+                    else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement | GettingStats | GettingBondLevel | GettingBiography | GettingBasicInformation && s == @"}}")
                     {
-                        if (fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category == null)
+                        if (fateGrandOrderPerson.PassiveSkills != null && fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category == null)
                             GettingPassiveSkills = false;
                         GettingAscension = false;
                         GettingSkillReinforcement = false;

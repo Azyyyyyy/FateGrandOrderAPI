@@ -21,7 +21,7 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = FateGrandOrderParsing.GetPerson(servant).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = FateGrandOrderParsing.GetPerson(servant, presetsForInformation: PresetsForInformation.BasicInformation, GetImages: true).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {person} data");
@@ -68,6 +68,6 @@ namespace ApiTest
         }
 
         //static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
-        static string[] Servants = { "Jeanne d'Arc (Alter)" };//, "Lancelot (Saber)" };
+        static string[] Servants = { "Jack the Ripper" };
     }
 }
