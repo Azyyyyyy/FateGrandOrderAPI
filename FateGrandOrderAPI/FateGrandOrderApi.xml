@@ -4,6 +4,36 @@
         <name>FateGrandOrderApi</name>
     </assembly>
     <members>
+        <member name="T:FateGrandOrderApi.Caching.FateGrandOrderPersonCache">
+            <summary>
+            Everything that has been setup for caching
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople">
+            <summary>
+            People that are currently in the cache
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Items">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Enemies">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.ActiveSkills">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Skills">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.FateGrandOrderPerson">
             <summary>
             Your Fate/Grand Order servant
@@ -1004,6 +1034,11 @@
             
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.Uses">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="P:FateGrandOrderApi.Classes.Item.FromCache">
             <summary>
             
@@ -1011,26 +1046,26 @@
         </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing">
             <summary>
-            Class containing parsing logic (this is where you get your people and skills from)
+            Class containing parsing logic (this is where you get what you need from the api)
             </summary>
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkill(System.String)">
             <summary>
-            This will return a Skill (will return null if the skill isn't found)
+            Returns a Skill (will return null if the skill isn't found)
             </summary>
             <param name="skillName">The Skill name to look for</param>
             <returns></returns>
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkills(System.String)">
             <summary>
-            This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content and this will return a ActiveSkill only with the ActiveSkill name you used if the skill isn't found)
+            This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content)
             </summary>
             <param name="skillName">The ActiveSkill name to look for</param>
             <returns></returns>
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetSkill(FateGrandOrderApi.Classes.ActiveSkill)">
             <summary>
-            This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content and this will return what was in the ActiveSkills already if the skill isn't found)
+            This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content)
             </summary>
             <param name="skill">The ActiveSkill to put all the content into</param>
             <returns></returns>
@@ -1140,36 +1175,6 @@
             <param name="AscensionSkillReinforcementNumber"></param>
             <param name="AscensionToMake"></param>
             <returns></returns>
-        </member>
-        <member name="T:FateGrandOrderApi.Caching.FateGrandOrderPersonCache">
-            <summary>
-            Everything that has been setup for caching
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople">
-            <summary>
-            People that are currently in the cache
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Items">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Enemies">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.ActiveSkills">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderPersonCache.Skills">
-            <summary>
-            
-            </summary>
         </member>
     </members>
 </doc>

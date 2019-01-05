@@ -980,6 +980,10 @@ namespace FateGrandOrderApi.Classes
         /// 
         /// </summary>
         public List<ItemDropLocationList> DropLocations { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<FateGrandOrderPerson> Uses { get; set; }
 #if DEBUG
         /// <summary>
         /// 

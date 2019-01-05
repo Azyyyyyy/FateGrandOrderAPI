@@ -4,16 +4,16 @@ using System.Linq;
 using HtmlAgilityPack;
 using System.Threading.Tasks;
 using FateGrandOrderApi.Classes;
-using FateGrandOrderApi.Caching;
 using FateGrandOrderApi.Logging;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using FateGrandOrderApi.Caching;
 
 namespace FateGrandOrderApi
 {
     /// <summary>
-    /// Class containing parsing logic (this is where you get your people and skills from)
+    /// Class containing parsing logic (this is where you get what you need from the api)
     /// </summary>
     public static class FateGrandOrderParsing
     {
@@ -27,7 +27,7 @@ namespace FateGrandOrderApi
 
         #region Skills Logic
         /// <summary>
-        /// This will return a Skill (will return null if the skill isn't found)
+        /// Returns a Skill (will return null if the skill isn't found)
         /// </summary>
         /// <param name="skillName">The Skill name to look for</param>
         /// <returns></returns>
@@ -67,9 +67,15 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for skills", $"skill name: {skill.Name}", false);
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for skills", false, $"skill name: {skill.Name}");
+                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
+                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
                 }
+
+                if (skillToRemoveFromCache != null)
+                    FateGrandOrderPersonCache.Skills.Remove(skillToRemoveFromCache);
+                if (skill != null && !FateGrandOrderPersonCache.Skills.Contains(skill))
+                    FateGrandOrderPersonCache.Skills.Add(skill);
+                skillToRemoveFromCache = null;
 
                 foreach (string s in resultString)
                 {
@@ -111,20 +117,17 @@ namespace FateGrandOrderApi
                                 effects = effects.Remove(startpoint, 2);
                             }
                             skill.Effect = effects.Split('\\');
+                            effects = null;
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}", false);
-                            Logger.LogFile(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", false, $"String used when doing this: {s}");
+                            Logger.LogConsole(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}");
+                            Logger.LogFile(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}");
                         }
                         break;
                     }
                 }
 
-                if (skillToRemoveFromCache != null)
-                    FateGrandOrderPersonCache.Skills.Remove(skillToRemoveFromCache);
-                if (skill != null && !FateGrandOrderPersonCache.Skills.Contains(skill))
-                    FateGrandOrderPersonCache.Skills.Add(skill);
                 if (skill != null)
                     return Tuple.Create(skill, resultString);
                 else
@@ -134,7 +137,7 @@ namespace FateGrandOrderApi
         }
 
         /// <summary>
-        /// This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content and this will return a ActiveSkill only with the ActiveSkill name you used if the skill isn't found)
+        /// This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content)
         /// </summary>
         /// <param name="skillName">The ActiveSkill name to look for</param>
         /// <returns></returns>
@@ -144,7 +147,7 @@ namespace FateGrandOrderApi
         }
 
         /// <summary>
-        /// This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content and this will return what was in the ActiveSkills already if the skill isn't found)
+        /// This will return a filled in ActiveSkill (If the skill isn't a ActiveSkill it will return the core skill content)
         /// </summary>
         /// <param name="skill">The ActiveSkill to put all the content into</param>
         /// <returns></returns>
@@ -159,6 +162,8 @@ namespace FateGrandOrderApi
                 content = await GetSkill(skill.Name);
             var basicSkillContent = content.Item1;
             string[] resultString = content.Item2;
+            if (string.IsNullOrWhiteSpace(skill.GeneratedWith))
+                skill.GeneratedWith = content.Item1.GeneratedWith;
 
             string GetStartPart()
             {
@@ -174,8 +179,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when GetStartPart was called", $"what lastLevelEffect was when this ex happened: {lastLevelEffect}", false);
-                    Logger.LogFile(e, "Looks like something happened when GetStartPart was called", false, $"what lastLevelEffect was when this ex happened: {lastLevelEffect}");
+                    Logger.LogConsole(e, "Looks like something happened when GetStartPart was called", $"What lastLevelEffect was when this ex happened: {lastLevelEffect}");
+                    Logger.LogFile(e, "Looks like something happened when GetStartPart was called", $"What lastLevelEffect was when this ex happened: {lastLevelEffect}");
                     return "|";
                 }
             }
@@ -206,9 +211,15 @@ namespace FateGrandOrderApi
             }
             catch (Exception e)
             {
-                Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for active skill", $"active skill name: {skill.Name}", false);
-                Logger.LogFile(e, "Looks like something happened when accessing/using the cache for active skill", false, $"active skill name: {skill.Name}");
+                Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
+                Logger.LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
             }
+
+            if (skillToRemoveFromCache != null)
+                FateGrandOrderPersonCache.ActiveSkills.Remove(skillToRemoveFromCache);
+            if (skill != null && !FateGrandOrderPersonCache.ActiveSkills.Contains(skill))
+                FateGrandOrderPersonCache.ActiveSkills.Add(skill);
+            skillToRemoveFromCache = null;
 
             foreach (string s in resultString)
             {
@@ -240,11 +251,13 @@ namespace FateGrandOrderApi
                         {
                             skill.ServantsThatHaveThisSkill.Add(await GetPerson(servant, PresetsForInformation.BasicInformation));
                         }
+                        servantIcons = null;
+                        servants = null;
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}", false);
-                        Logger.LogFile(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", false, $"String used when doing this: {s}");
+                        Logger.LogConsole(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}");
+                        Logger.LogFile(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}");
                     }
                 }
                 else if (s.Contains($"leveleffect"))
@@ -279,8 +292,8 @@ namespace FateGrandOrderApi
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}", false);
-                        Logger.LogFile(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", false, $"String used when doing this: {s}");
+                        Logger.LogConsole(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}");
+                        Logger.LogFile(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}");
                     }
                 }
                 else if (s.Contains($"{GetStartPart()}l1 "))
@@ -393,10 +406,10 @@ namespace FateGrandOrderApi
                 skill.Image = basicSkillContent.Image;
                 skill.Rank = basicSkillContent.Rank;
             }
-            if (skillToRemoveFromCache != null)
-                FateGrandOrderPersonCache.ActiveSkills.Remove(skillToRemoveFromCache);
-            if (skill != null && !FateGrandOrderPersonCache.ActiveSkills.Contains(skill))
-                FateGrandOrderPersonCache.ActiveSkills.Add(skill);
+
+            resultString = null;
+            lastLevelEffect = null;
+            content = null;
             return skill;
         }
         #endregion
@@ -409,7 +422,6 @@ namespace FateGrandOrderApi
         /// <returns></returns>
         public async static Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
         {
-            //To add Logger try catch
             bool DoingLocationLogic = false;
             Item item = null;
             Item ItemToRemoveFromCache = null;
@@ -444,61 +456,26 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for items", $"item name: {item.EnglishName}", false);
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", false, $"item name: {item.EnglishName}");
+                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
+                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
                 }
+
+                if (ItemToRemoveFromCache != null)
+                    FateGrandOrderPersonCache.Items.Remove(ItemToRemoveFromCache);
+                if (item != null && !FateGrandOrderPersonCache.Items.Contains(item))
+                    FateGrandOrderPersonCache.Items.Add(item);
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
                 foreach (string s in resultString)
                 {
-                    if (s == "}}" || FixString(s) == "}}</onlyinclude>" && DoingLocationLogic)
+                    if (!string.IsNullOrWhiteSpace(s) && s == "}}" || FixString(s) == "}}</onlyinclude>" && DoingLocationLogic)
                     {
                         DoingLocationLogic = false;
                     }
                     else if (DoingLocationLogic)
                     {
-                        try
-                        {
-                            if (!string.IsNullOrWhiteSpace(s) && FixString(s) != "<tabber>" && FixString(s) != "</tabber>")
-                            {
-                                if (s[s.Length - 1] == '=')
-                                {
-                                    item.DropLocations[item.DropLocations.Count - 1].Category = s.Replace("=", "");
-                                }
-                                else if (s == "|-|")
-                                {
-                                    item.DropLocations.Add(new ItemDropLocationList());
-                                }
-                                else
-                                {
-                                    try
-                                    {
-                                        var thing = await AssigningContent.GenericArrayAssigning(s, "", ']', new string[] { "<br/>" }, new string[][] { new string[] { "[[", "[" }, new string[] { "]]", "]" } });
-                                        if (thing.Length >= 3)
-                                        {
-                                            item.DropLocations[item.DropLocations.Count - 1].DropLocations.Add(new ItemDropLocation
-                                            {
-                                                Location = thing[0].Replace("[", ""),
-                                                PossibleDrops = thing[1].Replace("[", ""),
-                                                APCost = thing[2].Replace("[", "")
-                                            });
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Logger.LogConsole(e, "Looks like something happened while filling up a item stat", $"item name: {item.EnglishName}", false);
-                                        Logger.LogFile(e, "Looks like something happened while filling up a item stat", false, $"item name: {item.EnglishName}");
-                                    }
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.LogConsole(e, "Looks like something happened when doing DoingLocationLogic if statement", $"item name: {item.EnglishName}", false);
-                            Logger.LogFile(e, "Looks like something happened when doing DoingLocationLogic if statement", false, $"item name: {item.EnglishName}");
-                        }
-
+                        LocationLogic(s);
                     }
                     else if (s.Contains("|jpName"))
                     {
@@ -510,7 +487,7 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|enemy"))
                     {
-                        var enemys = await AssigningContent.GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" });
+                        var enemys = await AssigningContent.GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" } });
                         if (enemys != null && enemys.Length > 0) item.EnemiesThatDroppedThis = new List<Enemy>();
                         foreach (string enemy in enemys)
                         {
@@ -527,8 +504,8 @@ namespace FateGrandOrderApi
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}", false);
-                                Logger.LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", false, $"item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
+                                Logger.LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
+                                Logger.LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
                             }
                         }
                     }
@@ -544,15 +521,80 @@ namespace FateGrandOrderApi
                     {
                         item.DropLocations = new List<ItemDropLocationList>();
                         item.DropLocations.Add(new ItemDropLocationList());
-                        DoingLocationLogic = true;
+                        string ss = await AssigningContent.GenericAssigning(s, "|location");
+                        if (!string.IsNullOrWhiteSpace(ss))
+                            LocationLogic(ss);
+                        else
+                            DoingLocationLogic = true;
+                    }
+                    else if (s.Contains("|usedFor"))
+                    {
+                        item.Uses = new List<FateGrandOrderPerson>();
+                        foreach (string ss in (await AssigningContent.GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
+                        {
+                            var servant = await GetPerson(ss, PresetsForInformation.BasicInformation);
+                            if (servant != null)
+                                item.Uses.Add(servant);
+                        }
                     }
                 }
             }
-            if (ItemToRemoveFromCache != null)
-                FateGrandOrderPersonCache.Items.Remove(ItemToRemoveFromCache);
-            if (item != null && !FateGrandOrderPersonCache.Items.Contains(item))
-                FateGrandOrderPersonCache.Items.Add(item);
+
             return item;
+
+            async Task LocationLogic(string s)
+            {
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(s) && FixString(s) != "<tabber>" && FixString(s) != "</tabber>")
+                    {
+                        if (s[s.Length - 1] == '=')
+                        {
+                            item.DropLocations[item.DropLocations.Count - 1].Category = s.Replace("=", "");
+                        }
+                        else if (s == "|-|")
+                        {
+                            item.DropLocations.Add(new ItemDropLocationList());
+                        }
+                        else
+                        {
+                            try
+                            {
+                                foreach (string ss in FixString(s).Replace("<br/>", "\\").TrimEnd('\\').Split('\\'))
+                                {
+                                    var thing = await AssigningContent.GenericArrayAssigning(ss, "", ']', new string[] { "<br/>" }, new string[][] { new string[] { "[[", "[" }, new string[] { "]]", "]" } });
+                                    if (thing.Length >= 3)
+                                    {
+                                        item.DropLocations[item.DropLocations.Count - 1].DropLocations.Add(new ItemDropLocation
+                                        {
+                                            Location = thing[0].Replace("[", ""),
+                                            PossibleDrops = thing[1].Replace("[", ""),
+                                            APCost = thing[2].Replace("[", "")
+                                        });
+                                    }
+                                    else
+                                    {
+                                        item.DropLocations[item.DropLocations.Count - 1].DropLocations.Add(new ItemDropLocation
+                                        {
+                                            Location = thing[0].Replace("[","").Split('|').First()
+                                        });
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogConsole(e, "Looks like something happened while filling up a item stat", $"Item name: {item.EnglishName}");
+                                Logger.LogFile(e, "Looks like something happened while filling up a item stat", $"Item name: {item.EnglishName}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogConsole(e, "Looks like something happened when doing DoingLocationLogic if statement", $"Item name: {item.EnglishName}");
+                    Logger.LogFile(e, "Looks like something happened when doing DoingLocationLogic if statement", $"Item name: {item.EnglishName}");
+                }
+            }
         }
 
         /// <summary>
@@ -564,6 +606,7 @@ namespace FateGrandOrderApi
         public async static Task<Enemy> GetEnemy(string enemyName, Item itemToNotLookFor = null)
         {
             bool GettingImages = false;
+            bool GettingRecommendedServants = false;
             Enemy enemy = null;
             Enemy EnemyToRemoveFromCache = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{enemyName}?action=edit").DocumentNode.SelectNodes("//textarea"))
@@ -596,14 +639,66 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for enemy", $"enemy name: {enemy.EnglishName}", false);
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for enemy", false, $"enemy name: {enemy.EnglishName}");
+                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
+                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
                 }
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
                 foreach (string s in resultString)
                 {
+                    if (s == "|}")
+                    {
+                        GettingRecommendedServants = false;
+                    }
+                    else if (GettingRecommendedServants)
+                    {
+                        if (s.Contains("|{{") && !s.Contains("!!"))
+                        {
+                            try
+                            {
+                                string[] WhatToLookFor = s.Replace("|{{", "").Replace("}}", "").Split('|');
+                                foreach (HtmlNode col2 in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/Template:{WhatToLookFor[0]}?action=edit").DocumentNode.SelectNodes("//textarea"))
+                                {
+                                    var servants = col2.InnerText.Split('\n');
+                                    if (servants.Contains("{{#switch: {{{Servant}}}"))
+                                    {
+                                        for (int i = 0; i < servants.Length; i++)
+                                        {
+                                            if (WhatToLookFor.Length > 1 && servants[i].Contains($"|{WhatToLookFor[1]}"))
+                                            {
+                                                servants = new string[] { await AssigningContent.GenericAssigning(servants[i], $"|{WhatToLookFor[1]}") };
+                                                break;
+                                            }
+                                            else if (servants[i].Contains("|#default"))
+                                            {
+                                                servants = new string[] { await AssigningContent.GenericAssigning(servants[i], "|#default") };
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    foreach (var ss in Regex.Split(servants[0], "}}}} "))
+                                    {
+                                        var personcontent = ss.Split('|');
+                                        var servant = await GetPerson(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
+                                        if (servant != null)
+                                            enemy.RecommendedServants.Add(servant);
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.LogConsole(e, $"Looks like something failed when assigning enemy.RecommendedServants", $"Enemy name: {enemy.EnglishName}");
+                                Logger.LogFile(e, $"Looks like something failed when assigning enemy.RecommendedServants", $"Enemy name: {enemy.EnglishName}");
+                            }
+                        }
+                    }
+
+                    if (EnemyToRemoveFromCache != null)
+                        FateGrandOrderPersonCache.Enemies.Remove(EnemyToRemoveFromCache);
+                    if (enemy != null && !FateGrandOrderPersonCache.Enemies.Contains(enemy))
+                        FateGrandOrderPersonCache.Enemies.Add(enemy);
+
                     if (s.Contains("|image"))
                     {
                         if (FixString(s).Contains("<gallery>"))
@@ -641,8 +736,8 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"enemy name: {enemy.EnglishName}", false);
-                            Logger.LogFile(e, $"Looks like something failed when assigning enemy.Areas", false, $"Enemy name: {enemy.EnglishName}");
+                            Logger.LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
+                            Logger.LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
                         }
                     }
                     else if (s.Contains("|jname"))
@@ -683,21 +778,18 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"enemy name: {enemy.EnglishName}", false);
-                            Logger.LogFile(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", false, $"enemy name: {enemy.EnglishName}");
+                            Logger.LogConsole(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"Enemy name: {enemy.EnglishName}");
+                            Logger.LogFile(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"Enemy name: {enemy.EnglishName}");
                         }
                     }
                     else if (s == "==Recommended Servants==" | s == "== Recommended Servants ==")
                     {
-                        //enemy.RecommendedServants CBA to do right now, will do soon™
+                        GettingRecommendedServants = true;
+                        enemy.RecommendedServants = new List<FateGrandOrderPerson>();
                     }
                 }
             }
 
-            if (EnemyToRemoveFromCache != null)
-                FateGrandOrderPersonCache.Enemies.Remove(EnemyToRemoveFromCache);
-            if (enemy != null && !FateGrandOrderPersonCache.Enemies.Contains(enemy))
-                FateGrandOrderPersonCache.Enemies.Add(enemy);
             return enemy;
         }
 
@@ -867,8 +959,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when accessing FateGrandOrderPeople cache", $"servant name: {fateGrandOrderPerson.EnglishNamePassed}", false);
-                    Logger.LogFile(e, $"Looks like something failed when accessing FateGrandOrderPeople cache", false, $"servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                    Logger.LogConsole(e, $"Looks like something failed when accessing FateGrandOrderPeople cache", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                    Logger.LogFile(e, $"Looks like something failed when accessing FateGrandOrderPeople cache", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
                 }
                 #endregion
 
@@ -909,6 +1001,13 @@ namespace FateGrandOrderApi
                 {
                     fateGrandOrderPerson.Biography = new Biography();
                 }
+                #endregion
+
+                #region Add/Remove to cache and any returns we need to do
+                if (PersonToRemoveFromCache != null)
+                    FateGrandOrderPersonCache.FateGrandOrderPeople.Remove(PersonToRemoveFromCache);
+                if (fateGrandOrderPerson != null)
+                    FateGrandOrderPersonCache.FateGrandOrderPeople.Add(fateGrandOrderPerson);
                 #endregion
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
@@ -960,8 +1059,8 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"servant name: {fateGrandOrderPerson.EnglishNamePassed}", false);
-                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", false, $"servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
                         }
                     }
                     #endregion
@@ -992,8 +1091,8 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"servant name: {fateGrandOrderPerson.EnglishNamePassed}", false);
-                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", false, $"servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
                         }
                     }
                     #endregion
@@ -1014,8 +1113,8 @@ namespace FateGrandOrderApi
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"servant name: {fateGrandOrderPerson.EnglishNamePassed}", false);
-                                Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", false, $"servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                                Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                                Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
                             }
                         }
                         else if (s == "|-|")
@@ -1557,7 +1656,7 @@ namespace FateGrandOrderApi
                         }
                         else if (s.Contains("|effect"))
                         {
-                            fateGrandOrderPerson.BondLevels.Bond10Reward.Effect = await AssigningContent.GenericAssigning(FixString(s).Replace("<br/>","\\").Split('\\').Last(), "|effect");
+                            fateGrandOrderPerson.BondLevels.Bond10Reward.Effect = await AssigningContent.GenericAssigning(FixString(s).Replace("<br/>", "\\").Split('\\').Last(), "|effect");
                         }
                     }
                     #endregion
@@ -1636,7 +1735,7 @@ namespace FateGrandOrderApi
                         }
                         else if (GettingDefaultBioJap)
                         {
-                            fateGrandOrderPerson.Biography.Default.JapaneseText = fateGrandOrderPerson.Biography.Default.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" } ,PartsToReplace: new string[][] { new string[] { "<br/>","/r/n" } });
+                            fateGrandOrderPerson.Biography.Default.JapaneseText = fateGrandOrderPerson.Biography.Default.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingDefaultBio)
                         {
@@ -1698,10 +1797,10 @@ namespace FateGrandOrderApi
                     {
                         if (s.Contains("|[["))
                         {
-                            string ToAdd = FixString(s).Remove(0, s.IndexOf("|[[") + 3).Replace("]]","").Trim();
+                            string ToAdd = FixString(s).Remove(0, s.IndexOf("|[[") + 3).Replace("]]", "").Trim();
                             if (ToAdd.Contains('|'))
                                 ToAdd = ToAdd.Remove(ToAdd.IndexOf('|'));
-                            if(fateGrandOrderPerson.Availability == null)
+                            if (fateGrandOrderPerson.Availability == null)
                                 fateGrandOrderPerson.Availability = new string[] { ToAdd };
                             else
                                 fateGrandOrderPerson.Availability = new string[] { $"{fateGrandOrderPerson.Availability[0]}\\{ToAdd}" };
@@ -1712,7 +1811,7 @@ namespace FateGrandOrderApi
                     #region Trivia
                     else if (GettingTrivia)
                     {
-                        if(!string.IsNullOrWhiteSpace(s))
+                        if (!string.IsNullOrWhiteSpace(s))
                         {
                             string ToAdd = FixString(s);
                             while (ToAdd.Contains("[[") && ToAdd.Contains('|'))
@@ -1869,7 +1968,11 @@ namespace FateGrandOrderApi
 
                     #region Images
                     else if (GettingImages && !string.IsNullOrWhiteSpace(s) && s != "|-|" && s.Contains('|'))
-                        fateGrandOrderPerson.Images.Add(await AssigningContent.Image(s, ""));
+                    {
+                        var image = await AssigningContent.Image(s, "");
+                        if(image != null)
+                            fateGrandOrderPerson.Images.Add(image);
+                    }
                     #endregion
 
                     #region Trigger Skills Logic
@@ -1952,20 +2055,7 @@ namespace FateGrandOrderApi
                     #endregion
                 }
             }
-
-            #region Add/Remove to cache and any returns we need to do
-            if (PersonToRemoveFromCache != null)
-                FateGrandOrderPersonCache.FateGrandOrderPeople.Remove(PersonToRemoveFromCache);
-            if (fateGrandOrderPerson != null)
-            {
-                FateGrandOrderPersonCache.FateGrandOrderPeople.Add(fateGrandOrderPerson);
-                return fateGrandOrderPerson;
-            }
-            else
-            {
-                return null;
-            }
-            #endregion
+            return fateGrandOrderPerson;
         }
 
         /// <summary>
@@ -2006,8 +2096,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}", false);
-                    Logger.LogFile(e, $"Looks like something failed when assigning something", false, $"Assigning string: {Assigning}");
+                    Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
+                    Logger.LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
                 return s.Split(CharToSplitWith);
             }
@@ -2043,8 +2133,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}", false);
-                    Logger.LogFile(e, $"Looks like something failed when assigning something", false, $"Assigning string: {Assigning}");
+                    Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
+                    Logger.LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
                 return s;
             }
@@ -2074,8 +2164,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}", false);
-                    Logger.LogFile(e, $"Looks like something failed when assigning someone gender", false, $"String used for this: {s}");
+                    Logger.LogConsole(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}");
+                    Logger.LogFile(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}");
                 }
                 if(WhatToFill.Gender == null)
                     WhatToFill.Gender = @"¯\_(ツ)_/¯";
@@ -2207,8 +2297,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened in GetVideo Logic", $"video name: {video.Name}", false);
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", false, $"video name: {video.Name}");
+                    Logger.LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Name}");
+                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Video name: {video.Name}");
                 }
                 return video;
             }
@@ -2246,8 +2336,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}", false);
-                    Logger.LogFile(e, $"Looks like something failed when assigning an Item", false, $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
+                    Logger.LogConsole(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
+                    Logger.LogFile(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
                 }
                 return WhatToFill;
             }

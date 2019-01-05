@@ -6,7 +6,7 @@ namespace FateGrandOrderApi.Caching
     /// <summary>
     /// Everything that has been setup for caching
     /// </summary>
-    public static class FateGrandOrderPersonCache
+    internal static class FateGrandOrderPersonCache
     {
         /// <summary>
         /// People that are currently in the cache

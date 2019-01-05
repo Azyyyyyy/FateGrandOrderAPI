@@ -44,21 +44,7 @@ namespace ApiTest
                 Console.Write(servantInfo);
                 ServantsParsed.Add(persondata);
             }
-            Console.WriteLine(Line($"Has cache cached all servants: {EverythingCached()}"));
-            Console.WriteLine($"Has cache cached all servants: {EverythingCached()}");
             Console.ReadLine();
-        }
-
-        public static bool EverythingCached()
-        {
-            int Count = 0;
-            while(Count + 1 != FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople.Count)
-            {
-                if (FateGrandOrderApi.Caching.FateGrandOrderPersonCache.FateGrandOrderPeople[Count] != ServantsParsed[Count])
-                    return false;
-                Count++;
-            }
-            return true;
         }
 
         static string Line(string person)
@@ -71,7 +57,7 @@ namespace ApiTest
             return b.ToString();
         }
 
-        //static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
-        static string[] Servants = { "Jack the Ripper" };
+        static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
+        //static string[] Servants = { "Jeanne d'Arc (Alter)" };
     }
 }
