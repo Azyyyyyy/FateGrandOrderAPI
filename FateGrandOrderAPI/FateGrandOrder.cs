@@ -1,14 +1,16 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Linq;
 using HtmlAgilityPack;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
 using FateGrandOrderApi.Classes;
 using FateGrandOrderApi.Logging;
+using FateGrandOrderApi.Caching;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using FateGrandOrderApi.Caching;
 
 namespace FateGrandOrderApi
 {
@@ -17,6 +19,40 @@ namespace FateGrandOrderApi
     /// </summary>
     public static class FateGrandOrderParsing
     {
+        static FateGrandOrderParsing()
+        {
+            if (!Directory.Exists(Settings.Cache.UserFilesLocation))
+                Directory.CreateDirectory(Settings.Cache.UserFilesLocation);
+
+            if (!Settings.Cache.SaveCachedPartsToDisk)
+                return;
+
+            try
+            {
+                if (!Directory.Exists(FateGrandOrderApiCache.CacheLocation))
+                {
+                    Directory.CreateDirectory(FateGrandOrderApiCache.CacheLocation);
+                    return;
+                }
+
+                if (Settings.Cache.CacheServants && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Servants.json")))
+                    FateGrandOrderApiCache.Servants = JsonConvert.DeserializeObject<List<Servant>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Servants.json")));
+                if (Settings.Cache.CacheItems && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Items.json")))
+                    FateGrandOrderApiCache.Items = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Items.json")));
+                if (Settings.Cache.CacheEnemies && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Enemies.json")))
+                    FateGrandOrderApiCache.Enemies = JsonConvert.DeserializeObject<List<Enemy>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Enemies.json")));
+                if (Settings.Cache.CacheActiveSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "ActiveSkills.json")))
+                    FateGrandOrderApiCache.ActiveSkills = JsonConvert.DeserializeObject<List<ActiveSkill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "ActiveSkills.json")));
+                if (Settings.Cache.CacheSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")))
+                    FateGrandOrderApiCache.Skills = JsonConvert.DeserializeObject<List<Skill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")));
+            }
+            catch (Exception e)
+            {
+                Logger.LogConsole(e, "Looks like something happened when accessing/editing the cache");
+                Logger.LogFile(e, "Looks like something happened when accessing/editing the cache");
+            }
+        }
+
         private static string FixString(string s)
         {
             if (!string.IsNullOrWhiteSpace(s))
@@ -44,44 +80,51 @@ namespace FateGrandOrderApi
 
                 skill = new Skill(skillName, col.InnerText);
                 resultString = Regex.Split(col.InnerText, @"\n");
-                if (FateGrandOrderPersonCache.Skills == null)
-                    FateGrandOrderPersonCache.Skills = new List<Skill>();
 
-                try
+                if (Settings.Cache.CacheSkills)
                 {
-                    foreach (Skill skillC in FateGrandOrderPersonCache.Skills)
+                    if (FateGrandOrderApiCache.Skills == null)
+                        FateGrandOrderApiCache.Skills = new List<Skill>();
+                    try
                     {
-                        if (skill.GeneratedWith == skillC.GeneratedWith && skillC.NamePassed == skill.NamePassed)
+                        foreach (Skill skillC in FateGrandOrderApiCache.Skills)
                         {
+                            if (skill.GeneratedWith == skillC.GeneratedWith && skillC.NamePassed == skill.NamePassed)
+                            {
 #if DEBUG
-                            skillC.FromCache = true;
+                                skillC.FromCache = true;
 #endif
-                            return Tuple.Create(skillC, resultString);
-                        }
-                        else if (skill.GeneratedWith != skillC.GeneratedWith && skill.NamePassed == skillC.NamePassed)
-                        {
-                            skillToRemoveFromCache = skillC;
-                            break;
+                                skill = null;
+                                skillName = null;
+                                return Tuple.Create(skillC, resultString);
+                            }
+                            else if (skill.GeneratedWith != skillC.GeneratedWith && skill.NamePassed == skillC.NamePassed)
+                            {
+                                skillToRemoveFromCache = skillC;
+                                break;
+                            }
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
+                    catch (Exception e)
+                    {
+                        Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
+                        Logger.LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
+                    }
                 }
 
                 if (skillToRemoveFromCache != null)
-                    FateGrandOrderPersonCache.Skills.Remove(skillToRemoveFromCache);
-                if (skill != null && !FateGrandOrderPersonCache.Skills.Contains(skill))
-                    FateGrandOrderPersonCache.Skills.Add(skill);
+                    FateGrandOrderApiCache.Skills.Remove(skillToRemoveFromCache);
+                if (skill != null && !FateGrandOrderApiCache.Skills.Contains(skill))
+                    FateGrandOrderApiCache.Skills.Add(skill);
                 skillToRemoveFromCache = null;
 
                 foreach (string s in resultString)
                 {
                     if (s.Contains("|img"))
                     {
-                        skill.Image = await AssigningContent.Image(s);
+                        var image = await AssigningContent.Image(s);
+                        skill.Image = image;
+                        image = null;
                     }
                     else if (s.Contains("|name"))
                     {
@@ -128,11 +171,16 @@ namespace FateGrandOrderApi
                     }
                 }
 
+                await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Skills);
                 if (skill != null)
+                {
+                    skillName = null;
                     return Tuple.Create(skill, resultString);
+                }
                 else
                     return null;
             }
+            skillName = null;
             return Tuple.Create(skill, resultString);
         }
 
@@ -141,9 +189,9 @@ namespace FateGrandOrderApi
         /// </summary>
         /// <param name="skillName">The ActiveSkill name to look for</param>
         /// <returns></returns>
-        public static async Task<ActiveSkill> GetSkills(string skillName)
+        public static async Task<ActiveSkill> GetActiveSkill(string skillName)
         {
-            return await GetSkill(new ActiveSkill(skillName, ""));
+            return await GetActiveSkill(new ActiveSkill(skillName, ""));
         }
 
         /// <summary>
@@ -151,7 +199,7 @@ namespace FateGrandOrderApi
         /// </summary>
         /// <param name="skill">The ActiveSkill to put all the content into</param>
         /// <returns></returns>
-        public static async Task<ActiveSkill> GetSkill(ActiveSkill skill)
+        public static async Task<ActiveSkill> GetActiveSkill(ActiveSkill skill)
         {
             Tuple<Skill, string[]> content = null;
             string lastLevelEffect = "";
@@ -187,38 +235,51 @@ namespace FateGrandOrderApi
 
             //For in case we put the person in wrong
             if (resultString == null)
-                return skill;
-
-            if (FateGrandOrderPersonCache.ActiveSkills == null)
-                FateGrandOrderPersonCache.ActiveSkills = new List<ActiveSkill>();
-            try
             {
-                foreach (ActiveSkill activeSkillC in FateGrandOrderPersonCache.ActiveSkills)
+                content = null;
+                basicSkillContent = null;
+                resultString = null;
+                return skill;
+            }
+
+            if (Settings.Cache.CacheActiveSkills)
+            {
+                if (FateGrandOrderApiCache.ActiveSkills == null)
+                    FateGrandOrderApiCache.ActiveSkills = new List<ActiveSkill>();
+                try
                 {
-                    if (skill.GeneratedWith == activeSkillC.GeneratedWith && activeSkillC.NamePassed == skill.NamePassed)
+                    foreach (ActiveSkill activeSkillC in FateGrandOrderApiCache.ActiveSkills)
                     {
+                        if (skill.GeneratedWith == activeSkillC.GeneratedWith && activeSkillC.NamePassed == skill.NamePassed)
+                        {
 #if DEBUG
-                        activeSkillC.FromCache = true;
+                            activeSkillC.FromCache = true;
 #endif
-                        return activeSkillC;
-                    }
-                    else if (skill.GeneratedWith != activeSkillC.GeneratedWith && skill.NamePassed == activeSkillC.NamePassed)
-                    {
-                        skillToRemoveFromCache = activeSkillC;
-                        break;
+                            skill = null;
+                            lastLevelEffect = null;
+                            content = null;
+                            basicSkillContent = null;
+                            resultString = null;
+                            return activeSkillC;
+                        }
+                        else if (skill.GeneratedWith != activeSkillC.GeneratedWith && skill.NamePassed == activeSkillC.NamePassed)
+                        {
+                            skillToRemoveFromCache = activeSkillC;
+                            break;
+                        }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
-                Logger.LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
+                catch (Exception e)
+                {
+                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
+                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
+                }
             }
 
             if (skillToRemoveFromCache != null)
-                FateGrandOrderPersonCache.ActiveSkills.Remove(skillToRemoveFromCache);
-            if (skill != null && !FateGrandOrderPersonCache.ActiveSkills.Contains(skill))
-                FateGrandOrderPersonCache.ActiveSkills.Add(skill);
+                FateGrandOrderApiCache.ActiveSkills.Remove(skillToRemoveFromCache);
+            if (skill != null && !FateGrandOrderApiCache.ActiveSkills.Contains(skill))
+                FateGrandOrderApiCache.ActiveSkills.Add(skill);
             skillToRemoveFromCache = null;
 
             foreach (string s in resultString)
@@ -245,11 +306,14 @@ namespace FateGrandOrderApi
                         }
                         var servants = await AssigningContent.GenericArrayAssigning(servantIcons, "|servanticons", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
                         if (servants != null && servants.Length > 0)
-                            skill.ServantsThatHaveThisSkill = new List<FateGrandOrderPerson>();
+                            skill.ServantsThatHaveThisSkill = new List<Servant>();
 
                         foreach (string servant in servants)
                         {
-                            skill.ServantsThatHaveThisSkill.Add(await GetPerson(servant, PresetsForInformation.BasicInformation));
+                            var servantP = await GetPerson(servant, PresetsForInformation.BasicInformation);
+                            if (servantP != null && servantP.BasicInformation != null)
+                                skill.ServantsThatHaveThisSkill.Add(servantP);
+                            servantP = null;
                         }
                         servantIcons = null;
                         servants = null;
@@ -410,6 +474,8 @@ namespace FateGrandOrderApi
             resultString = null;
             lastLevelEffect = null;
             content = null;
+            basicSkillContent = null;
+            await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.ActiveSkills);
             return skill;
         }
         #endregion
@@ -433,37 +499,41 @@ namespace FateGrandOrderApi
 
                 item = new Item(col.InnerText, itemName);
 
-                if (FateGrandOrderPersonCache.Items == null)
-                    FateGrandOrderPersonCache.Items = new List<Item>();
-
-                try
+                if (Settings.Cache.CacheItems)
                 {
-                    foreach (Item itemC in FateGrandOrderPersonCache.Items)
+                    if (FateGrandOrderApiCache.Items == null)
+                        FateGrandOrderApiCache.Items = new List<Item>();
+                    try
                     {
-                        if (item.GeneratedWith == itemC.GeneratedWith && itemC.EnglishName == item.EnglishName)
+                        foreach (Item itemC in FateGrandOrderApiCache.Items)
                         {
+                            if (item.GeneratedWith == itemC.GeneratedWith && itemC.EnglishName == item.EnglishName)
+                            {
 #if DEBUG
-                            itemC.FromCache = true;
+                                itemC.FromCache = true;
 #endif
-                            return itemC;
-                        }
-                        else if (item.GeneratedWith != itemC.GeneratedWith && item.EnglishName == itemC.EnglishName)
-                        {
-                            ItemToRemoveFromCache = itemC;
-                            break;
+                                item = null;
+                                itemName = null;
+                                return itemC;
+                            }
+                            else if (item.GeneratedWith != itemC.GeneratedWith && item.EnglishName == itemC.EnglishName)
+                            {
+                                ItemToRemoveFromCache = itemC;
+                                break;
+                            }
                         }
                     }
+                    catch (Exception e)
+                    {
+                        Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
+                        Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
+                    }
                 }
-                catch (Exception e)
-                {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
-                }
-
                 if (ItemToRemoveFromCache != null)
-                    FateGrandOrderPersonCache.Items.Remove(ItemToRemoveFromCache);
-                if (item != null && !FateGrandOrderPersonCache.Items.Contains(item))
-                    FateGrandOrderPersonCache.Items.Add(item);
+                    FateGrandOrderApiCache.Items.Remove(ItemToRemoveFromCache);
+                if (item != null && !FateGrandOrderApiCache.Items.Contains(item))
+                    FateGrandOrderApiCache.Items.Add(item);
+                ItemToRemoveFromCache = null;
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
@@ -475,7 +545,7 @@ namespace FateGrandOrderApi
                     }
                     else if (DoingLocationLogic)
                     {
-                        LocationLogic(s);
+                        await LocationLogic(s);
                     }
                     else if (s.Contains("|jpName"))
                     {
@@ -500,14 +570,21 @@ namespace FateGrandOrderApi
                                 if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
                                     item.EnemiesThatDroppedThis.Add(enemyToNotLookFor);
                                 else
-                                    item.EnemiesThatDroppedThis.Add(await GetEnemy(enemyEdited, item));
+                                {
+                                    var enemyP = await GetEnemy(enemyEdited, item);
+                                    if (enemyP != null)
+                                        item.EnemiesThatDroppedThis.Add(enemyP);
+                                    enemyP = null;
+                                }
                             }
                             catch (Exception e)
                             {
                                 Logger.LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
                                 Logger.LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
                             }
+                            enemyEdited = null;
                         }
+                        enemys = null;
                     }
                     else if (s.Contains("|jdesc"))
                     {
@@ -519,27 +596,31 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|location"))
                     {
-                        item.DropLocations = new List<ItemDropLocationList>();
-                        item.DropLocations.Add(new ItemDropLocationList());
+                        item.DropLocations = new List<ItemDropLocationList> { new ItemDropLocationList { } };
                         string ss = await AssigningContent.GenericAssigning(s, "|location");
                         if (!string.IsNullOrWhiteSpace(ss))
-                            LocationLogic(ss);
+                            await LocationLogic(ss);
                         else
                             DoingLocationLogic = true;
+                        ss = null;
                     }
                     else if (s.Contains("|usedFor"))
                     {
-                        item.Uses = new List<FateGrandOrderPerson>();
+                        item.Uses = new List<Servant>();
                         foreach (string ss in (await AssigningContent.GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
                         {
                             var servant = await GetPerson(ss, PresetsForInformation.BasicInformation);
                             if (servant != null)
                                 item.Uses.Add(servant);
+                            servant = null;
                         }
                     }
                 }
+                resultString = null;
             }
-
+            
+            await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Items);
+            itemName = null;
             return item;
 
             async Task LocationLogic(string s)
@@ -579,6 +660,7 @@ namespace FateGrandOrderApi
                                             Location = thing[0].Replace("[","").Split('|').First()
                                         });
                                     }
+                                    thing = null;
                                 }
                             }
                             catch (Exception e)
@@ -616,31 +698,36 @@ namespace FateGrandOrderApi
                     break;
 
                 enemy = new Enemy(enemyName, col.InnerHtml);
-                if (FateGrandOrderPersonCache.Enemies == null)
-                    FateGrandOrderPersonCache.Enemies = new List<Enemy>();
 
-                try
+                if (Settings.Cache.CacheEnemies)
                 {
-                    foreach (Enemy enemyC in FateGrandOrderPersonCache.Enemies)
+                    if (FateGrandOrderApiCache.Enemies == null)
+                        FateGrandOrderApiCache.Enemies = new List<Enemy>();
+                    try
                     {
-                        if (enemy.GeneratedWith == enemyC.GeneratedWith && enemyC.EnglishName == enemy.EnglishName)
+                        foreach (Enemy enemyC in FateGrandOrderApiCache.Enemies)
                         {
+                            if (enemy.GeneratedWith == enemyC.GeneratedWith && enemyC.EnglishName == enemy.EnglishName)
+                            {
 #if DEBUG
-                            enemyC.FromCache = true;
+                                enemyC.FromCache = true;
 #endif
-                            return enemyC;
-                        }
-                        else if (enemy.GeneratedWith != enemyC.GeneratedWith && enemy.EnglishName == enemyC.EnglishName)
-                        {
-                            EnemyToRemoveFromCache = enemyC;
-                            break;
+                                enemy = null;
+                                enemyName = null;
+                                return enemyC;
+                            }
+                            else if (enemy.GeneratedWith != enemyC.GeneratedWith && enemy.EnglishName == enemyC.EnglishName)
+                            {
+                                EnemyToRemoveFromCache = enemyC;
+                                break;
+                            }
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
+                    catch (Exception e)
+                    {
+                        Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
+                        Logger.LogFile(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
+                    }
                 }
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
@@ -681,10 +768,14 @@ namespace FateGrandOrderApi
                                     {
                                         var personcontent = ss.Split('|');
                                         var servant = await GetPerson(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
-                                        if (servant != null)
+                                        if (servant != null && servant.BasicInformation != null)
                                             enemy.RecommendedServants.Add(servant);
+                                        personcontent = null;
+                                        servant = null;
                                     }
+                                    servants = null;
                                 }
+                                WhatToLookFor = null;
                             }
                             catch (Exception e)
                             {
@@ -695,16 +786,21 @@ namespace FateGrandOrderApi
                     }
 
                     if (EnemyToRemoveFromCache != null)
-                        FateGrandOrderPersonCache.Enemies.Remove(EnemyToRemoveFromCache);
-                    if (enemy != null && !FateGrandOrderPersonCache.Enemies.Contains(enemy))
-                        FateGrandOrderPersonCache.Enemies.Add(enemy);
+                        FateGrandOrderApiCache.Enemies.Remove(EnemyToRemoveFromCache);
+                    if (enemy != null && !FateGrandOrderApiCache.Enemies.Contains(enemy))
+                        FateGrandOrderApiCache.Enemies.Add(enemy);
+                    EnemyToRemoveFromCache = null;
 
                     if (s.Contains("|image"))
                     {
                         if (FixString(s).Contains("<gallery>"))
                             GettingImages = true;
                         else
-                            enemy.EnemyImage.Add(await AssigningContent.Image(s, "|image"));
+                        {
+                            var image = await AssigningContent.Image(s, "|image");
+                            enemy.EnemyImage.Add(image);
+                            image = null;
+                        }
                     }
                     if (GettingImages && FixString(s).Contains("</gallery>"))
                     {
@@ -712,7 +808,9 @@ namespace FateGrandOrderApi
                     }
                     else if (GettingImages)
                     {
-                        enemy.EnemyImage.Add(await AssigningContent.Image(s, ""));
+                        var image = await AssigningContent.Image(s, "");
+                        enemy.EnemyImage.Add(image);
+                        image = null;
                     }
                     else if (s.Contains("|class"))
                     {
@@ -739,6 +837,7 @@ namespace FateGrandOrderApi
                             Logger.LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
                             Logger.LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
                         }
+                        thing = null;
                     }
                     else if (s.Contains("|jname"))
                     {
@@ -765,16 +864,24 @@ namespace FateGrandOrderApi
                         try
                         {
                             var items = await AssigningContent.GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
+                            if(items != null)
+                                enemy.WhatThisEnemyDrops = new List<Item>();
                             foreach (string item in items)
                             {
-                                if (string.IsNullOrWhiteSpace(item))
+                                if (!string.IsNullOrWhiteSpace(item))
                                 {
                                     if (itemToNotLookFor != null && items.Contains(itemToNotLookFor.EnglishName))
                                         enemy.WhatThisEnemyDrops.Add(itemToNotLookFor);
                                     else
-                                        enemy.WhatThisEnemyDrops.Add(await GetItem(item, enemy));
+                                    {
+                                        var itemP = await GetItem(item, enemy);
+                                        if(itemP != null)
+                                            enemy.WhatThisEnemyDrops.Add(itemP);
+                                        itemP = null;
+                                    }
                                 }
                             }
+                            items = null;
                         }
                         catch (Exception e)
                         {
@@ -785,11 +892,14 @@ namespace FateGrandOrderApi
                     else if (s == "==Recommended Servants==" | s == "== Recommended Servants ==")
                     {
                         GettingRecommendedServants = true;
-                        enemy.RecommendedServants = new List<FateGrandOrderPerson>();
+                        enemy.RecommendedServants = new List<Servant>();
                     }
                 }
+                resultString = null;
             }
 
+            await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Enemies);
+            enemyName = null;
             return enemy;
         }
 
@@ -811,10 +921,10 @@ namespace FateGrandOrderApi
         /// <param name="GetTrivia"></param>
         /// <param name="GetImages"></param>
         /// <returns></returns>
-        public static async Task<FateGrandOrderPerson> GetPerson(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, bool GetBasicInformation = false, bool GetActiveSkills = false, bool GetPassiveSkills = false, bool GetNoblePhantasm = false, bool GetAscension = false, bool GetSkillReinforcement = false, bool GetStats = false, bool GetBondLevel = false, bool GetBiography = false, bool GetAvailability = false, bool GetTrivia = false, bool GetImages = false)
+        public static async Task<Servant> GetPerson(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, bool GetBasicInformation = false, bool GetActiveSkills = false, bool GetPassiveSkills = false, bool GetNoblePhantasm = false, bool GetAscension = false, bool GetSkillReinforcement = false, bool GetStats = false, bool GetBondLevel = false, bool GetBiography = false, bool GetAvailability = false, bool GetTrivia = false, bool GetImages = false)
         {
-            FateGrandOrderPerson fateGrandOrderPerson = null;
-            FateGrandOrderPerson PersonToRemoveFromCache = null;
+            Servant Servant = null;
+            Servant ServantToRemoveFromCache = null;
 
             #region Toggles For GettingInformation
             if (presetsForInformation == PresetsForInformation.BasicInformation)
@@ -878,136 +988,149 @@ namespace FateGrandOrderApi
                     break;
 
                 ServantName = ServantName.Replace("_", " ");
-
-                if (FateGrandOrderPersonCache.FateGrandOrderPeople == null)
-                    FateGrandOrderPersonCache.FateGrandOrderPeople = new List<FateGrandOrderPerson>();
-                fateGrandOrderPerson = new FateGrandOrderPerson(col.InnerText, ServantName);
+                Servant = new Servant(col.InnerText, ServantName);
 
                 #region Caching Logic
-                try
+                if (Settings.Cache.CacheServants)
                 {
-                    foreach (FateGrandOrderPerson fateGrandOrderPersonC in FateGrandOrderPersonCache.FateGrandOrderPeople)
+                    if (FateGrandOrderApiCache.Servants == null)
+                        FateGrandOrderApiCache.Servants = new List<Servant>();
+                    try
                     {
-                        if (fateGrandOrderPersonC.GeneratedWith == fateGrandOrderPerson.GeneratedWith && fateGrandOrderPersonC.EnglishNamePassed == fateGrandOrderPerson.EnglishNamePassed)
+                        foreach (Servant fateGrandOrderPersonC in FateGrandOrderApiCache.Servants)
                         {
-                            if (GetBasicInformation && fateGrandOrderPersonC.BasicInformation != null)
+                            if (fateGrandOrderPersonC.GeneratedWith == Servant.GeneratedWith && fateGrandOrderPersonC.EnglishNamePassed == Servant.EnglishNamePassed)
                             {
-                                GetBasicInformation = false;
-                                GettingBasicInformation = false;
-                            }
-                            if (GetActiveSkills && fateGrandOrderPersonC.ActiveSkills != null)
-                            {
-                                GetActiveSkills = false;
-                            }
-                            if (GetPassiveSkills && fateGrandOrderPersonC.PassiveSkills != null)
-                            {
-                                GetPassiveSkills = false;
-                            }
-                            if (GetNoblePhantasm && fateGrandOrderPersonC.NoblePhantasms != null)
-                            {
-                                GetNoblePhantasm = false;
-                            }
-                            if (GetAscension && fateGrandOrderPersonC.Ascension != null)
-                            {
-                                GetAscension = false;
-                            }
-                            if (GetSkillReinforcement && fateGrandOrderPersonC.SkillReinforcement != null)
-                            {
-                                GetSkillReinforcement = false;
-                            }
-                            if (GetStats && fateGrandOrderPersonC.Stats != null)
-                            {
-                                GetStats = false;
-                            }
-                            if (GetBondLevel && fateGrandOrderPersonC.BondLevels != null)
-                            {
-                                GetBondLevel = false;
-                            }
-                            if (GetBiography && fateGrandOrderPersonC.Biography != null)
-                            {
-                                GetBiography = false;
-                            }
-                            if (GetAvailability && fateGrandOrderPersonC.Availability != null)
-                            {
-                                GetAvailability = false;
-                            }
-                            if (GetTrivia && fateGrandOrderPersonC.Trivia != null)
-                            {
-                                GetTrivia = false;
-                            }
+                                if (GetBasicInformation && fateGrandOrderPersonC.BasicInformation != null)
+                                {
+                                    GetBasicInformation = false;
+                                    GettingBasicInformation = false;
+                                }
+                                if (GetActiveSkills && fateGrandOrderPersonC.ActiveSkills != null)
+                                {
+                                    GetActiveSkills = false;
+                                }
+                                if (GetPassiveSkills && fateGrandOrderPersonC.PassiveSkills != null)
+                                {
+                                    GetPassiveSkills = false;
+                                }
+                                if (GetNoblePhantasm && fateGrandOrderPersonC.NoblePhantasms != null)
+                                {
+                                    GetNoblePhantasm = false;
+                                }
+                                if (GetAscension && fateGrandOrderPersonC.Ascension != null)
+                                {
+                                    GetAscension = false;
+                                }
+                                if (GetSkillReinforcement && fateGrandOrderPersonC.SkillReinforcement != null)
+                                {
+                                    GetSkillReinforcement = false;
+                                }
+                                if (GetStats && fateGrandOrderPersonC.Stats != null)
+                                {
+                                    GetStats = false;
+                                }
+                                if (GetBondLevel && fateGrandOrderPersonC.BondLevels != null)
+                                {
+                                    GetBondLevel = false;
+                                }
+                                if (GetBiography && fateGrandOrderPersonC.Biography != null)
+                                {
+                                    GetBiography = false;
+                                }
+                                if (GetAvailability && fateGrandOrderPersonC.Availability != null)
+                                {
+                                    GetAvailability = false;
+                                }
+                                if (GetTrivia && fateGrandOrderPersonC.Trivia != null)
+                                {
+                                    GetTrivia = false;
+                                }
+                                if (GetImages && fateGrandOrderPersonC.Images != null)
+                                {
+                                    GetImages = false;
+                                }
 
-                            if (GetBasicInformation == false && GetActiveSkills == false && GetPassiveSkills == false && GetNoblePhantasm == false && GetAscension == false && GetSkillReinforcement == false && GetStats == false && GetBondLevel == false && GetBiography == false && GetAvailability == false)
-                            {
-                                return fateGrandOrderPersonC;
-                            }
-                            else
-                            {
-                                PersonToRemoveFromCache = fateGrandOrderPersonC;
-                                fateGrandOrderPerson = fateGrandOrderPersonC;
-                            }
+                                if (GetBasicInformation == false && GetActiveSkills == false && GetPassiveSkills == false && GetNoblePhantasm == false && GetAscension == false && GetSkillReinforcement == false && GetStats == false && GetBondLevel == false && GetBiography == false && GetAvailability == false && GetImages == false && GetTrivia == false)
+                                {
+                                    Servant = null;
+                                    ServantName = null;
+                                    return fateGrandOrderPersonC;
+                                }
+                                else
+                                {
+                                    ServantToRemoveFromCache = fateGrandOrderPersonC;
+                                    Servant = fateGrandOrderPersonC;
+                                }
 #if DEBUG
-                            fateGrandOrderPersonC.FromCache = true;
+                                fateGrandOrderPersonC.FromCache = true;
 #endif
-                            break;
-                        }
-                        else if (fateGrandOrderPersonC.GeneratedWith != fateGrandOrderPerson.GeneratedWith && fateGrandOrderPersonC.EnglishNamePassed == fateGrandOrderPerson.EnglishNamePassed)
-                        {
-                            PersonToRemoveFromCache = fateGrandOrderPersonC;
-                            break;
+                                break;
+                            }
+                            else if (fateGrandOrderPersonC.GeneratedWith != Servant.GeneratedWith && fateGrandOrderPersonC.EnglishNamePassed == Servant.EnglishNamePassed)
+                            {
+                                ServantToRemoveFromCache = fateGrandOrderPersonC;
+                                break;
+                            }
                         }
                     }
-                }
-                catch (Exception e)
-                {
-                    Logger.LogConsole(e, $"Looks like something failed when accessing FateGrandOrderPeople cache", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
-                    Logger.LogFile(e, $"Looks like something failed when accessing FateGrandOrderPeople cache", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                    catch (Exception e)
+                    {
+                        Logger.LogConsole(e, $"Looks like something failed when accessing FateGrandOrderServant cache", $"Servant name: {Servant.EnglishNamePassed}");
+                        Logger.LogFile(e, $"Looks like something failed when accessing FateGrandOrderServant cache", $"Servant name: {Servant.EnglishNamePassed}");
+                    }
                 }
                 #endregion
 
                 #region Assigning Parts that we're going to populate
-                if (GetBasicInformation && fateGrandOrderPerson.BasicInformation == null)
+                if (GetBasicInformation && Servant.BasicInformation == null)
                 {
-                    fateGrandOrderPerson.BasicInformation = new FateGrandOrderPersonBasic(ServantName);
+                    Servant.BasicInformation = new FateGrandOrderServantBasic(ServantName);
                 }
-                if (GetActiveSkills && fateGrandOrderPerson.ActiveSkills == null)
+                if (GetActiveSkills && Servant.ActiveSkills == null)
                 {
-                    fateGrandOrderPerson.ActiveSkills = new List<ActiveSkill>();
+                    Servant.ActiveSkills = new List<ActiveSkill>();
                 }
-                if (GetPassiveSkills && fateGrandOrderPerson.PassiveSkills == null)
+                if (GetPassiveSkills && Servant.PassiveSkills == null)
                 {
-                    fateGrandOrderPerson.PassiveSkills = new List<PassiveSkillList>();
+                    Servant.PassiveSkills = new List<PassiveSkillList>();
                 }
-                if (GetNoblePhantasm && fateGrandOrderPerson.NoblePhantasms == null)
+                if (GetNoblePhantasm && Servant.NoblePhantasms == null)
                 {
-                    fateGrandOrderPerson.NoblePhantasms = new List<NoblePhantasmList>();
+                    Servant.NoblePhantasms = new List<NoblePhantasmList>();
                 }
-                if (GetAscension && fateGrandOrderPerson.Ascension == null)
+                if (GetAscension && Servant.Ascension == null)
                 {
-                    fateGrandOrderPerson.Ascension = new Ascension();
+                    Servant.Ascension = new Ascension();
                 }
-                if (GetSkillReinforcement && fateGrandOrderPerson.SkillReinforcement == null)
+                if (GetSkillReinforcement && Servant.SkillReinforcement == null)
                 {
-                    fateGrandOrderPerson.SkillReinforcement = new SkillReinforcement();
+                    Servant.SkillReinforcement = new SkillReinforcement();
                 }
-                if (GetStats && fateGrandOrderPerson.Stats == null)
+                if (GetStats && Servant.Stats == null)
                 {
-                    fateGrandOrderPerson.Stats = new Stats();
+                    Servant.Stats = new Stats();
                 }
-                if (GetBondLevel && fateGrandOrderPerson.BondLevels == null)
+                if (GetBondLevel && Servant.BondLevels == null)
                 {
-                    fateGrandOrderPerson.BondLevels = new BondLevels();
+                    Servant.BondLevels = new BondLevels();
                 }
-                if (GetBiography && fateGrandOrderPerson.Biography == null)
+                if (GetBiography && Servant.Biography == null)
                 {
-                    fateGrandOrderPerson.Biography = new Biography();
+                    Servant.Biography = new Biography();
+                }
+                if (GetImages && Servant.Images == null)
+                {
+                    Servant.Images = new List<ImageInformation>();
                 }
                 #endregion
 
-                #region Add/Remove to cache and any returns we need to do
-                if (PersonToRemoveFromCache != null)
-                    FateGrandOrderPersonCache.FateGrandOrderPeople.Remove(PersonToRemoveFromCache);
-                if (fateGrandOrderPerson != null)
-                    FateGrandOrderPersonCache.FateGrandOrderPeople.Add(fateGrandOrderPerson);
+                #region Add/Remove to cache
+                if (ServantToRemoveFromCache != null)
+                    FateGrandOrderApiCache.Servants.Remove(ServantToRemoveFromCache);
+                if (Servant != null)
+                    FateGrandOrderApiCache.Servants.Add(Servant);
+                ServantToRemoveFromCache = null;
                 #endregion
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
@@ -1021,46 +1144,46 @@ namespace FateGrandOrderApi
                         {
                             if (!string.IsNullOrWhiteSpace(s) && s[s.Length - 1] == '=')
                             {
-                                if (fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category != null)
-                                    fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillList());
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category = s.Replace("=", "");
+                                if (Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].Category != null)
+                                    Servant.PassiveSkills.Add(new PassiveSkillList());
+                                Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].Category = s.Replace("=", "");
                                 PassiveSkillsCount = 0;
                             }
                             else if (s.Contains("|img"))
                             {
-                                fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Add(new PassiveSkills());
+                                Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Add(new PassiveSkills());
                                 PassiveSkillsCount++;
                                 if (PassiveSkillsCount == 1)
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await AssigningContent.Image(s);
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await AssigningContent.Image(s);
                                 else
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await AssigningContent.Image(s.Replace($"|img{PassiveSkillsCount}", "|img"));
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await AssigningContent.Image(s.Replace($"|img{PassiveSkillsCount}", "|img"));
                             }
                             else if (s.Contains("|name"))
                             {
                                 if (PassiveSkillsCount == 1)
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await AssigningContent.GenericAssigning(s, "|name");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await AssigningContent.GenericAssigning(s, "|name");
                                 else
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await AssigningContent.GenericAssigning(s, $"|name{PassiveSkillsCount}");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await AssigningContent.GenericAssigning(s, $"|name{PassiveSkillsCount}");
                             }
                             else if (s.Contains("|rank"))
                             {
                                 if (PassiveSkillsCount == 1)
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await AssigningContent.GenericAssigning(s, "|rank");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await AssigningContent.GenericAssigning(s, "|rank");
                                 else
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await AssigningContent.GenericAssigning(s, $"|rank{PassiveSkillsCount}");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await AssigningContent.GenericAssigning(s, $"|rank{PassiveSkillsCount}");
                             }
                             else if (s.Contains("|effect"))
                             {
                                 if (PassiveSkillsCount == 1)
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await AssigningContent.GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await AssigningContent.GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
                                 else
-                                    fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills[fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await AssigningContent.GenericArrayAssigning(s, $"|effect{PassiveSkillsCount}", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await AssigningContent.GenericArrayAssigning(s, $"|effect{PassiveSkillsCount}", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
                             }
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
-                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
+                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
                         }
                     }
                     #endregion
@@ -1072,27 +1195,27 @@ namespace FateGrandOrderApi
                         {
                             if (s[s.Length - 1] == '=')
                             {
-                                fateGrandOrderPerson.ActiveSkills.Add(new ActiveSkill());
+                                Servant.ActiveSkills.Add(new ActiveSkill());
                                 if (s.Contains("NPC"))
-                                    fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1].ForNPC = true;
+                                    Servant.ActiveSkills[Servant.ActiveSkills.Count - 1].ForNPC = true;
                             }
                             else if (s.Contains("{{unlock|"))
                             {
-                                fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1].WhenSkillUnlocks = s.Replace("{{unlock|", "")[0].ToString();
+                                Servant.ActiveSkills[Servant.ActiveSkills.Count - 1].WhenSkillUnlocks = s.Replace("{{unlock|", "")[0].ToString();
                             }
                             else if (s.Contains(@"{{:"))
                             {
                                 if (s.IndexOf("|") != -1)
-                                    fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1].Name = s.Remove(s.IndexOf("|")).Replace(@"{{:", "");
+                                    Servant.ActiveSkills[Servant.ActiveSkills.Count - 1].Name = s.Remove(s.IndexOf("|")).Replace(@"{{:", "");
                                 else
-                                    fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1].Name = s.Replace(@"{{:", "").Replace("}}", "");
-                                fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1] = await GetSkill(fateGrandOrderPerson.ActiveSkills[fateGrandOrderPerson.ActiveSkills.Count - 1]);
+                                    Servant.ActiveSkills[Servant.ActiveSkills.Count - 1].Name = s.Replace(@"{{:", "").Replace("}}", "");
+                                Servant.ActiveSkills[Servant.ActiveSkills.Count - 1] = await GetActiveSkill(Servant.ActiveSkills[Servant.ActiveSkills.Count - 1]);
                             }
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
-                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
+                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
                         }
                     }
                     #endregion
@@ -1102,107 +1225,105 @@ namespace FateGrandOrderApi
                     {
                         if (!string.IsNullOrWhiteSpace(s) && s[s.Length - 1] == '=')
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].Category = s.Replace("=", "");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].Category = s.Replace("=", "");
                         }
                         if (s.Contains("[[File:"))
                         {
                             try
                             {
-                                fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
-                                fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = await AssigningContent.Video(s.Replace("[[File:", ""));
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = await AssigningContent.Video(s.Replace("[[File:", ""));
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
-                                Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {fateGrandOrderPerson.EnglishNamePassed}");
+                                Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {Servant.EnglishNamePassed}");
+                                Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {Servant.EnglishNamePassed}");
                             }
                         }
                         else if (s == "|-|")
                         {
-                            fateGrandOrderPerson.NoblePhantasms.Add(new NoblePhantasmList());
+                            Servant.NoblePhantasms.Add(new NoblePhantasmList());
                         }
                         else if (s.Contains("|name"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Name = await AssigningContent.GenericAssigning(s, "|name", PartsToReplace: new string[][] { new string[] { "<br/>", "\n" } });
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Name = await AssigningContent.GenericAssigning(s, "|name", PartsToReplace: new string[][] { new string[] { "<br/>", "\n" } });
                             if (s.Contains("Video"))
                             {
-                                fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
-                                fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = new VideoInformation();
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = new VideoInformation();
                             }
                         }
                         else if (s.Contains("|rank"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Rank = await AssigningContent.GenericAssigning(s, "|rank");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Rank = await AssigningContent.GenericAssigning(s, "|rank");
                         }
                         else if (s.Contains("|classification"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Classification = await AssigningContent.GenericAssigning(s, "|classification");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Classification = await AssigningContent.GenericAssigning(s, "|classification");
                         }
                         else if (s.Contains("|type"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Type = await AssigningContent.GenericAssigning(s, "|type");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Type = await AssigningContent.GenericAssigning(s, "|type");
                         }
                         else if (s.Contains("|hitcount"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.HitCount = await AssigningContent.GenericAssigning(s, "|hitcount");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.HitCount = await AssigningContent.GenericAssigning(s, "|hitcount");
                         }
                         else if (s.Contains("|effect"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.Effects = await AssigningContent.GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Effects = await AssigningContent.GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
                         }
                         else if (s.Contains("|overchargeeffect"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.OverChargeEffect = await AssigningContent.GenericArrayAssigning(s, "|overchargeeffect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.OverChargeEffect = await AssigningContent.GenericArrayAssigning(s, "|overchargeeffect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
                         }
                         else if (s.Contains("|leveleffect"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect = new LevelEffect();
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.Name = await AssigningContent.GenericAssigning(s, "|leveleffect");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect = new LevelEffect { Name = await AssigningContent.GenericAssigning(s, "|leveleffect") };
                         }
                         else if (s.Contains("|l1"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel1 = await AssigningContent.GenericAssigning(s, "|l1");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel1 = await AssigningContent.GenericAssigning(s, "|l1");
                         }
                         else if (s.Contains("|l2"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel2 = await AssigningContent.GenericAssigning(s, "|l2");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel2 = await AssigningContent.GenericAssigning(s, "|l2");
                         }
                         else if (s.Contains("|l3"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel3 = await AssigningContent.GenericAssigning(s, "|l3");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel3 = await AssigningContent.GenericAssigning(s, "|l3");
                         }
                         else if (s.Contains("|l4"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel4 = await AssigningContent.GenericAssigning(s, "|l4");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel4 = await AssigningContent.GenericAssigning(s, "|l4");
                         }
                         else if (s.Contains("|l5"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel5 = await AssigningContent.GenericAssigning(s, "|l5");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel5 = await AssigningContent.GenericAssigning(s, "|l5");
                         }
                         else if (s.Contains("|chargeeffect"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect = new ChargeEffect();
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name = await AssigningContent.GenericAssigning(s, "|chargeeffect");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect = new ChargeEffect { Name = await AssigningContent.GenericAssigning(s, "|chargeeffect") };
                         }
                         else if (s.Contains("|c1"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel1 = await AssigningContent.GenericAssigning(s, "|c1");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel1 = await AssigningContent.GenericAssigning(s, "|c1");
                         }
                         else if (s.Contains("|c2"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel2 = await AssigningContent.GenericAssigning(s, "|c2");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel2 = await AssigningContent.GenericAssigning(s, "|c2");
                         }
                         else if (s.Contains("|c3"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel3 = await AssigningContent.GenericAssigning(s, "|c3");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel3 = await AssigningContent.GenericAssigning(s, "|c3");
                         }
                         else if (s.Contains("|c4"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel4 = await AssigningContent.GenericAssigning(s, "|c4");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel4 = await AssigningContent.GenericAssigning(s, "|c4");
                         }
                         else if (s.Contains("|c5"))
                         {
-                            fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel5 = await AssigningContent.GenericAssigning(s, "|c5");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel5 = await AssigningContent.GenericAssigning(s, "|c5");
                         }
                     }
                     #endregion
@@ -1212,108 +1333,108 @@ namespace FateGrandOrderApi
                     {
                         if (s.Length >= 3 && s.Remove(3) == "|11")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension1 = await AssigningContent.Item(null, null, null, true, "1", fateGrandOrderPerson.Ascension.Ascension1);
-                            fateGrandOrderPerson.Ascension.Ascension1.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension1.Item1, "11");
+                            Servant.Ascension.Ascension1 = await AssigningContent.Item(null, null, null, true, "1", Servant.Ascension.Ascension1);
+                            Servant.Ascension.Ascension1.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item1, "11");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|12")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension1.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension1.Item2, "12");
+                            Servant.Ascension.Ascension1.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item2, "12");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|13")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension1.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension1.Item3, "13");
+                            Servant.Ascension.Ascension1.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item3, "13");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|14")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension1.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension1.Item4, "14");
+                            Servant.Ascension.Ascension1.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item4, "14");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|21")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension2 = await AssigningContent.Item(null, null, null, true, "2", fateGrandOrderPerson.Ascension.Ascension2);
-                            fateGrandOrderPerson.Ascension.Ascension2.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension2.Item2, "21");
+                            Servant.Ascension.Ascension2 = await AssigningContent.Item(null, null, null, true, "2", Servant.Ascension.Ascension2);
+                            Servant.Ascension.Ascension2.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item2, "21");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|22")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension2.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension2.Item2, "22");
+                            Servant.Ascension.Ascension2.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item2, "22");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|23")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension2.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension2.Item3, "23");
+                            Servant.Ascension.Ascension2.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item3, "23");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|24")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension2.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension2.Item4, "24");
+                            Servant.Ascension.Ascension2.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item4, "24");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|31")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension3 = await AssigningContent.Item(null, null, null, true, "3", fateGrandOrderPerson.Ascension.Ascension3);
-                            fateGrandOrderPerson.Ascension.Ascension3.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension3.Item2, "31");
+                            Servant.Ascension.Ascension3 = await AssigningContent.Item(null, null, null, true, "3", Servant.Ascension.Ascension3);
+                            Servant.Ascension.Ascension3.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item2, "31");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|32")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension3.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension3.Item2, "32");
+                            Servant.Ascension.Ascension3.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item2, "32");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|33")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension3.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension3.Item3, "33");
+                            Servant.Ascension.Ascension3.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item3, "33");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|34")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension3.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension3.Item4, "34");
+                            Servant.Ascension.Ascension3.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item4, "34");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|41")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension4 = await AssigningContent.Item(null, null, null, true, "4", fateGrandOrderPerson.Ascension.Ascension4);
-                            fateGrandOrderPerson.Ascension.Ascension4.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension4.Item2, "41");
+                            Servant.Ascension.Ascension4 = await AssigningContent.Item(null, null, null, true, "4", Servant.Ascension.Ascension4);
+                            Servant.Ascension.Ascension4.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item2, "41");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|42")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension4.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension4.Item2, "42");
+                            Servant.Ascension.Ascension4.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item2, "42");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|43")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension4.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension4.Item3, "43");
+                            Servant.Ascension.Ascension4.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item3, "43");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|44")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension4.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension4.Item4, "44");
+                            Servant.Ascension.Ascension4.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item4, "44");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|51")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension5 = await AssigningContent.Item(null, null, null, true, "5", fateGrandOrderPerson.Ascension.Ascension5);
-                            fateGrandOrderPerson.Ascension.Ascension5.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension5.Item2, "51");
+                            Servant.Ascension.Ascension5 = await AssigningContent.Item(null, null, null, true, "5", Servant.Ascension.Ascension5);
+                            Servant.Ascension.Ascension5.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item2, "51");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|52")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension5.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension5.Item2, "52");
+                            Servant.Ascension.Ascension5.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item2, "52");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|53")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension5.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension5.Item3, "53");
+                            Servant.Ascension.Ascension5.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item3, "53");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|54")
                         {
-                            fateGrandOrderPerson.Ascension.Ascension5.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.Ascension.Ascension5.Item4, "54");
+                            Servant.Ascension.Ascension5.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item4, "54");
                         }
                         else if (s.Contains("|1qp"))
                         {
-                            fateGrandOrderPerson.Ascension.Ascension1.QP = await AssigningContent.GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension1.QP = await AssigningContent.GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|2qp"))
                         {
-                            fateGrandOrderPerson.Ascension.Ascension2.QP = await AssigningContent.GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension2.QP = await AssigningContent.GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|3qp"))
                         {
-                            fateGrandOrderPerson.Ascension.Ascension3.QP = await AssigningContent.GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension3.QP = await AssigningContent.GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|4qp"))
                         {
-                            fateGrandOrderPerson.Ascension.Ascension4.QP = await AssigningContent.GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension4.QP = await AssigningContent.GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|5qp"))
                         {
-                            fateGrandOrderPerson.Ascension.Ascension5.QP = await AssigningContent.GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension5.QP = await AssigningContent.GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                     }
                     #endregion
@@ -1323,192 +1444,192 @@ namespace FateGrandOrderApi
                     {
                         if (s.Length >= 3 && s.Remove(3) == "|11")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension1 = await AssigningContent.Item(null, null, null, true, "1", fateGrandOrderPerson.SkillReinforcement.Ascension1);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension1.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension1.Item2, "11");
+                            Servant.SkillReinforcement.Ascension1 = await AssigningContent.Item(null, null, null, true, "1", Servant.SkillReinforcement.Ascension1);
+                            Servant.SkillReinforcement.Ascension1.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item2, "11");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|12")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension1.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension1.Item2, "12");
+                            Servant.SkillReinforcement.Ascension1.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item2, "12");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|13")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension1.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension1.Item3, "13");
+                            Servant.SkillReinforcement.Ascension1.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item3, "13");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|14")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension1.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension1.Item4, "14");
+                            Servant.SkillReinforcement.Ascension1.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item4, "14");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|21")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension2 = await AssigningContent.Item(null, null, null, true, "2", fateGrandOrderPerson.SkillReinforcement.Ascension2);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension2.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension2.Item2, "21");
+                            Servant.SkillReinforcement.Ascension2 = await AssigningContent.Item(null, null, null, true, "2", Servant.SkillReinforcement.Ascension2);
+                            Servant.SkillReinforcement.Ascension2.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item2, "21");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|22")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension2.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension2.Item2, "22");
+                            Servant.SkillReinforcement.Ascension2.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item2, "22");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|23")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension2.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension2.Item3, "23");
+                            Servant.SkillReinforcement.Ascension2.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item3, "23");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|24")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension2.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension2.Item4, "24");
+                            Servant.SkillReinforcement.Ascension2.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item4, "24");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|31")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension3 = await AssigningContent.Item(null, null, null, true, "3", fateGrandOrderPerson.SkillReinforcement.Ascension3);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension3.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension3.Item2, "31");
+                            Servant.SkillReinforcement.Ascension3 = await AssigningContent.Item(null, null, null, true, "3", Servant.SkillReinforcement.Ascension3);
+                            Servant.SkillReinforcement.Ascension3.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item2, "31");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|32")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension3.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension3.Item2, "32");
+                            Servant.SkillReinforcement.Ascension3.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item2, "32");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|33")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension3.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension3.Item3, "33");
+                            Servant.SkillReinforcement.Ascension3.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item3, "33");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|34")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension3.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension3.Item4, "34");
+                            Servant.SkillReinforcement.Ascension3.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item4, "34");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|41")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension4 = await AssigningContent.Item(null, null, null, true, "4", fateGrandOrderPerson.SkillReinforcement.Ascension4);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension4.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension4.Item2, "41");
+                            Servant.SkillReinforcement.Ascension4 = await AssigningContent.Item(null, null, null, true, "4", Servant.SkillReinforcement.Ascension4);
+                            Servant.SkillReinforcement.Ascension4.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item2, "41");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|42")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension4.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension4.Item2, "42");
+                            Servant.SkillReinforcement.Ascension4.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item2, "42");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|43")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension4.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension4.Item3, "43");
+                            Servant.SkillReinforcement.Ascension4.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item3, "43");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|44")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension4.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension4.Item4, "44");
+                            Servant.SkillReinforcement.Ascension4.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item4, "44");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|51")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension5 = await AssigningContent.Item(null, null, null, true, "5", fateGrandOrderPerson.SkillReinforcement.Ascension5);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension5.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension5.Item2, "51");
+                            Servant.SkillReinforcement.Ascension5 = await AssigningContent.Item(null, null, null, true, "5", Servant.SkillReinforcement.Ascension5);
+                            Servant.SkillReinforcement.Ascension5.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item2, "51");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|52")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension5.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension5.Item2, "52");
+                            Servant.SkillReinforcement.Ascension5.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item2, "52");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|53")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension5.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension5.Item3, "53");
+                            Servant.SkillReinforcement.Ascension5.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item3, "53");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|54")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension5.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension5.Item4, "54");
+                            Servant.SkillReinforcement.Ascension5.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item4, "54");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|61")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension6 = await AssigningContent.Item(null, null, null, true, "6", fateGrandOrderPerson.SkillReinforcement.Ascension6);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension6.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension6.Item2, "61");
+                            Servant.SkillReinforcement.Ascension6 = await AssigningContent.Item(null, null, null, true, "6", Servant.SkillReinforcement.Ascension6);
+                            Servant.SkillReinforcement.Ascension6.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item2, "61");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|62")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension6.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension6.Item2, "62");
+                            Servant.SkillReinforcement.Ascension6.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item2, "62");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|63")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension6.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension6.Item3, "63");
+                            Servant.SkillReinforcement.Ascension6.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item3, "63");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|64")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension6.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension6.Item4, "64");
+                            Servant.SkillReinforcement.Ascension6.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item4, "64");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|71")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension7 = await AssigningContent.Item(null, null, null, true, "7", fateGrandOrderPerson.SkillReinforcement.Ascension7);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension7.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension7.Item2, "71");
+                            Servant.SkillReinforcement.Ascension7 = await AssigningContent.Item(null, null, null, true, "7", Servant.SkillReinforcement.Ascension7);
+                            Servant.SkillReinforcement.Ascension7.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item2, "71");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|72")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension7.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension7.Item2, "72");
+                            Servant.SkillReinforcement.Ascension7.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item2, "72");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|73")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension7.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension7.Item3, "73");
+                            Servant.SkillReinforcement.Ascension7.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item3, "73");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|74")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension7.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension7.Item4, "74");
+                            Servant.SkillReinforcement.Ascension7.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item4, "74");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|81")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension8 = await AssigningContent.Item(null, null, null, true, "8", fateGrandOrderPerson.SkillReinforcement.Ascension8);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension8.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension8.Item2, "82");
+                            Servant.SkillReinforcement.Ascension8 = await AssigningContent.Item(null, null, null, true, "8", Servant.SkillReinforcement.Ascension8);
+                            Servant.SkillReinforcement.Ascension8.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|82")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension8.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension8.Item2, "82");
+                            Servant.SkillReinforcement.Ascension8.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|83")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension8.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension8.Item3, "83");
+                            Servant.SkillReinforcement.Ascension8.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item3, "83");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|84")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension8.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension8.Item4, "84");
+                            Servant.SkillReinforcement.Ascension8.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item4, "84");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|91")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension9 = await AssigningContent.Item(null, null, null, true, "9", fateGrandOrderPerson.SkillReinforcement.Ascension9);
-                            fateGrandOrderPerson.SkillReinforcement.Ascension9.Item1 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension9.Item2, "92");
+                            Servant.SkillReinforcement.Ascension9 = await AssigningContent.Item(null, null, null, true, "9", Servant.SkillReinforcement.Ascension9);
+                            Servant.SkillReinforcement.Ascension9.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|92")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension9.Item2 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension9.Item2, "92");
+                            Servant.SkillReinforcement.Ascension9.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|93")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension9.Item3 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension9.Item3, "93");
+                            Servant.SkillReinforcement.Ascension9.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item3, "93");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|94")
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension9.Item4 = await AssigningContent.Item(s, fateGrandOrderPerson.SkillReinforcement.Ascension9.Item4, "94");
+                            Servant.SkillReinforcement.Ascension9.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item4, "94");
                         }
                         else if (s.Contains("|1qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension1.QP = await AssigningContent.GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension1.QP = await AssigningContent.GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|2qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension2.QP = await AssigningContent.GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension2.QP = await AssigningContent.GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|3qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension3.QP = await AssigningContent.GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension3.QP = await AssigningContent.GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|4qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension4.QP = await AssigningContent.GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension4.QP = await AssigningContent.GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|5qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension5.QP = await AssigningContent.GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension5.QP = await AssigningContent.GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|6qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension6.QP = await AssigningContent.GenericAssigning(s, "|6qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension6.QP = await AssigningContent.GenericAssigning(s, "|6qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|7qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension7.QP = await AssigningContent.GenericAssigning(s, "|7qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension7.QP = await AssigningContent.GenericAssigning(s, "|7qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|8qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension8.QP = await AssigningContent.GenericAssigning(s, "|8qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension8.QP = await AssigningContent.GenericAssigning(s, "|8qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|9qp"))
                         {
-                            fateGrandOrderPerson.SkillReinforcement.Ascension9.QP = await AssigningContent.GenericAssigning(s, "|9qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension9.QP = await AssigningContent.GenericAssigning(s, "|9qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                     }
                     #endregion
@@ -1518,51 +1639,51 @@ namespace FateGrandOrderApi
                     {
                         if (s.Contains("|strength"))
                         {
-                            fateGrandOrderPerson.Stats.Strength.Grade = await AssigningContent.GenericAssigning(s, "|strength");
+                            Servant.Stats.Strength.Grade = await AssigningContent.GenericAssigning(s, "|strength");
                         }
                         else if (s.Contains("|stbar"))
                         {
-                            fateGrandOrderPerson.Stats.Strength.BarNumber = await AssigningContent.GenericAssigning(s, "|stbar");
+                            Servant.Stats.Strength.BarNumber = await AssigningContent.GenericAssigning(s, "|stbar");
                         }
                         else if (s.Contains("|endurance"))
                         {
-                            fateGrandOrderPerson.Stats.Endurance.Grade = await AssigningContent.GenericAssigning(s, "|endurance");
+                            Servant.Stats.Endurance.Grade = await AssigningContent.GenericAssigning(s, "|endurance");
                         }
                         else if (s.Contains("|enbar"))
                         {
-                            fateGrandOrderPerson.Stats.Endurance.BarNumber = await AssigningContent.GenericAssigning(s, "|enbar");
+                            Servant.Stats.Endurance.BarNumber = await AssigningContent.GenericAssigning(s, "|enbar");
                         }
                         else if (s.Contains("|agility"))
                         {
-                            fateGrandOrderPerson.Stats.Agility.Grade = await AssigningContent.GenericAssigning(s, "|agility");
+                            Servant.Stats.Agility.Grade = await AssigningContent.GenericAssigning(s, "|agility");
                         }
                         else if (s.Contains("|agbar"))
                         {
-                            fateGrandOrderPerson.Stats.Agility.BarNumber = await AssigningContent.GenericAssigning(s, "|agbar");
+                            Servant.Stats.Agility.BarNumber = await AssigningContent.GenericAssigning(s, "|agbar");
                         }
                         else if (s.Contains("|mana"))
                         {
-                            fateGrandOrderPerson.Stats.Mana.Grade = await AssigningContent.GenericAssigning(s, "|mana");
+                            Servant.Stats.Mana.Grade = await AssigningContent.GenericAssigning(s, "|mana");
                         }
                         else if (s.Contains("|mabar"))
                         {
-                            fateGrandOrderPerson.Stats.Mana.BarNumber = await AssigningContent.GenericAssigning(s, "|mabar");
+                            Servant.Stats.Mana.BarNumber = await AssigningContent.GenericAssigning(s, "|mabar");
                         }
                         else if (s.Contains("|luck"))
                         {
-                            fateGrandOrderPerson.Stats.Luck.Grade = await AssigningContent.GenericAssigning(s, "|luck");
+                            Servant.Stats.Luck.Grade = await AssigningContent.GenericAssigning(s, "|luck");
                         }
                         else if (s.Contains("|lubar"))
                         {
-                            fateGrandOrderPerson.Stats.Luck.BarNumber = await AssigningContent.GenericAssigning(s, "|lubar");
+                            Servant.Stats.Luck.BarNumber = await AssigningContent.GenericAssigning(s, "|lubar");
                         }
                         else if (s.Contains("|np") && !s.Contains("|npbar"))
                         {
-                            fateGrandOrderPerson.Stats.NP.Grade = await AssigningContent.GenericAssigning(s, "|np");
+                            Servant.Stats.NP.Grade = await AssigningContent.GenericAssigning(s, "|np");
                         }
                         else if (s.Contains("|npbar"))
                         {
-                            fateGrandOrderPerson.Stats.NP.BarNumber = await AssigningContent.GenericAssigning(s, "|npbar");
+                            Servant.Stats.NP.BarNumber = await AssigningContent.GenericAssigning(s, "|npbar");
                         }
                     }
                     #endregion
@@ -1572,91 +1693,91 @@ namespace FateGrandOrderApi
                     {
                         if (s.Contains("|b1") && !s.Contains("|b10"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel1.BondRequired = await AssigningContent.GenericAssigning(s, "|b1");
+                            Servant.BondLevels.BondLevel1.BondRequired = await AssigningContent.GenericAssigning(s, "|b1");
                         }
                         else if (s.Contains("|b2"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel2.BondRequired = await AssigningContent.GenericAssigning(s, "|b2");
+                            Servant.BondLevels.BondLevel2.BondRequired = await AssigningContent.GenericAssigning(s, "|b2");
                         }
                         else if (s.Contains("|b3"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel3.BondRequired = await AssigningContent.GenericAssigning(s, "|b3");
+                            Servant.BondLevels.BondLevel3.BondRequired = await AssigningContent.GenericAssigning(s, "|b3");
                         }
                         else if (s.Contains("|b4"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel4.BondRequired = await AssigningContent.GenericAssigning(s, "|b4");
+                            Servant.BondLevels.BondLevel4.BondRequired = await AssigningContent.GenericAssigning(s, "|b4");
                         }
                         else if (s.Contains("|b5"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel5.BondRequired = await AssigningContent.GenericAssigning(s, "|b5");
+                            Servant.BondLevels.BondLevel5.BondRequired = await AssigningContent.GenericAssigning(s, "|b5");
                         }
                         else if (s.Contains("|b6"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel6.BondRequired = await AssigningContent.GenericAssigning(s, "|b6");
+                            Servant.BondLevels.BondLevel6.BondRequired = await AssigningContent.GenericAssigning(s, "|b6");
                         }
                         else if (s.Contains("|b7"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel7.BondRequired = await AssigningContent.GenericAssigning(s, "|b7");
+                            Servant.BondLevels.BondLevel7.BondRequired = await AssigningContent.GenericAssigning(s, "|b7");
                         }
                         else if (s.Contains("|b8"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel8.BondRequired = await AssigningContent.GenericAssigning(s, "|b8");
+                            Servant.BondLevels.BondLevel8.BondRequired = await AssigningContent.GenericAssigning(s, "|b8");
                         }
                         else if (s.Contains("|b9"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel9.BondRequired = await AssigningContent.GenericAssigning(s, "|b9");
+                            Servant.BondLevels.BondLevel9.BondRequired = await AssigningContent.GenericAssigning(s, "|b9");
                         }
                         else if (s.Contains("|b10"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel10.BondRequired = await AssigningContent.GenericAssigning(s, "|b10");
+                            Servant.BondLevels.BondLevel10.BondRequired = await AssigningContent.GenericAssigning(s, "|b10");
                         }
                         if (s.Contains("|2b1") && !s.Contains("|2b10"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel1.TotalBond = await AssigningContent.GenericAssigning(s, "|2b1");
+                            Servant.BondLevels.BondLevel1.TotalBond = await AssigningContent.GenericAssigning(s, "|2b1");
                         }
                         else if (s.Contains("|2b2"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel2.TotalBond = await AssigningContent.GenericAssigning(s, "|2b2");
+                            Servant.BondLevels.BondLevel2.TotalBond = await AssigningContent.GenericAssigning(s, "|2b2");
                         }
                         else if (s.Contains("|2b3"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel3.TotalBond = await AssigningContent.GenericAssigning(s, "|2b3");
+                            Servant.BondLevels.BondLevel3.TotalBond = await AssigningContent.GenericAssigning(s, "|2b3");
                         }
                         else if (s.Contains("|2b4"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel4.TotalBond = await AssigningContent.GenericAssigning(s, "|2b4");
+                            Servant.BondLevels.BondLevel4.TotalBond = await AssigningContent.GenericAssigning(s, "|2b4");
                         }
                         else if (s.Contains("|2b5"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel5.TotalBond = await AssigningContent.GenericAssigning(s, "|2b5");
+                            Servant.BondLevels.BondLevel5.TotalBond = await AssigningContent.GenericAssigning(s, "|2b5");
                         }
                         else if (s.Contains("|2b6"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel6.TotalBond = await AssigningContent.GenericAssigning(s, "|2b6");
+                            Servant.BondLevels.BondLevel6.TotalBond = await AssigningContent.GenericAssigning(s, "|2b6");
                         }
                         else if (s.Contains("|2b7"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel7.TotalBond = await AssigningContent.GenericAssigning(s, "|2b7");
+                            Servant.BondLevels.BondLevel7.TotalBond = await AssigningContent.GenericAssigning(s, "|2b7");
                         }
                         else if (s.Contains("|2b8"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel8.TotalBond = await AssigningContent.GenericAssigning(s, "|2b8");
+                            Servant.BondLevels.BondLevel8.TotalBond = await AssigningContent.GenericAssigning(s, "|2b8");
                         }
                         else if (s.Contains("|2b9"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel9.TotalBond = await AssigningContent.GenericAssigning(s, "|2b9");
+                            Servant.BondLevels.BondLevel9.TotalBond = await AssigningContent.GenericAssigning(s, "|2b9");
                         }
                         else if (s.Contains("|2b10"))
                         {
-                            fateGrandOrderPerson.BondLevels.BondLevel10.TotalBond = await AssigningContent.GenericAssigning(s, "|2b10");
+                            Servant.BondLevels.BondLevel10.TotalBond = await AssigningContent.GenericAssigning(s, "|2b10");
                         }
                         else if (s.Contains("|image"))
                         {
-                            fateGrandOrderPerson.BondLevels.Bond10Reward.Image = await AssigningContent.Image(s, "|image");
+                            Servant.BondLevels.Bond10Reward.Image = await AssigningContent.Image(s, "|image");
                         }
                         else if (s.Contains("|effect"))
                         {
-                            fateGrandOrderPerson.BondLevels.Bond10Reward.Effect = await AssigningContent.GenericAssigning(FixString(s).Replace("<br/>", "\\").Split('\\').Last(), "|effect");
+                            Servant.BondLevels.Bond10Reward.Effect = await AssigningContent.GenericAssigning(FixString(s).Replace("<br/>", "\\").Split('\\').Last(), "|effect");
                         }
                     }
                     #endregion
@@ -1735,59 +1856,59 @@ namespace FateGrandOrderApi
                         }
                         else if (GettingDefaultBioJap)
                         {
-                            fateGrandOrderPerson.Biography.Default.JapaneseText = fateGrandOrderPerson.Biography.Default.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Default.JapaneseText = Servant.Biography.Default.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingDefaultBio)
                         {
-                            fateGrandOrderPerson.Biography.Default.EnglishText = fateGrandOrderPerson.Biography.Default.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Default.EnglishText = Servant.Biography.Default.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond1BioJap)
                         {
-                            fateGrandOrderPerson.Biography.Bond1.JapaneseText = fateGrandOrderPerson.Biography.Bond1.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond1.JapaneseText = Servant.Biography.Bond1.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond1Bio)
                         {
-                            fateGrandOrderPerson.Biography.Bond1.EnglishText = fateGrandOrderPerson.Biography.Bond1.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond1.EnglishText = Servant.Biography.Bond1.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond2BioJap)
                         {
-                            fateGrandOrderPerson.Biography.Bond2.JapaneseText = fateGrandOrderPerson.Biography.Bond2.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond2.JapaneseText = Servant.Biography.Bond2.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond2Bio)
                         {
-                            fateGrandOrderPerson.Biography.Bond2.EnglishText = fateGrandOrderPerson.Biography.Bond2.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond2.EnglishText = Servant.Biography.Bond2.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond3BioJap)
                         {
-                            fateGrandOrderPerson.Biography.Bond3.JapaneseText = fateGrandOrderPerson.Biography.Bond3.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond3.JapaneseText = Servant.Biography.Bond3.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond3Bio)
                         {
-                            fateGrandOrderPerson.Biography.Bond3.EnglishText = fateGrandOrderPerson.Biography.Bond3.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond3.EnglishText = Servant.Biography.Bond3.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond4BioJap)
                         {
-                            fateGrandOrderPerson.Biography.Bond4.JapaneseText = fateGrandOrderPerson.Biography.Bond4.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond4.JapaneseText = Servant.Biography.Bond4.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond4Bio)
                         {
-                            fateGrandOrderPerson.Biography.Bond4.EnglishText = fateGrandOrderPerson.Biography.Bond4.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond4.EnglishText = Servant.Biography.Bond4.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond5BioJap)
                         {
-                            fateGrandOrderPerson.Biography.Bond5.JapaneseText = fateGrandOrderPerson.Biography.Bond5.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond5.JapaneseText = Servant.Biography.Bond5.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond5Bio)
                         {
-                            fateGrandOrderPerson.Biography.Bond5.EnglishText = fateGrandOrderPerson.Biography.Bond5.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond5.EnglishText = Servant.Biography.Bond5.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingExtraBioJap)
                         {
-                            fateGrandOrderPerson.Biography.Extra.JapaneseText = fateGrandOrderPerson.Biography.Extra.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingExtraBio)
                         {
-                            fateGrandOrderPerson.Biography.Extra.EnglishText = fateGrandOrderPerson.Biography.Extra.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Extra.EnglishText = Servant.Biography.Extra.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                     }
                     #endregion
@@ -1800,10 +1921,11 @@ namespace FateGrandOrderApi
                             string ToAdd = FixString(s).Remove(0, s.IndexOf("|[[") + 3).Replace("]]", "").Trim();
                             if (ToAdd.Contains('|'))
                                 ToAdd = ToAdd.Remove(ToAdd.IndexOf('|'));
-                            if (fateGrandOrderPerson.Availability == null)
-                                fateGrandOrderPerson.Availability = new string[] { ToAdd };
+                            if (Servant.Availability == null)
+                                Servant.Availability = new string[] { ToAdd };
                             else
-                                fateGrandOrderPerson.Availability = new string[] { $"{fateGrandOrderPerson.Availability[0]}\\{ToAdd}" };
+                                Servant.Availability = new string[] { $"{Servant.Availability[0]}\\{ToAdd}" };
+                            ToAdd = null;
                         }
                     }
                     #endregion
@@ -1825,10 +1947,11 @@ namespace FateGrandOrderApi
                                 ToAdd = ToAdd.Remove(ToAdd.IndexOf('['), ToAdd.LastIndexOf('/') + 2 - ToAdd.IndexOf('['));
                                 ToAdd = ToAdd.Remove(ToAdd.IndexOf(']'), 1);
                             }
-                            if (fateGrandOrderPerson.Trivia == null)
-                                fateGrandOrderPerson.Trivia = new string[] { ToAdd };
+                            if (Servant.Trivia == null)
+                                Servant.Trivia = new string[] { ToAdd };
                             else
-                                fateGrandOrderPerson.Trivia = new string[] { $"{fateGrandOrderPerson.Trivia[0]}\\{ToAdd}" };
+                                Servant.Trivia = new string[] { $"{Servant.Trivia[0]}\\{ToAdd}" };
+                            ToAdd = null;
                         }
                     }
                     #endregion
@@ -1836,132 +1959,117 @@ namespace FateGrandOrderApi
                     #region Basic Information
                     else if (GettingBasicInformation)
                     {
-                        if (s.Contains("|image"))
-                        {
-                            if (FixString(s).Contains("<gallery>"))
-                                GettingImages = true;
-                            else
-                                fateGrandOrderPerson.BasicInformation.Images.Add(await AssigningContent.Image(s, "|image"));
-                        }
-                        if (GettingImages && FixString(s).Contains("</gallery>"))
-                        {
-                            GettingImages = false;
-                        }
-                        else if (GettingImages)
-                        {
-                            fateGrandOrderPerson.BasicInformation.Images.Add(await AssigningContent.Image(s, ""));
-                        }
                         if (s.Contains("|jname"))
                         {
-                            fateGrandOrderPerson.BasicInformation.JapaneseName = await AssigningContent.GenericAssigning(s, "|jname");
+                            Servant.BasicInformation.JapaneseName = await AssigningContent.GenericAssigning(s, "|jname");
                         }
                         else if (s.Contains("|voicea"))
                         {
-                            fateGrandOrderPerson.BasicInformation.VoiceActor = await AssigningContent.GenericAssigning(s, "|voicea");
+                            Servant.BasicInformation.VoiceActor = await AssigningContent.GenericAssigning(s, "|voicea");
                         }
                         else if (s.Contains("|illus"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Illustrator = await AssigningContent.GenericAssigning(s, "|illus");
+                            Servant.BasicInformation.Illustrator = await AssigningContent.GenericAssigning(s, "|illus");
                         }
                         else if (s.Contains("|class"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Class = await AssigningContent.GenericAssigning(s, "|class");
+                            Servant.BasicInformation.Class = await AssigningContent.GenericAssigning(s, "|class");
                         }
                         else if (s.Contains("|atk"))
                         {
-                            fateGrandOrderPerson.BasicInformation.ATK = await AssigningContent.GenericAssigning(s, "|atk");
+                            Servant.BasicInformation.ATK = await AssigningContent.GenericAssigning(s, "|atk");
                         }
                         else if (s.Contains("|hp"))
                         {
-                            fateGrandOrderPerson.BasicInformation.HP = await AssigningContent.GenericAssigning(s, "|hp");
+                            Servant.BasicInformation.HP = await AssigningContent.GenericAssigning(s, "|hp");
                         }
                         else if (s.Contains("|gatk"))
                         {
-                            fateGrandOrderPerson.BasicInformation.GrailATK = await AssigningContent.GenericAssigning(s, "|gatk");
+                            Servant.BasicInformation.GrailATK = await AssigningContent.GenericAssigning(s, "|gatk");
                         }
                         else if (s.Contains("|ghp"))
                         {
-                            fateGrandOrderPerson.BasicInformation.GrailHP = await AssigningContent.GenericAssigning(s, "|ghp");
+                            Servant.BasicInformation.GrailHP = await AssigningContent.GenericAssigning(s, "|ghp");
                         }
                         else if (s.Contains("|stars"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Stars = await AssigningContent.GenericAssigning(s, "|stars");
+                            Servant.BasicInformation.Stars = await AssigningContent.GenericAssigning(s, "|stars");
                         }
                         else if (s.Contains("|cost"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Cost = await AssigningContent.GenericAssigning(s, "|cost");
+                            Servant.BasicInformation.Cost = await AssigningContent.GenericAssigning(s, "|cost");
                         }
                         else if (s.Contains("|cc"))
                         {
-                            fateGrandOrderPerson.BasicInformation.QQQAB = await AssigningContent.GenericAssigning(s, "|cc");
+                            Servant.BasicInformation.CommandCode = await AssigningContent.GenericAssigning(s, "|cc");
                         }
                         else if (s.Contains("|mlevel"))
                         {
-                            fateGrandOrderPerson.BasicInformation.MaxLevel = await AssigningContent.GenericAssigning(s, "|mlevel");
+                            Servant.BasicInformation.MaxLevel = await AssigningContent.GenericAssigning(s, "|mlevel");
                         }
                         else if (s.Contains("|id"))
                         {
-                            fateGrandOrderPerson.BasicInformation.ID = await AssigningContent.GenericAssigning(s, "|id");
+                            Servant.BasicInformation.ID = await AssigningContent.GenericAssigning(s, "|id");
                         }
                         else if (s.Contains("|attribute"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Attribute = await AssigningContent.GenericAssigning(s, "|attribute");
+                            Servant.BasicInformation.Attribute = await AssigningContent.GenericAssigning(s, "|attribute");
                         }
                         else if (s.Contains("|qhits"))
                         {
-                            fateGrandOrderPerson.BasicInformation.QuickHits = await AssigningContent.GenericAssigning(s, "|qhits");
+                            Servant.BasicInformation.QuickHits = await AssigningContent.GenericAssigning(s, "|qhits");
                         }
                         else if (s.Contains("|ahits"))
                         {
-                            fateGrandOrderPerson.BasicInformation.ArtsHits = await AssigningContent.GenericAssigning(s, "|ahits");
+                            Servant.BasicInformation.ArtsHits = await AssigningContent.GenericAssigning(s, "|ahits");
                         }
                         else if (s.Contains("|bhits"))
                         {
-                            fateGrandOrderPerson.BasicInformation.BusterHits = await AssigningContent.GenericAssigning(s, "|bhits");
+                            Servant.BasicInformation.BusterHits = await AssigningContent.GenericAssigning(s, "|bhits");
                         }
                         else if (s.Contains("|ehits"))
                         {
-                            fateGrandOrderPerson.BasicInformation.ExtraHits = await AssigningContent.GenericAssigning(s, "|ehits");
+                            Servant.BasicInformation.ExtraHits = await AssigningContent.GenericAssigning(s, "|ehits");
                         }
                         else if (s.Contains("|deathrate"))
                         {
-                            fateGrandOrderPerson.BasicInformation.DeathRate = await AssigningContent.GenericAssigning(s, "|deathrate");
+                            Servant.BasicInformation.DeathRate = await AssigningContent.GenericAssigning(s, "|deathrate");
                         }
                         else if (s.Contains("|starabsorption"))
                         {
-                            fateGrandOrderPerson.BasicInformation.StarAbsorption = await AssigningContent.GenericAssigning(s, "|starabsorption");
+                            Servant.BasicInformation.StarAbsorption = await AssigningContent.GenericAssigning(s, "|starabsorption");
                         }
                         else if (s.Contains("|stargeneration"))
                         {
-                            fateGrandOrderPerson.BasicInformation.StarGeneration = await AssigningContent.GenericAssigning(s, "|stargeneration");
+                            Servant.BasicInformation.StarGeneration = await AssigningContent.GenericAssigning(s, "|stargeneration");
                         }
                         else if (s.Contains("|npchargeatk"))
                         {
-                            fateGrandOrderPerson.BasicInformation.NPChargeATK = await AssigningContent.GenericAssigning(s, "|npchargeatk");
+                            Servant.BasicInformation.NPChargeATK = await AssigningContent.GenericAssigning(s, "|npchargeatk");
                         }
                         else if (s.Contains("|npchargedef"))
                         {
-                            fateGrandOrderPerson.BasicInformation.NPChargeDEF = await AssigningContent.GenericAssigning(s, "|npchargedef");
+                            Servant.BasicInformation.NPChargeDEF = await AssigningContent.GenericAssigning(s, "|npchargedef");
                         }
                         else if (s.Contains("|growthc"))
                         {
-                            fateGrandOrderPerson.BasicInformation.GrowthCurve = await AssigningContent.GenericAssigning(s, "|growthc");
+                            Servant.BasicInformation.GrowthCurve = await AssigningContent.GenericAssigning(s, "|growthc");
                         }
                         else if (s.Contains("|aka"))
                         {
-                            fateGrandOrderPerson.BasicInformation.AKA = await AssigningContent.GenericArrayAssigning(s, "|aka", OtherPartsToRemove: new string[] { "'''", "''" });
+                            Servant.BasicInformation.AKA = await AssigningContent.GenericArrayAssigning(s, "|aka", OtherPartsToRemove: new string[] { "'''", "''" });
                         }
                         else if (s.Contains("|traits"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Traits = await AssigningContent.GenericArrayAssigning(s, "|traits");
+                            Servant.BasicInformation.Traits = await AssigningContent.GenericArrayAssigning(s, "|traits");
                         }
                         else if (s.Contains("|gender"))
                         {
-                            await AssigningContent.Gender(s, fateGrandOrderPerson.BasicInformation);
+                            await AssigningContent.Gender(s, Servant.BasicInformation);
                         }
                         else if (s.Contains("|alignment"))
                         {
-                            fateGrandOrderPerson.BasicInformation.Alignment = await AssigningContent.GenericAssigning(s, "|alignment");
+                            Servant.BasicInformation.Alignment = await AssigningContent.GenericAssigning(s, "|alignment");
                         }
                     }
                     #endregion
@@ -1971,14 +2079,15 @@ namespace FateGrandOrderApi
                     {
                         var image = await AssigningContent.Image(s, "");
                         if(image != null)
-                            fateGrandOrderPerson.Images.Add(image);
+                            Servant.Images.Add(image);
+                        image = null;
                     }
                     #endregion
 
                     #region Trigger Skills Logic
                     if (GetPassiveSkills && s == "== Passive Skills ==" | s == "==Passive Skills==")
                     {
-                        fateGrandOrderPerson.PassiveSkills.Add(new PassiveSkillList());
+                        Servant.PassiveSkills.Add(new PassiveSkillList());
                         GettingPassiveSkills = true;
                     }
                     else if (GetActiveSkills && s == "== Active Skills ==" | s == "==Active Skills==")
@@ -1987,18 +2096,18 @@ namespace FateGrandOrderApi
                     }
                     else if (GetAscension && s == "== Ascension ==" | s == "==Ascension==")
                     {
-                        fateGrandOrderPerson.Ascension = new Ascension();
+                        Servant.Ascension = new Ascension();
                         GettingAscension = true;
                     }
                     else if (GetSkillReinforcement && s == "== Skill Reinforcement ==" | s == "==Skill Reinforcement==")
                     {
-                        fateGrandOrderPerson.SkillReinforcement = new SkillReinforcement();
+                        Servant.SkillReinforcement = new SkillReinforcement();
                         GettingSkillReinforcement = true;
                     }
                     else if (GetNoblePhantasm && s == "== Noble Phantasm ==" | s == "==Noble Phantasm==")
                     {
                         GettingNoblePhantasm = true;
-                        fateGrandOrderPerson.NoblePhantasms.Add(new NoblePhantasmList());
+                        Servant.NoblePhantasms.Add(new NoblePhantasmList());
                     }
                     else if (GetStats && s == "== Stats ==" | s == "==Stats==")
                     {
@@ -2033,7 +2142,7 @@ namespace FateGrandOrderApi
                     }
                     else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement | GettingStats | GettingBondLevel | GettingBiography | GettingBasicInformation && s == @"}}")
                     {
-                        if (fateGrandOrderPerson.PassiveSkills != null && fateGrandOrderPerson.PassiveSkills.Count > 0 && fateGrandOrderPerson.PassiveSkills[fateGrandOrderPerson.PassiveSkills.Count - 1].Category == null)
+                        if (Servant.PassiveSkills != null && Servant.PassiveSkills.Count > 0 && Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].Category == null)
                             GettingPassiveSkills = false;
                         GettingAscension = false;
                         GettingSkillReinforcement = false;
@@ -2045,23 +2154,27 @@ namespace FateGrandOrderApi
                     else if (GettingAvailability && s == "|}")
                     {
                         GettingAvailability = false;
-                        fateGrandOrderPerson.Availability = fateGrandOrderPerson.Availability[0].Split('\\');
+                        Servant.Availability = Servant.Availability[0].Split('\\');
                     }
                     else if (GettingTrivia && string.IsNullOrWhiteSpace(s))
                     {
-                        fateGrandOrderPerson.Trivia = fateGrandOrderPerson.Trivia[0].Split('\\');
+                        Servant.Trivia = Servant.Trivia[0].Split('\\');
                         GettingTrivia = false;
                     }
                     #endregion
                 }
+                resultString = null;
             }
-            return fateGrandOrderPerson;
+
+            await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Servants);
+            ServantName = null;
+            return Servant;
         }
 
         /// <summary>
-        /// 
+        /// Assigning Content
         /// </summary>
-        private class AssigningContent
+        internal class AssigningContent
         {
             /// <summary>
             /// 
@@ -2074,6 +2187,7 @@ namespace FateGrandOrderApi
             /// <returns></returns>
             public static async Task<string[]> GenericArrayAssigning(string s, string Assigning, char CharToSplitWith = ',', string[] OtherPartsToRemove = null, string[][] PartsToReplace = null)
             {
+                string[] ToReturn = null;
                 s = FixString(s);
                 try
                 {
@@ -2090,16 +2204,22 @@ namespace FateGrandOrderApi
 
                     s = s.TrimEnd(CharToSplitWith);
                     if (!string.IsNullOrWhiteSpace(Assigning))
-                        return s.Replace(Assigning, "").Replace("=", "").Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
+                        ToReturn = s.Replace(Assigning, "").Replace("=", "").Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
                     else
-                        return s.Replace("=", "").Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
+                        ToReturn = s.Replace("=", "").Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
                 }
                 catch (Exception e)
                 {
                     Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                     Logger.LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
-                return s.Split(CharToSplitWith);
+                if (ToReturn == null)
+                    ToReturn = s.Split(CharToSplitWith);
+                s = null;
+                Assigning = null;
+                OtherPartsToRemove = null;
+                PartsToReplace = null;
+                return ToReturn;
             }
 
             /// <summary>
@@ -2127,15 +2247,18 @@ namespace FateGrandOrderApi
                         }
 
                     if (!string.IsNullOrWhiteSpace(Assigning))
-                        return s.Replace(Assigning, "").Replace("=", "").Trim().Replace("/r/n","\r\n");
+                        s = s.Replace(Assigning, "").Replace("=", "").Trim().Replace("/r/n","\r\n");
                     else
-                        return s.Replace("=", "").Trim().Replace("/r/n", "\r\n");
+                        s = s.Replace("=", "").Trim().Replace("/r/n", "\r\n");
                 }
                 catch (Exception e)
                 {
                     Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                     Logger.LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
+                Assigning = null;
+                OtherPartsToRemove = null;
+                PartsToReplace = null;
                 return s;
             }
 
@@ -2181,18 +2304,15 @@ namespace FateGrandOrderApi
             public static async Task<ImageInformation> Image(string s, string ImageKeyword = "|img", string[] OtherPartsToRemove = null)
             {
                 if (OtherPartsToRemove == null)
-                {
                     OtherPartsToRemove = new string[] { "File:", "link", "[[", "]]" };
-                }
+
                 string baseUri = "https://vignette.wikia.nocookie.net/fategrandorder/images";
                 int DirDepth = 2;
                 string hashPartToUse = "";
                 s = await GenericAssigning(s, ImageKeyword, OtherPartsToRemove);
 
                 if (s.Contains("px"))
-                {
                     s = s.Remove(s.IndexOf('|'), s.LastIndexOf('|') - s.IndexOf('|'));
-                }
 
                 var Image = new ImageInformation();
                 if (s.Contains("|"))
@@ -2237,6 +2357,10 @@ namespace FateGrandOrderApi
                 }
 
                 Image.Uri = $"{baseUri}/{Image.FileName}";
+                OtherPartsToRemove = null;
+                baseUri = null;
+                hashPartToUse = null;
+                s = null;
                 return Image;
             }
 
@@ -2262,9 +2386,14 @@ namespace FateGrandOrderApi
                 {
                     sBuilder.Append(data[i].ToString("x2"));
                 }
+                data = null;
+                string ToReturn = sBuilder.ToString();
+                sBuilder = null;
+                md5Hash = null;
+                input = null;
 
                 // Return the hexadecimal string.
-                return sBuilder.ToString();
+                return ToReturn;
             }
 
             /// <summary>
@@ -2300,6 +2429,7 @@ namespace FateGrandOrderApi
                     Logger.LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Name}");
                     Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Video name: {video.Name}");
                 }
+                VideoName = null;
                 return video;
             }
 
@@ -2321,17 +2451,20 @@ namespace FateGrandOrderApi
                     {
                         AscensionToMake = new AscensionSkillReinforcement();
                         AscensionToMake.AscensionNumber = AscensionSkillReinforcementNumber;
+                        s = null;
+                        ItemNumber = null;
+                        AscensionSkillReinforcementNumber = null;
                         return AscensionToMake;
                     }
                     else
                     {
                         WhatToFill = new Item();
-                        WhatToFill.EnglishName = await GenericAssigning(s, $"|{ItemNumber}", new string[] { "{{Inum|{{", "{{", "}}" });
-                        if (WhatToFill.EnglishName.IndexOf('|') != -1)
-                            WhatToFill = await GetItem(WhatToFill.EnglishName.Remove(WhatToFill.EnglishName.IndexOf('|')));
+                        string name = await GenericAssigning(s, $"|{ItemNumber}", new string[] { "{{Inum|{{", "{{", "}}" });
+                        if (name.IndexOf('|') != -1)
+                            WhatToFill = await GetItem(name.Remove(name.IndexOf('|')));
                         else
-                            WhatToFill = await GetItem(WhatToFill.EnglishName);
-                        return WhatToFill;
+                            WhatToFill = await GetItem(name);
+                        name = null;
                     }
                 }
                 catch (Exception e)
@@ -2339,6 +2472,9 @@ namespace FateGrandOrderApi
                     Logger.LogConsole(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
                     Logger.LogFile(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
                 }
+                s = null;
+                ItemNumber = null;
+                AscensionSkillReinforcementNumber = null;
                 return WhatToFill;
             }
         }

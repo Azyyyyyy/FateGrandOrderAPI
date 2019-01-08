@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Text;
 using FateGrandOrderApi;
 using System.Diagnostics;
-using System.Text;
 using FateGrandOrderApi.Classes;
+using System.Collections.Generic;
 
 namespace ApiTest
 {
     class Program
     {
-        public static List<FateGrandOrderPerson> ServantsParsed = new List<FateGrandOrderPerson>();
+        public static List<Servant> ServantsParsed = new List<Servant>();
 
         static void Main(string[] args)
         {
@@ -22,18 +22,19 @@ namespace ApiTest
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
                 var persondata = FateGrandOrderParsing.GetPerson(servant, GetImages: true).ConfigureAwait(true).GetAwaiter().GetResult();
-                foreach (ImageInformation image in persondata.Images)
-                {
-                    Console.WriteLine($"{image.Name} Uri: {image.Uri}");
-                }
                 stopwatch.Stop();
 #if !DEBUG
-                Console.WriteLine($"It took {stopwatch.Elapsed} to get {person} data");
+                Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
 #endif
 #if DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})");
 #endif
+#if DEBUG
                 Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})"));
+#endif
+#if !DEBUG
+                Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
+#endif
                 StringBuilder servantInfo = new StringBuilder();
                 servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
                 servantInfo.AppendLine($"Jap name: {persondata.BasicInformation.JapaneseName}");
@@ -57,7 +58,7 @@ namespace ApiTest
             return b.ToString();
         }
 
-        static string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
-        //static string[] Servants = { "Jeanne d'Arc (Alter)" };
+        static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
+        //static readonly string[] Servants = { "Jack the Ripper" }; //Check NoblePhantasms
     }
 }
