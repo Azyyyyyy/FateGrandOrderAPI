@@ -14,6 +14,7 @@ namespace ApiTest
         static void Main(string[] args)
         {
             Console.WriteLine("Api Tester - AzyIsCool");
+            FateGrandOrderApi.Settings.Cache.SaveCachedPartsToDisk = false;
             Stopwatch stopwatch = new Stopwatch();
             foreach (var servant in Servants)
             {
@@ -21,7 +22,7 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = FateGrandOrderParsing.GetPerson(servant, GetImages: true).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = FateGrandOrderParsing.GetServant(servant).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
@@ -35,14 +36,17 @@ namespace ApiTest
 #if !DEBUG
                 Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
 #endif
-                StringBuilder servantInfo = new StringBuilder();
-                servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
-                servantInfo.AppendLine($"Jap name: {persondata.BasicInformation.JapaneseName}");
-                servantInfo.AppendLine($"Gender: {persondata.BasicInformation.Gender}");
-                servantInfo.AppendLine($"ATK: {persondata.BasicInformation.ATK}");
-                servantInfo.AppendLine($"Class: {persondata.BasicInformation.Class}");
-                servantInfo.AppendLine($"Cost: {persondata.BasicInformation.Cost}");
-                Console.Write(servantInfo);
+                if (persondata.BasicInformation != null)
+                {
+                    StringBuilder servantInfo = new StringBuilder();
+                    servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
+                    servantInfo.AppendLine($"Jap name: {persondata.BasicInformation.JapaneseName}");
+                    servantInfo.AppendLine($"Gender: {persondata.BasicInformation.Gender}");
+                    servantInfo.AppendLine($"ATK: {persondata.BasicInformation.ATK}");
+                    servantInfo.AppendLine($"Class: {persondata.BasicInformation.Class}");
+                    servantInfo.AppendLine($"Cost: {persondata.BasicInformation.Cost}");
+                    Console.Write(servantInfo);
+                }
                 ServantsParsed.Add(persondata);
             }
             Console.ReadLine();
@@ -59,6 +63,6 @@ namespace ApiTest
         }
 
         //static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
-        static readonly string[] Servants = { "Jack the Ripper" }; //Check NoblePhantasms
+        static readonly string[] Servants = { "Jack the Ripper" };
     }
 }

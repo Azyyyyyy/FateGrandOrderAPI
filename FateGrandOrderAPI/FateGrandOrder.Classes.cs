@@ -271,6 +271,11 @@ namespace FateGrandOrderApi.Classes
     /// </summary>
     public class ImageInformation
     {
+        public ImageInformation(string generatedWith)
+        {
+            GeneratedWith = generatedWith;
+        }
+        public ImageInformation() { }
         /// <summary>
         /// Returns image name
         /// </summary>
@@ -287,6 +292,16 @@ namespace FateGrandOrderApi.Classes
         /// Returns the file name of the image
         /// </summary>
         public string FileName { get; set; }
+        /// <summary>
+        /// String that was used when generating this servant class, used for checking if in cache and if cache version is up to date
+        /// </summary>
+        internal string GeneratedWith { get; set; }
+#if DEBUG
+        /// <summary>
+        /// If the enemy that was returned from cache
+        /// </summary>
+        public bool FromCache { get; set; }
+#endif
     }
 
     /// <summary>
@@ -294,6 +309,11 @@ namespace FateGrandOrderApi.Classes
     /// </summary>
     public class VideoInformation : ImageInformation
     {
+        public VideoInformation(string generatedWith)
+        {
+            GeneratedWith = generatedWith;
+        }
+        public VideoInformation() { }
     }
     #endregion
 
@@ -929,6 +949,12 @@ namespace FateGrandOrderApi.Classes
         NotSet
     }
 
+    public class ItemDrops
+    {
+        public List<Enemy> Enemies { get; set; }
+        public List<Servant> Servants { get; set; }
+    }
+
     /// <summary>
     /// Item
     /// </summary>
@@ -963,7 +989,7 @@ namespace FateGrandOrderApi.Classes
         /// <summary>
         /// Enemies that drop this
         /// </summary>
-        public List<Enemy> EnemiesThatDroppedThis { get; set; }
+        public ItemDrops AnythingThatDropsThis { get; set; }
         /// <summary>
         /// Where this item gets dropped
         /// </summary>

@@ -39,9 +39,7 @@ namespace FateGrandOrderApi.Logging
         public static void LogFile(Exception e, string LogMessage, string AdditionalData = "N/A", bool ToThrow = false)
         {
             string FileContent = $"[{nameof(FateGrandOrderApi)}]: {LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}Additional Data:\r\n{AdditionalData}";
-            if (!Directory.Exists($"FateGrandOrderAPI"))
-                Directory.CreateDirectory($"FateGrandOrderAPI");
-            File.AppendAllText(Path.Combine($"FateGrandOrderAPI", "Log.txt"),FileContent);
+            File.AppendAllText("FateGrandOrderAPILog.txt", FileContent);
             if (ToThrow)
                 throw e;
         }

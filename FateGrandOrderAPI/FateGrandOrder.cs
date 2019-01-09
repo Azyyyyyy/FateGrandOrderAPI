@@ -11,6 +11,7 @@ using FateGrandOrderApi.Caching;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace FateGrandOrderApi
 {
@@ -45,10 +46,10 @@ namespace FateGrandOrderApi
                     FateGrandOrderApiCache.ActiveSkills = JsonConvert.DeserializeObject<List<ActiveSkill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Active Skills.json")));
                 if (Settings.Cache.CacheSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")))
                     FateGrandOrderApiCache.Skills = JsonConvert.DeserializeObject<List<Skill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")));
-                if (Settings.Cache.CachePassiveSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Passive Skills.json")))
-                    FateGrandOrderApiCache.PassiveSkills = JsonConvert.DeserializeObject<List<PassiveSkills>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Passive Skills.json")));
                 if (Settings.Cache.CacheImages && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")))
                     FateGrandOrderApiCache.Images = JsonConvert.DeserializeObject<List<ImageInformation>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")));
+                //if (Settings.Cache.CacheVideos && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Videos.json")))
+                //    FateGrandOrderApiCache.Videos = JsonConvert.DeserializeObject<List<ImageInformation>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Videos.json")));
             }
             catch (Exception e)
             {
@@ -67,6 +68,10 @@ namespace FateGrandOrderApi
                 FateGrandOrderApiCache.Enemies = new List<Enemy>();
             if (FateGrandOrderApiCache.Servants == null && Settings.Cache.CacheServants)
                 FateGrandOrderApiCache.Servants = new List<Servant>();
+            if (FateGrandOrderApiCache.Images == null && Settings.Cache.CacheImages)
+                FateGrandOrderApiCache.Images = new List<ImageInformation>();
+            //if (FateGrandOrderApiCache.Videos == null && Settings.Cache.CacheVideos)
+            //    FateGrandOrderApiCache.Videos = new List<ImageInformation>();
         }
 
         internal static string FixString(string s)
@@ -87,12 +92,11 @@ namespace FateGrandOrderApi
         {
             string[] resultString = null;
             Skill skill = null;
-            Skill skillToRemoveFromCache = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skillName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 //For in case we put the person in wrong
                 if (string.IsNullOrEmpty(col.InnerText))
-                    break;
+                    return null;
 
                 skill = new Skill(skillName, col.InnerText);
                 resultString = Regex.Split(col.InnerText, @"\n");
@@ -115,7 +119,7 @@ namespace FateGrandOrderApi
                             }
                             else if (skill.GeneratedWith != skillC.GeneratedWith && skill.NamePassed == skillC.NamePassed)
                             {
-                                skillToRemoveFromCache = skillC;
+                                skill = skillC;
                                 break;
                             }
                         }
@@ -126,12 +130,9 @@ namespace FateGrandOrderApi
                         Logger.LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
                     }
                 }
-
-                if (skillToRemoveFromCache != null)
-                    FateGrandOrderApiCache.Skills.Remove(skillToRemoveFromCache);
+                
                 if (skill != null && !FateGrandOrderApiCache.Skills.Contains(skill))
                     FateGrandOrderApiCache.Skills.Add(skill);
-                skillToRemoveFromCache = null;
 
                 foreach (string s in resultString)
                 {
@@ -218,7 +219,6 @@ namespace FateGrandOrderApi
         {
             Tuple<Skill, string[]> content = null;
             string lastLevelEffect = "";
-            ActiveSkill skillToRemoveFromCache = null;
             if (skill.NamePassed != null)
                 content = await GetSkill(skill.NamePassed);
             else
@@ -279,7 +279,7 @@ namespace FateGrandOrderApi
                         }
                         else if (skill.GeneratedWith != activeSkillC.GeneratedWith && skill.NamePassed == activeSkillC.NamePassed)
                         {
-                            skillToRemoveFromCache = activeSkillC;
+                            skill = activeSkillC;
                             break;
                         }
                     }
@@ -291,11 +291,8 @@ namespace FateGrandOrderApi
                 }
             }
 
-            if (skillToRemoveFromCache != null)
-                FateGrandOrderApiCache.ActiveSkills.Remove(skillToRemoveFromCache);
             if (skill != null && !FateGrandOrderApiCache.ActiveSkills.Contains(skill))
                 FateGrandOrderApiCache.ActiveSkills.Add(skill);
-            skillToRemoveFromCache = null;
 
             foreach (string s in resultString)
             {
@@ -323,7 +320,7 @@ namespace FateGrandOrderApi
                         var servants = await AssigningContent.GenericArrayAssigning(servantIcons, "|servanticons", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
                         foreach (string servant in servants)
                         {
-                            var servantP = await GetPerson(servant, PresetsForInformation.BasicInformation);
+                            var servantP = await GetServant(servant, PresetsForInformation.BasicInformation);
                             if (servantP != null && servantP.BasicInformation != null)
                             {
                                 if(skill.ServantsThatHaveThisSkill == null)
@@ -501,16 +498,15 @@ namespace FateGrandOrderApi
         #endregion
 
         /// <summary>
-        /// 
+        /// Returns a item in the Fate/Grand Order (will return null if the item is not found)
         /// </summary>
-        /// <param name="itemName"></param>
-        /// <param name="enemyToNotLookFor"></param>
+        /// <param name="itemName">The item's name</param>
+        /// <param name="enemyToNotLookFor">enemy that been found already and is known to drop this item</param>
         /// <returns></returns>
         public async static Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
         {
             bool DoingLocationLogic = false;
             Item item = null;
-            Item ItemToRemoveFromCache = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{itemName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 //For in case we put the person in wrong
@@ -536,7 +532,7 @@ namespace FateGrandOrderApi
                             }
                             else if (item.GeneratedWith != itemC.GeneratedWith && item.EnglishName == itemC.EnglishName)
                             {
-                                ItemToRemoveFromCache = itemC;
+                                item = itemC;
                                 break;
                             }
                         }
@@ -547,11 +543,8 @@ namespace FateGrandOrderApi
                         Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
                     }
                 }
-                if (ItemToRemoveFromCache != null)
-                    FateGrandOrderApiCache.Items.Remove(ItemToRemoveFromCache);
                 if (item != null && !FateGrandOrderApiCache.Items.Contains(item))
                     FateGrandOrderApiCache.Items.Add(item);
-                ItemToRemoveFromCache = null;
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
@@ -575,25 +568,68 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|enemy"))
                     {
-                        var enemys = await AssigningContent.GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" } });
+                        var enemys = await AssigningContent.GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" }, new string[] { " / ", "/" } });
                         if (enemys != null && enemys.Length > 0)
-                            item.EnemiesThatDroppedThis = new List<Enemy>();
+                            item.AnythingThatDropsThis = new ItemDrops();
                         foreach (string enemy in enemys)
                         {
                             string enemyEdited = enemy;
                             try
                             {
-                                if (enemyEdited.IndexOf('|') != -1)
-                                    enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
+                                if (!enemyEdited.Contains("}}-class"))
+                                {
+                                    if (enemyEdited.IndexOf('|') != -1)
+                                        enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
 
-                                if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
-                                    item.EnemiesThatDroppedThis.Add(enemyToNotLookFor);
+                                    if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
+                                        item.AnythingThatDropsThis.Enemies.Add(enemyToNotLookFor);
+                                    else
+                                    {
+                                        var enemyP = await GetEnemy(enemyEdited, item);
+                                        if (enemyP != null)
+                                            item.AnythingThatDropsThis.Enemies.Add(enemyP);
+                                        enemyP = null;
+                                    }
+                                }
                                 else
                                 {
-                                    var enemyP = await GetEnemy(enemyEdited, item);
-                                    if (enemyP != null)
-                                        item.EnemiesThatDroppedThis.Add(enemyP);
-                                    enemyP = null;
+                                    enemyEdited = enemyEdited.Replace("}}-class","").Replace("{{","");
+                                    string[] strings = enemyEdited.Split(' ');
+                                    foreach (HtmlNode col2 in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{strings[0]}?action=edit").DocumentNode.SelectNodes("//textarea"))
+                                    {
+                                        if (col2.InnerText == null)
+                                            break;
+
+                                        var resultString2 = Regex.Split(col2.InnerText, @"\n");
+
+                                        foreach (string ss in resultString2)
+                                        {
+                                            if (ss.StartsWith("|[["))
+                                            {
+                                                string thing = ss;
+                                                if (!thing.EndsWith("]"))
+                                                    thing = thing.Remove(thing.LastIndexOf(']') + 1);
+                                                thing = thing.Replace("[[","").Replace("]]","");
+                                                if (strings[1] == "Servant")
+                                                {
+                                                    var Servant = await GetServant(thing);
+                                                    if (thing == null)
+                                                        item.AnythingThatDropsThis.Servants.Add(Servant);
+                                                    Servant = null;
+                                                }
+                                                else if (strings[1] == "Enemy")
+                                                {
+                                                    var Enemy = await GetEnemy(thing);
+                                                    if (thing == null)
+                                                        item.AnythingThatDropsThis.Enemies.Add(Enemy);
+                                                    Enemy = null;
+                                                }
+                                            }
+                                        }
+                                        resultString2 = null;
+                                    }
+                                    strings = null;
+                                    Debugger.Break();
                                 }
                             }
                             catch (Exception e)
@@ -627,7 +663,7 @@ namespace FateGrandOrderApi
                         item.Uses = new List<Servant>();
                         foreach (string ss in (await AssigningContent.GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
                         {
-                            var servant = await GetPerson(ss, PresetsForInformation.BasicInformation);
+                            var servant = await GetServant(ss, PresetsForInformation.BasicInformation);
                             if (servant != null)
                                 item.Uses.Add(servant);
                             servant = null;
@@ -700,22 +736,21 @@ namespace FateGrandOrderApi
         }
 
         /// <summary>
-        /// 
+        /// Return a enemy in Fate/Grand Order (will return null if not found)
         /// </summary>
-        /// <param name="enemyName"></param>
-        /// <param name="itemToNotLookFor"></param>
+        /// <param name="enemyName">The enemy's name</param>
+        /// <param name="itemToNotLookFor">Item that already been found and is known for dropping this item</param>
         /// <returns></returns>
         public async static Task<Enemy> GetEnemy(string enemyName, Item itemToNotLookFor = null)
         {
             bool GettingImages = false;
             bool GettingRecommendedServants = false;
             Enemy enemy = null;
-            Enemy EnemyToRemoveFromCache = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{enemyName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 //For in case we put the person in wrong or it doesn't have a webpage
                 if (string.IsNullOrEmpty(col.InnerText))
-                    break;
+                    return null;
 
                 enemy = new Enemy(enemyName, col.InnerHtml);
 
@@ -736,7 +771,7 @@ namespace FateGrandOrderApi
                             }
                             else if (enemy.GeneratedWith != enemyC.GeneratedWith && enemy.EnglishName == enemyC.EnglishName)
                             {
-                                EnemyToRemoveFromCache = enemyC;
+                                enemy = enemyC;
                                 break;
                             }
                         }
@@ -785,7 +820,7 @@ namespace FateGrandOrderApi
                                     foreach (var ss in Regex.Split(servants[0], "}}}} "))
                                     {
                                         var personcontent = ss.Split('|');
-                                        var servant = await GetPerson(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
+                                        var servant = await GetServant(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
                                         if (servant != null && servant.BasicInformation != null)
                                             enemy.RecommendedServants.Add(servant);
                                         personcontent = null;
@@ -803,11 +838,8 @@ namespace FateGrandOrderApi
                         }
                     }
 
-                    if (EnemyToRemoveFromCache != null)
-                        FateGrandOrderApiCache.Enemies.Remove(EnemyToRemoveFromCache);
                     if (enemy != null && !FateGrandOrderApiCache.Enemies.Contains(enemy))
                         FateGrandOrderApiCache.Enemies.Add(enemy);
-                    EnemyToRemoveFromCache = null;
 
                     if (s.Contains("|image"))
                     {
@@ -934,25 +966,24 @@ namespace FateGrandOrderApi
         /// <summary>
         /// This will return the servant from the servant name (will return null if we are unable to find the person)
         /// </summary>
-        /// <param name="ServantName"></param>
-        /// <param name="presetsForInformation"></param>
-        /// <param name="GetBasicInformation"></param>
-        /// <param name="GetActiveSkills"></param>
-        /// <param name="GetPassiveSkills"></param>
-        /// <param name="GetNoblePhantasm"></param>
-        /// <param name="GetAscension"></param>
-        /// <param name="GetSkillReinforcement"></param>
-        /// <param name="GetStats"></param>
-        /// <param name="GetBondLevel"></param>
-        /// <param name="GetBiography"></param>
-        /// <param name="GetAvailability"></param>
-        /// <param name="GetTrivia"></param>
-        /// <param name="GetImages"></param>
+        /// <param name="ServantName">The Servant's name</param>
+        /// <param name="presetsForInformation">Preset to use</param>
+        /// <param name="GetBasicInformation">If to get the basic infomation</param>
+        /// <param name="GetActiveSkills">If to get Active Skills</param>
+        /// <param name="GetPassiveSkills">If to get Passive Skills</param>
+        /// <param name="GetNoblePhantasm">If to get Noble Phantasm</param>
+        /// <param name="GetAscension">If to get Ascension</param>
+        /// <param name="GetSkillReinforcement">If to get the Skill Reinforcement</param>
+        /// <param name="GetStats">If to get the Stats</param>
+        /// <param name="GetBondLevel">If to get the Bond Levels</param>
+        /// <param name="GetBiography">If to get the servant's Biography</param>
+        /// <param name="GetAvailability">If to get when this servants been available</param>
+        /// <param name="GetTrivia">If to get Trivia</param>
+        /// <param name="GetImages">If to get the servants Images</param>
         /// <returns></returns>
-        public static async Task<Servant> GetPerson(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, bool GetBasicInformation = false, bool GetActiveSkills = false, bool GetPassiveSkills = false, bool GetNoblePhantasm = false, bool GetAscension = false, bool GetSkillReinforcement = false, bool GetStats = false, bool GetBondLevel = false, bool GetBiography = false, bool GetAvailability = false, bool GetTrivia = false, bool GetImages = false)
+        public static async Task<Servant> GetServant(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, bool GetBasicInformation = false, bool GetActiveSkills = false, bool GetPassiveSkills = false, bool GetNoblePhantasm = false, bool GetAscension = false, bool GetSkillReinforcement = false, bool GetStats = false, bool GetBondLevel = false, bool GetBiography = false, bool GetAvailability = false, bool GetTrivia = false, bool GetImages = false)
         {
             Servant Servant = null;
-            Servant ServantToRemoveFromCache = null;
 
             #region Toggles For GettingInformation
             if (presetsForInformation == PresetsForInformation.BasicInformation)
@@ -1009,11 +1040,14 @@ namespace FateGrandOrderApi
             #endregion
             #endregion
 
+            if (!GetBasicInformation)
+                GettingBasicInformation = false;
+
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 //For in case we put the person in wrong
                 if (string.IsNullOrEmpty(col.InnerText))
-                    break;
+                    return null;
 
                 ServantName = ServantName.Replace("_", " ");
                 Servant = new Servant(col.InnerText, ServantName);
@@ -1085,7 +1119,6 @@ namespace FateGrandOrderApi
                                 }
                                 else
                                 {
-                                    ServantToRemoveFromCache = fateGrandOrderPersonC;
                                     Servant = fateGrandOrderPersonC;
                                 }
 #if DEBUG
@@ -1095,7 +1128,7 @@ namespace FateGrandOrderApi
                             }
                             else if (fateGrandOrderPersonC.GeneratedWith != Servant.GeneratedWith && fateGrandOrderPersonC.EnglishNamePassed == Servant.EnglishNamePassed)
                             {
-                                ServantToRemoveFromCache = fateGrandOrderPersonC;
+                                Servant = fateGrandOrderPersonC;
                                 break;
                             }
                         }
@@ -1109,11 +1142,8 @@ namespace FateGrandOrderApi
                 #endregion
 
                 #region Add/Remove to/from cache
-                if (ServantToRemoveFromCache != null)
-                    FateGrandOrderApiCache.Servants.Remove(ServantToRemoveFromCache);
-                if (Servant != null)
+                if (Servant != null && !FateGrandOrderApiCache.Servants.Contains(Servant))
                     FateGrandOrderApiCache.Servants.Add(Servant);
-                ServantToRemoveFromCache = null;
                 #endregion
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
@@ -2317,13 +2347,47 @@ namespace FateGrandOrderApi
                 if (s.Contains("px"))
                     s = s.Remove(s.IndexOf('|'), s.LastIndexOf('|') - s.IndexOf('|'));
 
-                var Image = new ImageInformation();
+                var Image = new ImageInformation(s);
                 if (s.Contains("|"))
                     Image.Name = s.Remove(0, s.IndexOf('|') + 1);
                 else if (s.Contains("."))
                     Image.Name = s.Remove(s.LastIndexOf('.'));
                 else
                     Image.Name = s;
+
+                try
+                {
+                    foreach (ImageInformation ImageC in FateGrandOrderApiCache.Images)
+                    {
+                        if (s == ImageC.GeneratedWith && ImageC.Name == Image.Name)
+                        {
+#if DEBUG
+                                ImageC.FromCache = true;
+#endif
+                            OtherPartsToRemove = null;
+                            baseUri = null;
+                            hashPartToUse = null;
+                            s = null;
+                            Image = null;
+                            return ImageC;
+                        }
+                        else if (s != ImageC.GeneratedWith && Image.Name == ImageC.Name)
+                        {
+                            Image = ImageC;
+                            break;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for Images", $"Image name: {Image.Name}");
+                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for Images", $"Image name: {Image.Name}");
+                }
+
+                #region Add/Remove to/from cache
+                if (Image != null && !FateGrandOrderApiCache.Images.Contains(Image))
+                    FateGrandOrderApiCache.Images.Add(Image);
+                #endregion
 
                 if (s.Contains("|"))
                     Image.FileName = s.Remove(s.IndexOf('|'));
@@ -2332,6 +2396,7 @@ namespace FateGrandOrderApi
 
                 if (!s.Contains("."))
                     Image.FileName = Image.FileName + ".png";
+
 
                 if (string.IsNullOrWhiteSpace(Image.FileName) | Image.FileName == ".png")
                 {
@@ -2364,6 +2429,7 @@ namespace FateGrandOrderApi
                 baseUri = null;
                 hashPartToUse = null;
                 s = null;
+                await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Images);
                 return Image;
             }
 
@@ -2412,7 +2478,7 @@ namespace FateGrandOrderApi
                     while (VideoName.LastIndexOf("|") != -1)
                         VideoName = VideoName.Remove(VideoName.LastIndexOf("|"));
 
-                    video = new VideoInformation { Name = VideoName, Uri = VideoName };
+                    video = new VideoInformation(VideoName) { Name = VideoName, Uri = VideoName };
                     //[ytp-title-link yt-uix-sessionlink]
                     //foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/File:{VideoName}").DocumentNode.SelectNodes("//div"))
                     //{

@@ -36,13 +36,13 @@ namespace FateGrandOrderApi.Caching
         /// </summary>
         public static List<Skill> Skills { get; set; }
         /// <summary>
-        /// Passive Skills that are currently in cache
-        /// </summary>
-        public static List<PassiveSkills> PassiveSkills { get; set; }
-        /// <summary>
         /// Images that are currently in cache
         /// </summary>
         public static List<ImageInformation> Images { get; set; }
+        ///// <summary>
+        ///// Videos that are currently in cache
+        ///// </summary>
+        //public static List<VideoInformation> Videos { get; set; }
 
         public static async Task SaveCache(dynamic CacheToSave)
         {
@@ -64,10 +64,10 @@ namespace FateGrandOrderApi.Caching
                     File.WriteAllText(Path.Combine(CacheLocation, "Active Skills.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
                 else if (Settings.Cache.CacheSkills && CacheToSave is List<Skill>)
                     File.WriteAllText(Path.Combine(CacheLocation, "Skills.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
-                else if (Settings.Cache.CachePassiveSkills && CacheToSave is List<PassiveSkills>)
-                    File.WriteAllText(Path.Combine(CacheLocation, "Passive Skills.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
                 else if (Settings.Cache.CacheImages && CacheToSave is List<ImageInformation>)
                     File.WriteAllText(Path.Combine(CacheLocation, "Images.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
+                //else if (Settings.Cache.CacheVideos && CacheToSave is List<VideoInformation>)
+                //    File.WriteAllText(Path.Combine(CacheLocation, "Videos.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
                 else
                     new Exception("Unable to find what type of cache this is ;-;");
             }

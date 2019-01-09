@@ -30,8 +30,8 @@ namespace FateGrandOrderApi.Settings
                     if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Enemies.json"))) { cacheEnemies = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Enemies.json"))); }
                     if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Active Skills.json"))) { cacheActiveSkills = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Active Skills.json"))); }
                     if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Skills.json"))) { cacheSkills = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Skills.json"))); }
-                    if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Passive Skills.json"))) { cachePassiveSkills = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Passive Skills.json"))); }
                     if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Images.json"))) { cacheImages = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Images.json"))); }
+                    //if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Videos.json"))) { cacheVideos = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Videos.json"))); }
                     if (File.Exists(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.ToDisk.json"))) { cacheToDisk = JsonConvert.DeserializeObject<bool>(File.ReadAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.ToDisk.json"))); }
                 }
             }
@@ -55,9 +55,9 @@ namespace FateGrandOrderApi.Settings
         private static bool cacheEnemies = true;
         private static bool cacheActiveSkills = true;
         private static bool cacheSkills = true;
+        //private static bool cacheVideos = true;
+        private static bool cacheImages = true;
         private static bool cacheToDisk = false;
-        private static bool cachePassiveSkills = true;
-        private static bool cacheImages = false;
 
         /// <summary>
         /// If we should cache servants
@@ -80,13 +80,13 @@ namespace FateGrandOrderApi.Settings
         /// </summary>
         public static bool CacheSkills { get { return cacheSkills; } set { cacheSkills = value; File.WriteAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Skills.json"), JsonConvert.SerializeObject(value)); } }
         /// <summary>
-        /// If we should cache active skills
-        /// </summary>
-        public static bool CachePassiveSkills { get { return cachePassiveSkills; } set { cachePassiveSkills = value; File.WriteAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Passive Skills.json"), JsonConvert.SerializeObject(value)); } }
-        /// <summary>
-        /// If we should cache skills
+        /// If we should cache images
         /// </summary>
         public static bool CacheImages { get { return cacheImages; } set { cacheImages = value; File.WriteAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Images.json"), JsonConvert.SerializeObject(value)); } }
+        ///// <summary>
+        ///// If we should cache videos
+        ///// </summary>
+        //public static bool CacheVideos { get { return cacheVideos; } set { cacheVideos = value; File.WriteAllText(Path.Combine(UserFilesLocation, "FGOSettings", "Cache.Videos.json"), JsonConvert.SerializeObject(value)); } }
         /// <summary>
         /// If we should save cached content to the user's disk 
         /// </summary>

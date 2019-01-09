@@ -34,6 +34,11 @@
             Skills that are currently in cache
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Caching.FateGrandOrderApiCache.Images">
+            <summary>
+            Images that are currently in cache
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.Servant">
             <summary>
             A Fate/Grand Order Servant
@@ -347,6 +352,11 @@
         <member name="P:FateGrandOrderApi.Classes.ImageInformation.FileName">
             <summary>
             Returns the file name of the image
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ImageInformation.GeneratedWith">
+            <summary>
+            String that was used when generating this servant class, used for checking if in cache and if cache version is up to date
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.VideoInformation">
@@ -1004,7 +1014,7 @@
             Image of the item
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.Item.EnemiesThatDroppedThis">
+        <member name="P:FateGrandOrderApi.Classes.Item.AnythingThatDropsThis">
             <summary>
             Enemies that drop this
             </summary>
@@ -1047,38 +1057,38 @@
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetItem(System.String,FateGrandOrderApi.Classes.Enemy)">
             <summary>
-            
+            Returns a item in the Fate/Grand Order (will return null if the item is not found)
             </summary>
-            <param name="itemName"></param>
-            <param name="enemyToNotLookFor"></param>
+            <param name="itemName">The item's name</param>
+            <param name="enemyToNotLookFor">enemy that been found already and is known to drop this item</param>
             <returns></returns>
         </member>
         <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetEnemy(System.String,FateGrandOrderApi.Classes.Item)">
             <summary>
-            
+            Return a enemy in Fate/Grand Order (will return null if not found)
             </summary>
-            <param name="enemyName"></param>
-            <param name="itemToNotLookFor"></param>
+            <param name="enemyName">The enemy's name</param>
+            <param name="itemToNotLookFor">Item that already been found and is known for dropping this item</param>
             <returns></returns>
         </member>
-        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetPerson(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetServant(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             This will return the servant from the servant name (will return null if we are unable to find the person)
             </summary>
-            <param name="ServantName"></param>
-            <param name="presetsForInformation"></param>
-            <param name="GetBasicInformation"></param>
-            <param name="GetActiveSkills"></param>
-            <param name="GetPassiveSkills"></param>
-            <param name="GetNoblePhantasm"></param>
-            <param name="GetAscension"></param>
-            <param name="GetSkillReinforcement"></param>
-            <param name="GetStats"></param>
-            <param name="GetBondLevel"></param>
-            <param name="GetBiography"></param>
-            <param name="GetAvailability"></param>
-            <param name="GetTrivia"></param>
-            <param name="GetImages"></param>
+            <param name="ServantName">The Servant's name</param>
+            <param name="presetsForInformation">Preset to use</param>
+            <param name="GetBasicInformation">If to get the basic infomation</param>
+            <param name="GetActiveSkills">If to get Active Skills</param>
+            <param name="GetPassiveSkills">If to get Passive Skills</param>
+            <param name="GetNoblePhantasm">If to get Noble Phantasm</param>
+            <param name="GetAscension">If to get Ascension</param>
+            <param name="GetSkillReinforcement">If to get the Skill Reinforcement</param>
+            <param name="GetStats">If to get the Stats</param>
+            <param name="GetBondLevel">If to get the Bond Levels</param>
+            <param name="GetBiography">If to get the servant's Biography</param>
+            <param name="GetAvailability">If to get when this servants been available</param>
+            <param name="GetTrivia">If to get Trivia</param>
+            <param name="GetImages">If to get the servants Images</param>
             <returns></returns>
         </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing.AssigningContent">
@@ -1179,6 +1189,11 @@
         <member name="P:FateGrandOrderApi.Settings.Cache.CacheSkills">
             <summary>
             If we should cache skills
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Settings.Cache.CacheImages">
+            <summary>
+            If we should cache images
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Settings.Cache.SaveCachedPartsToDisk">
