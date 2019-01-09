@@ -20,7 +20,6 @@ namespace FateGrandOrderApi
     /// </summary>
     public static class FateGrandOrderParsing
     {
-        //TODO: Add image and Passive Skills Caching logic
         static FateGrandOrderParsing()
         {
             if (!Directory.Exists(Settings.Cache.UserFilesLocation))
@@ -587,11 +586,15 @@ namespace FateGrandOrderApi
                                     {
                                         var enemyP = await GetEnemy(enemyEdited, item);
                                         if (enemyP != null)
+                                        {
+                                            if (item.AnythingThatDropsThis.Enemies == null)
+                                                item.AnythingThatDropsThis.Enemies = new List<Enemy>();
                                             item.AnythingThatDropsThis.Enemies.Add(enemyP);
+                                        }
                                         enemyP = null;
                                     }
                                 }
-                                else
+                                else if (enemyEdited.Contains("}}-class"))
                                 {
                                     enemyEdited = enemyEdited.Replace("}}-class","").Replace("{{","");
                                     string[] strings = enemyEdited.Split(' ');
@@ -609,19 +612,28 @@ namespace FateGrandOrderApi
                                                 string thing = ss;
                                                 if (!thing.EndsWith("]"))
                                                     thing = thing.Remove(thing.LastIndexOf(']') + 1);
-                                                thing = thing.Replace("[[","").Replace("]]","");
+                                                thing = thing.Replace("|[[","").Replace("]]","");
                                                 if (strings[1] == "Servant")
                                                 {
                                                     var Servant = await GetServant(thing);
                                                     if (thing == null)
+                                                    {
+                                                        if (item.AnythingThatDropsThis.Servants == null)
+                                                            item.AnythingThatDropsThis.Servants = new List<Servant>();
                                                         item.AnythingThatDropsThis.Servants.Add(Servant);
+                                                    }
+
                                                     Servant = null;
                                                 }
                                                 else if (strings[1] == "Enemy")
                                                 {
                                                     var Enemy = await GetEnemy(thing);
                                                     if (thing == null)
+                                                    {
+                                                        if (item.AnythingThatDropsThis.Enemies == null)
+                                                            item.AnythingThatDropsThis.Enemies = new List<Enemy>();
                                                         item.AnythingThatDropsThis.Enemies.Add(Enemy);
+                                                    }
                                                     Enemy = null;
                                                 }
                                             }
@@ -629,7 +641,6 @@ namespace FateGrandOrderApi
                                         resultString2 = null;
                                     }
                                     strings = null;
-                                    Debugger.Break();
                                 }
                             }
                             catch (Exception e)
