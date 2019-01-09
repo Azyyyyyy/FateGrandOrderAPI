@@ -206,8 +206,8 @@ namespace FateGrandOrderApi.Classes
     /// </summary>
     public class Enemy
     {
-        public Enemy() { EnemyImage = new List<ImageInformation>(); EnglishName = ""; }
-        public Enemy(string englishName, string generatedWith) { EnemyImage = new List<ImageInformation>(); EnglishName = englishName; GeneratedWith = generatedWith; }
+        public Enemy() { EnglishName = ""; }
+        public Enemy(string englishName, string generatedWith) { EnglishName = englishName; GeneratedWith = generatedWith; }
         /// <summary>
         /// Images of/with the enemy (image)
         /// </summary>
@@ -386,15 +386,10 @@ namespace FateGrandOrderApi.Classes
     {
         public Skill(string skillName, string generatedWith)
         {
-            Image = new ImageInformation();
             GeneratedWith = generatedWith;
             NamePassed = skillName;
         }
-
-        public Skill()
-        {
-            Image = new ImageInformation();
-        }
+        public Skill() { }
 
         /// <summary>
         /// Returns the image information of this skill (img) 
@@ -437,11 +432,9 @@ namespace FateGrandOrderApi.Classes
         {
             GeneratedWith = generatedWith;
             NamePassed = skillName;
-            LevelEffects = new List<LevelEffect10>();
         }
         public ActiveSkill()
         {
-            LevelEffects = new List<LevelEffect10>();
         }
 
         /// <summary>

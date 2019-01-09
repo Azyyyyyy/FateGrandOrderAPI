@@ -19,21 +19,21 @@ namespace FateGrandOrderApi
     /// </summary>
     public static class FateGrandOrderParsing
     {
+        //TODO: Add image and Passive Skills Caching logic
         static FateGrandOrderParsing()
         {
             if (!Directory.Exists(Settings.Cache.UserFilesLocation))
                 Directory.CreateDirectory(Settings.Cache.UserFilesLocation);
+            if (!Directory.Exists(Settings.Cache.GlobalFilesLocation))
+                Directory.CreateDirectory(Settings.Cache.GlobalFilesLocation);
 
             if (!Settings.Cache.SaveCachedPartsToDisk)
-                return;
+                goto End;
 
             try
             {
                 if (!Directory.Exists(FateGrandOrderApiCache.CacheLocation))
-                {
-                    Directory.CreateDirectory(FateGrandOrderApiCache.CacheLocation);
-                    return;
-                }
+                    goto End;
 
                 if (Settings.Cache.CacheServants && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Servants.json")))
                     FateGrandOrderApiCache.Servants = JsonConvert.DeserializeObject<List<Servant>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Servants.json")));
@@ -41,19 +41,35 @@ namespace FateGrandOrderApi
                     FateGrandOrderApiCache.Items = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Items.json")));
                 if (Settings.Cache.CacheEnemies && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Enemies.json")))
                     FateGrandOrderApiCache.Enemies = JsonConvert.DeserializeObject<List<Enemy>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Enemies.json")));
-                if (Settings.Cache.CacheActiveSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "ActiveSkills.json")))
-                    FateGrandOrderApiCache.ActiveSkills = JsonConvert.DeserializeObject<List<ActiveSkill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "ActiveSkills.json")));
+                if (Settings.Cache.CacheActiveSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Active Skills.json")))
+                    FateGrandOrderApiCache.ActiveSkills = JsonConvert.DeserializeObject<List<ActiveSkill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Active Skills.json")));
                 if (Settings.Cache.CacheSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")))
                     FateGrandOrderApiCache.Skills = JsonConvert.DeserializeObject<List<Skill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")));
+                if (Settings.Cache.CachePassiveSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Passive Skills.json")))
+                    FateGrandOrderApiCache.PassiveSkills = JsonConvert.DeserializeObject<List<PassiveSkills>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Passive Skills.json")));
+                if (Settings.Cache.CacheImages && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")))
+                    FateGrandOrderApiCache.Images = JsonConvert.DeserializeObject<List<ImageInformation>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")));
             }
             catch (Exception e)
             {
                 Logger.LogConsole(e, "Looks like something happened when accessing/editing the cache");
                 Logger.LogFile(e, "Looks like something happened when accessing/editing the cache");
             }
+
+            End:
+            if (FateGrandOrderApiCache.Skills == null && Settings.Cache.CacheSkills)
+                FateGrandOrderApiCache.Skills = new List<Skill>();
+            if (FateGrandOrderApiCache.ActiveSkills == null && Settings.Cache.CacheActiveSkills)
+                FateGrandOrderApiCache.ActiveSkills = new List<ActiveSkill>();
+            if (FateGrandOrderApiCache.Items == null && Settings.Cache.CacheItems)
+                FateGrandOrderApiCache.Items = new List<Item>();
+            if (FateGrandOrderApiCache.Enemies == null && Settings.Cache.CacheEnemies)
+                FateGrandOrderApiCache.Enemies = new List<Enemy>();
+            if (FateGrandOrderApiCache.Servants == null && Settings.Cache.CacheServants)
+                FateGrandOrderApiCache.Servants = new List<Servant>();
         }
 
-        private static string FixString(string s)
+        internal static string FixString(string s)
         {
             if (!string.IsNullOrWhiteSpace(s))
                 return s.Replace("&lt;", "<").Replace("%27", "'").Replace("<br>", "<br/>").Replace("%26", "%").Replace("<br />", "<br/>");
@@ -83,8 +99,6 @@ namespace FateGrandOrderApi
 
                 if (Settings.Cache.CacheSkills)
                 {
-                    if (FateGrandOrderApiCache.Skills == null)
-                        FateGrandOrderApiCache.Skills = new List<Skill>();
                     try
                     {
                         foreach (Skill skillC in FateGrandOrderApiCache.Skills)
@@ -96,7 +110,8 @@ namespace FateGrandOrderApi
 #endif
                                 skill = null;
                                 skillName = null;
-                                return Tuple.Create(skillC, resultString);
+                                resultString = null;
+                                return Tuple.Create(skillC, skillC.GeneratedWith.Split('\n'));
                             }
                             else if (skill.GeneratedWith != skillC.GeneratedWith && skill.NamePassed == skillC.NamePassed)
                             {
@@ -212,6 +227,8 @@ namespace FateGrandOrderApi
             string[] resultString = content.Item2;
             if (string.IsNullOrWhiteSpace(skill.GeneratedWith))
                 skill.GeneratedWith = content.Item1.GeneratedWith;
+            if (string.IsNullOrWhiteSpace(skill.NamePassed))
+                skill.NamePassed = content.Item1.NamePassed;
 
             string GetStartPart()
             {
@@ -244,8 +261,6 @@ namespace FateGrandOrderApi
 
             if (Settings.Cache.CacheActiveSkills)
             {
-                if (FateGrandOrderApiCache.ActiveSkills == null)
-                    FateGrandOrderApiCache.ActiveSkills = new List<ActiveSkill>();
                 try
                 {
                     foreach (ActiveSkill activeSkillC in FateGrandOrderApiCache.ActiveSkills)
@@ -304,15 +319,18 @@ namespace FateGrandOrderApi
                             }
                             servantIcons = servantIcons.Remove(startpoint, 2);
                         }
-                        var servants = await AssigningContent.GenericArrayAssigning(servantIcons, "|servanticons", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
-                        if (servants != null && servants.Length > 0)
-                            skill.ServantsThatHaveThisSkill = new List<Servant>();
 
+                        var servants = await AssigningContent.GenericArrayAssigning(servantIcons, "|servanticons", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
                         foreach (string servant in servants)
                         {
                             var servantP = await GetPerson(servant, PresetsForInformation.BasicInformation);
                             if (servantP != null && servantP.BasicInformation != null)
+                            {
+                                if(skill.ServantsThatHaveThisSkill == null)
+                                    skill.ServantsThatHaveThisSkill = new List<Servant>();
+
                                 skill.ServantsThatHaveThisSkill.Add(servantP);
+                            }
                             servantP = null;
                         }
                         servantIcons = null;
@@ -352,6 +370,8 @@ namespace FateGrandOrderApi
                                 lastLevelEffect = lastLevelEffect.Remove(startpoint, 2);
                             }
                         }
+                        if(skill.LevelEffects == null)
+                            skill.LevelEffects = new List<LevelEffect10>();
                         skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = await AssigningContent.GenericAssigning(lastLevelEffect, $"{GetStartPart()}leveleffect") });
                     }
                     catch (Exception e)
@@ -501,8 +521,6 @@ namespace FateGrandOrderApi
 
                 if (Settings.Cache.CacheItems)
                 {
-                    if (FateGrandOrderApiCache.Items == null)
-                        FateGrandOrderApiCache.Items = new List<Item>();
                     try
                     {
                         foreach (Item itemC in FateGrandOrderApiCache.Items)
@@ -558,7 +576,8 @@ namespace FateGrandOrderApi
                     else if (s.Contains("|enemy"))
                     {
                         var enemys = await AssigningContent.GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" } });
-                        if (enemys != null && enemys.Length > 0) item.EnemiesThatDroppedThis = new List<Enemy>();
+                        if (enemys != null && enemys.Length > 0)
+                            item.EnemiesThatDroppedThis = new List<Enemy>();
                         foreach (string enemy in enemys)
                         {
                             string enemyEdited = enemy;
@@ -596,7 +615,6 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|location"))
                     {
-                        item.DropLocations = new List<ItemDropLocationList> { new ItemDropLocationList { } };
                         string ss = await AssigningContent.GenericAssigning(s, "|location");
                         if (!string.IsNullOrWhiteSpace(ss))
                             await LocationLogic(ss);
@@ -629,6 +647,8 @@ namespace FateGrandOrderApi
                 {
                     if (!string.IsNullOrWhiteSpace(s) && FixString(s) != "<tabber>" && FixString(s) != "</tabber>")
                     {
+                        if (item.DropLocations == null)
+                            item.DropLocations = new List<ItemDropLocationList> { new ItemDropLocationList { } };
                         if (s[s.Length - 1] == '=')
                         {
                             item.DropLocations[item.DropLocations.Count - 1].Category = s.Replace("=", "");
@@ -701,8 +721,6 @@ namespace FateGrandOrderApi
 
                 if (Settings.Cache.CacheEnemies)
                 {
-                    if (FateGrandOrderApiCache.Enemies == null)
-                        FateGrandOrderApiCache.Enemies = new List<Enemy>();
                     try
                     {
                         foreach (Enemy enemyC in FateGrandOrderApiCache.Enemies)
@@ -798,7 +816,12 @@ namespace FateGrandOrderApi
                         else
                         {
                             var image = await AssigningContent.Image(s, "|image");
-                            enemy.EnemyImage.Add(image);
+                            if (image != null)
+                            {
+                                if(enemy.EnemyImage == null)
+                                    enemy.EnemyImage = new List<ImageInformation>();
+                                enemy.EnemyImage.Add(image);
+                            }
                             image = null;
                         }
                     }
@@ -809,7 +832,12 @@ namespace FateGrandOrderApi
                     else if (GettingImages)
                     {
                         var image = await AssigningContent.Image(s, "");
-                        enemy.EnemyImage.Add(image);
+                        if (image != null)
+                        {
+                            if (enemy.EnemyImage == null)
+                                enemy.EnemyImage = new List<ImageInformation>();
+                            enemy.EnemyImage.Add(image);
+                        }
                         image = null;
                     }
                     else if (s.Contains("|class"))
@@ -993,8 +1021,6 @@ namespace FateGrandOrderApi
                 #region Caching Logic
                 if (Settings.Cache.CacheServants)
                 {
-                    if (FateGrandOrderApiCache.Servants == null)
-                        FateGrandOrderApiCache.Servants = new List<Servant>();
                     try
                     {
                         foreach (Servant fateGrandOrderPersonC in FateGrandOrderApiCache.Servants)
@@ -1082,50 +1108,7 @@ namespace FateGrandOrderApi
                 }
                 #endregion
 
-                #region Assigning Parts that we're going to populate
-                if (GetBasicInformation && Servant.BasicInformation == null)
-                {
-                    Servant.BasicInformation = new FateGrandOrderServantBasic(ServantName);
-                }
-                if (GetActiveSkills && Servant.ActiveSkills == null)
-                {
-                    Servant.ActiveSkills = new List<ActiveSkill>();
-                }
-                if (GetPassiveSkills && Servant.PassiveSkills == null)
-                {
-                    Servant.PassiveSkills = new List<PassiveSkillList>();
-                }
-                if (GetNoblePhantasm && Servant.NoblePhantasms == null)
-                {
-                    Servant.NoblePhantasms = new List<NoblePhantasmList>();
-                }
-                if (GetAscension && Servant.Ascension == null)
-                {
-                    Servant.Ascension = new Ascension();
-                }
-                if (GetSkillReinforcement && Servant.SkillReinforcement == null)
-                {
-                    Servant.SkillReinforcement = new SkillReinforcement();
-                }
-                if (GetStats && Servant.Stats == null)
-                {
-                    Servant.Stats = new Stats();
-                }
-                if (GetBondLevel && Servant.BondLevels == null)
-                {
-                    Servant.BondLevels = new BondLevels();
-                }
-                if (GetBiography && Servant.Biography == null)
-                {
-                    Servant.Biography = new Biography();
-                }
-                if (GetImages && Servant.Images == null)
-                {
-                    Servant.Images = new List<ImageInformation>();
-                }
-                #endregion
-
-                #region Add/Remove to cache
+                #region Add/Remove to/from cache
                 if (ServantToRemoveFromCache != null)
                     FateGrandOrderApiCache.Servants.Remove(ServantToRemoveFromCache);
                 if (Servant != null)
@@ -1134,6 +1117,9 @@ namespace FateGrandOrderApi
                 #endregion
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
+
+                if (GetBasicInformation && Servant.BasicInformation == null)
+                    Servant.BasicInformation = new FateGrandOrderServantBasic(ServantName);
 
                 foreach (string s in resultString)
                 {
@@ -2087,38 +2073,53 @@ namespace FateGrandOrderApi
                     #region Trigger Skills Logic
                     if (GetPassiveSkills && s == "== Passive Skills ==" | s == "==Passive Skills==")
                     {
-                        Servant.PassiveSkills.Add(new PassiveSkillList());
+                        if (Servant.PassiveSkills == null)
+                            Servant.PassiveSkills = new List<PassiveSkillList>() { new PassiveSkillList() };
                         GettingPassiveSkills = true;
                     }
                     else if (GetActiveSkills && s == "== Active Skills ==" | s == "==Active Skills==")
                     {
+                        if (Servant.ActiveSkills == null)
+                            Servant.ActiveSkills = new List<ActiveSkill>();
                         GettingActiveSkills = true;
                     }
                     else if (GetAscension && s == "== Ascension ==" | s == "==Ascension==")
                     {
+                        if (Servant.Ascension == null)
+                            Servant.Ascension = new Ascension();
                         Servant.Ascension = new Ascension();
                         GettingAscension = true;
                     }
                     else if (GetSkillReinforcement && s == "== Skill Reinforcement ==" | s == "==Skill Reinforcement==")
                     {
+                        if (Servant.SkillReinforcement == null)
+                            Servant.SkillReinforcement = new SkillReinforcement();
                         Servant.SkillReinforcement = new SkillReinforcement();
                         GettingSkillReinforcement = true;
                     }
                     else if (GetNoblePhantasm && s == "== Noble Phantasm ==" | s == "==Noble Phantasm==")
                     {
+                        if (Servant.NoblePhantasms == null)
+                            Servant.NoblePhantasms = new List<NoblePhantasmList>();
                         GettingNoblePhantasm = true;
                         Servant.NoblePhantasms.Add(new NoblePhantasmList());
                     }
                     else if (GetStats && s == "== Stats ==" | s == "==Stats==")
                     {
+                        if (Servant.Stats == null)
+                            Servant.Stats = new Stats();
                         GettingStats = true;
                     }
                     else if (GetBondLevel && s == "== Bond Level ==" | s == "==Bond Level==")
                     {
+                        if (Servant.BondLevels == null)
+                            Servant.BondLevels = new BondLevels();
                         GettingBondLevel = true;
                     }
                     else if (GetBiography && s == "== Biography ==" | s == "==Biography==")
                     {
+                        if (Servant.Biography == null)
+                            Servant.Biography = new Biography();
                         GettingBiography = true;
                     }
                     else if (GetAvailability && s == "== Availability ==" | s == "==Availability==")
@@ -2131,6 +2132,8 @@ namespace FateGrandOrderApi
                     }
                     else if (GetImages && s == "== Images ==" | s == "==Images==")
                     {
+                        if (Servant.Images == null)
+                            Servant.Images = new List<ImageInformation>();
                         GettingImages = true;
                     }
                     else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm | GettingImages && FixString(s) == "</tabber>")
