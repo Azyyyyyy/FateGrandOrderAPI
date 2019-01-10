@@ -76,7 +76,7 @@ namespace FateGrandOrderApi
         internal static string FixString(string s)
         {
             if (!string.IsNullOrWhiteSpace(s))
-                return s.Replace("&lt;", "<").Replace("%27", "'").Replace("<br>", "<br/>").Replace("%26", "%").Replace("<br />", "<br/>");
+                return s.Replace("&lt;", "<").Replace("%27", "'").Replace("<br>", "<br/>").Replace("%26", "%").Replace("<br />", "<br/>").Replace("&amp;", "&");
             else
                 return s;
         }
@@ -573,6 +573,8 @@ namespace FateGrandOrderApi
                         foreach (string enemy in enemys)
                         {
                             string enemyEdited = enemy;
+                            if (enemyEdited.Contains("Shadow Servant"))
+                                enemyEdited = "Shadow Servant";
                             try
                             {
                                 if (!enemyEdited.Contains("}}-class"))
@@ -609,32 +611,39 @@ namespace FateGrandOrderApi
                                         {
                                             if (ss.StartsWith("|[["))
                                             {
-                                                string thing = ss;
-                                                if (!thing.EndsWith("]"))
-                                                    thing = thing.Remove(thing.LastIndexOf(']') + 1);
-                                                thing = thing.Replace("|[[","").Replace("]]","");
-                                                if (strings[1] == "Servant")
+                                                string thing = FixString(ss);
+                                                try
                                                 {
-                                                    var Servant = await GetServant(thing);
-                                                    if (thing == null)
+                                                    if (!thing.EndsWith("]"))
+                                                        thing = thing.Remove(thing.LastIndexOf(']') + 1);
+                                                    thing = thing.Replace("|[[", "").Replace("]]", "");
+                                                    if (strings[1] == "Servant")
                                                     {
-                                                        if (item.AnythingThatDropsThis.Servants == null)
-                                                            item.AnythingThatDropsThis.Servants = new List<Servant>();
-                                                        item.AnythingThatDropsThis.Servants.Add(Servant);
+                                                        var Servant = await GetServant(thing, PresetsForInformation.BasicInformation);
+                                                        if (Servant != null)
+                                                        {
+                                                            if (item.AnythingThatDropsThis.Servants == null)
+                                                                item.AnythingThatDropsThis.Servants = new List<Servant>();
+                                                            item.AnythingThatDropsThis.Servants.Add(Servant);
+                                                        }
+                                                        Servant = null;
                                                     }
-
-                                                    Servant = null;
+                                                    else if (strings[1] == "Enemy")
+                                                    {
+                                                        var Enemy = await GetEnemy(thing);
+                                                        if (Enemy != null)
+                                                        {
+                                                            if (item.AnythingThatDropsThis.Enemies == null)
+                                                                item.AnythingThatDropsThis.Enemies = new List<Enemy>();
+                                                            item.AnythingThatDropsThis.Enemies.Add(Enemy);
+                                                        }
+                                                        Enemy = null;
+                                                    }
                                                 }
-                                                else if (strings[1] == "Enemy")
+                                                catch (Exception e)
                                                 {
-                                                    var Enemy = await GetEnemy(thing);
-                                                    if (thing == null)
-                                                    {
-                                                        if (item.AnythingThatDropsThis.Enemies == null)
-                                                            item.AnythingThatDropsThis.Enemies = new List<Enemy>();
-                                                        item.AnythingThatDropsThis.Enemies.Add(Enemy);
-                                                    }
-                                                    Enemy = null;
+                                                    Logger.LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {thing}");
+                                                    Logger.LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {thing}");
                                                 }
                                             }
                                         }
@@ -889,24 +898,27 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|area"))
                     {
-                        var thing = await AssigningContent.GenericArrayAssigning(s, "|area");
-                        try
+                        var thing = await AssigningContent.GenericArrayAssigning(s, "|area", OtherPartsToRemove: new string[] { "<br/>" });
+                        if (thing.Length > 0 && !string.IsNullOrWhiteSpace(thing[0]))
                         {
-                            enemy.Areas = new string[thing.Length];
-                            int count = 0;
-                            foreach (string place in thing)
+                            try
                             {
-                                if (!place.Contains("|"))
-                                    enemy.Areas[count] = place.Replace("[[", "").Replace("]]", "");
-                                else
-                                    enemy.Areas[count] = place.Replace("[[", "").Replace("]]", ")").Replace("|", " (");
-                                count++;
+                                enemy.Areas = new string[thing.Length];
+                                int count = 0;
+                                foreach (string place in thing)
+                                {
+                                    if (!place.Contains("|"))
+                                        enemy.Areas[count] = place.Replace("[[", "").Replace("]]", "");
+                                    else
+                                        enemy.Areas[count] = place.Replace("[[", "").Replace("]]", ")").Replace("|", " (");
+                                    count++;
+                                }
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
-                            Logger.LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
+                            catch (Exception e)
+                            {
+                                Logger.LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
+                                Logger.LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
+                            }
                         }
                         thing = null;
                     }
@@ -934,8 +946,8 @@ namespace FateGrandOrderApi
                     {
                         try
                         {
-                            var items = await AssigningContent.GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
-                            if(items != null)
+                            var items = await AssigningContent.GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{", "<br/>" }, new string[][] { new string[] { "}}", "\\" } });
+                            if(items.Length > 0 && !string.IsNullOrWhiteSpace(items[0]))
                                 enemy.WhatThisEnemyDrops = new List<Item>();
                             foreach (string item in items)
                             {
