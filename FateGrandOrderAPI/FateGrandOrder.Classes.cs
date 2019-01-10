@@ -432,7 +432,7 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string[] Effect { get; set; }
         /// <summary>
-        /// String that was passed when generating this, used for checking if in cache and cache is updated
+        /// String that was passed when generating this, used for checking if in cache and if cache version is up to date
         /// </summary>
         internal string GeneratedWith { get; set; }
 #if DEBUG
@@ -507,13 +507,13 @@ namespace FateGrandOrderApi.Classes
 
     #region Item Drop Location
     /// <summary>
-    /// 
+    /// Item Drop Location List
     /// </summary>
     public class ItemDropLocationList
     {
         public ItemDropLocationList() { DropLocations = new List<ItemDropLocation>(); }
         /// <summary>
-        /// {CategoryName}=
+        /// Category ({CategoryName}=)
         /// </summary>
         public string Category { get; set; }
         /// <summary>
@@ -523,7 +523,7 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// 
+    /// Item Drop Location
     /// </summary>
     public class ItemDropLocation
     {
@@ -536,7 +536,7 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public string PossibleDrops { get; set; }
         /// <summary>
-        /// 
+        /// AP Cost
         /// </summary>
         public string APCost { get; set; }
     }
@@ -693,7 +693,7 @@ namespace FateGrandOrderApi.Classes
     {
         public NoblePhantasmList() { NoblePhantasm = new NoblePhantasm(); }
         /// <summary>
-        /// {Name}=
+        /// Category ({Name}=)
         /// </summary>
         public string Category { get; set; }
         /// <summary>
@@ -861,7 +861,7 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
-    /// 
+    /// Bond 10 Reward
     /// </summary>
     public class Bond10Reward
     {
@@ -949,9 +949,18 @@ namespace FateGrandOrderApi.Classes
         NotSet
     }
 
+    /// <summary>
+    /// Container for anything that drops items
+    /// </summary>
     public class ItemDrops
     {
+        /// <summary>
+        /// Enemies that drop this item
+        /// </summary>
         public List<Enemy> Enemies { get; set; }
+        /// <summary>
+        /// Servants that drop this item
+        /// </summary>
         public List<Servant> Servants { get; set; }
     }
 

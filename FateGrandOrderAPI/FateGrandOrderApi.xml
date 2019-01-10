@@ -501,7 +501,7 @@
         </member>
         <member name="P:FateGrandOrderApi.Classes.Skill.GeneratedWith">
             <summary>
-            String that was passed when generating this, used for checking if in cache and cache is updated
+            String that was passed when generating this, used for checking if in cache and if cache version is up to date
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.Skill.FromCache">
@@ -556,12 +556,12 @@
         </member>
         <member name="T:FateGrandOrderApi.Classes.ItemDropLocationList">
             <summary>
-            
+            Item Drop Location List
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.ItemDropLocationList.Category">
             <summary>
-            {CategoryName}=
+            Category ({CategoryName}=)
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.ItemDropLocationList.DropLocations">
@@ -571,7 +571,7 @@
         </member>
         <member name="T:FateGrandOrderApi.Classes.ItemDropLocation">
             <summary>
-            
+            Item Drop Location
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.ItemDropLocation.Location">
@@ -586,7 +586,7 @@
         </member>
         <member name="P:FateGrandOrderApi.Classes.ItemDropLocation.APCost">
             <summary>
-            
+            AP Cost
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.LevelEffectCore">
@@ -736,7 +736,7 @@
         </member>
         <member name="P:FateGrandOrderApi.Classes.NoblePhantasmList.Category">
             <summary>
-            {Name}=
+            Category ({Name}=)
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.NoblePhantasmList.NoblePhantasm">
@@ -911,7 +911,7 @@
         </member>
         <member name="T:FateGrandOrderApi.Classes.Bond10Reward">
             <summary>
-            
+            Bond 10 Reward
             </summary>
         </member>
         <member name="P:FateGrandOrderApi.Classes.Bond10Reward.Image">
@@ -997,6 +997,21 @@
         <member name="F:FateGrandOrderApi.Classes.PresetsForInformation.NotSet">
             <summary>
             Not Set for what to get
+            </summary>
+        </member>
+        <member name="T:FateGrandOrderApi.Classes.ItemDrops">
+            <summary>
+            Container for anything that drops items
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDrops.Enemies">
+            <summary>
+            Enemies that drop this item
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ItemDrops.Servants">
+            <summary>
+            Servants that drop this item
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.Item">

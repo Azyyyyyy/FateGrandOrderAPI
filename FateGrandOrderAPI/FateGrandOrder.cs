@@ -583,7 +583,11 @@ namespace FateGrandOrderApi
                                         enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
 
                                     if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
+                                    {
+                                        if (item.AnythingThatDropsThis.Enemies == null)
+                                            item.AnythingThatDropsThis.Enemies = new List<Enemy>();
                                         item.AnythingThatDropsThis.Enemies.Add(enemyToNotLookFor);
+                                    }
                                     else
                                     {
                                         var enemyP = await GetEnemy(enemyEdited, item);
@@ -617,6 +621,8 @@ namespace FateGrandOrderApi
                                                     if (!thing.EndsWith("]"))
                                                         thing = thing.Remove(thing.LastIndexOf(']') + 1);
                                                     thing = thing.Replace("|[[", "").Replace("]]", "");
+                                                    if (thing.Contains('|'))
+                                                        thing = thing.Remove(0, thing.IndexOf('|') + 1);
                                                     if (strings[1] == "Servant")
                                                     {
                                                         var Servant = await GetServant(thing, PresetsForInformation.BasicInformation);
@@ -2221,6 +2227,9 @@ namespace FateGrandOrderApi
                 }
                 resultString = null;
             }
+
+            if (Servant != null && Servant.BasicInformation != null && string.IsNullOrWhiteSpace(Servant.BasicInformation.Cost))
+                Servant.BasicInformation.Cost = "16";
 
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Servants);
             ServantName = null;

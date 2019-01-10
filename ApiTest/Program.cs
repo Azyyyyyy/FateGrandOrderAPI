@@ -25,16 +25,14 @@ namespace ApiTest
                 var persondata = FateGrandOrderParsing.GetServant(servant).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
-                Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
-#endif
-#if DEBUG
+                            Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
+#elif DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})");
 #endif
 #if DEBUG
                 Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})"));
-#endif
-#if !DEBUG
-                Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
+#elif !DEBUG
+                            Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
 #endif
                 if (persondata.BasicInformation != null)
                 {
@@ -62,7 +60,10 @@ namespace ApiTest
             return b.ToString();
         }
 
-        //static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
-        static readonly string[] Servants = { "Jack the Ripper" };
+#if !DEBUG
+        static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
+#elif DEBUG
+        static readonly string[] Servants = { "Jeanne d'Arc (Alter) (Santa Lily)" };
+#endif
     }
 }
