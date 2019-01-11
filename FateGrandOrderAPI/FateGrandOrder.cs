@@ -47,8 +47,6 @@ namespace FateGrandOrderApi
                     FateGrandOrderApiCache.Skills = JsonConvert.DeserializeObject<List<Skill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")));
                 if (Settings.Cache.CacheImages && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")))
                     FateGrandOrderApiCache.Images = JsonConvert.DeserializeObject<List<ImageInformation>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")));
-                //if (Settings.Cache.CacheVideos && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Videos.json")))
-                //    FateGrandOrderApiCache.Videos = JsonConvert.DeserializeObject<List<ImageInformation>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Videos.json")));
             }
             catch (Exception e)
             {
@@ -69,8 +67,6 @@ namespace FateGrandOrderApi
                 FateGrandOrderApiCache.Servants = new List<Servant>();
             if (FateGrandOrderApiCache.Images == null && Settings.Cache.CacheImages)
                 FateGrandOrderApiCache.Images = new List<ImageInformation>();
-            //if (FateGrandOrderApiCache.Videos == null && Settings.Cache.CacheVideos)
-            //    FateGrandOrderApiCache.Videos = new List<ImageInformation>();
         }
 
         internal static string FixString(string s)
@@ -1078,7 +1074,7 @@ namespace FateGrandOrderApi
                 if (string.IsNullOrEmpty(col.InnerText))
                     return null;
 
-                ServantName = ServantName.Replace("_", " ");
+                ServantName = FixString(ServantName.Replace("_", " "));
                 Servant = new Servant(col.InnerText, ServantName);
 
                 #region Caching Logic
@@ -1277,7 +1273,10 @@ namespace FateGrandOrderApi
                             try
                             {
                                 Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
-                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = await AssigningContent.Video(s.Replace("[[File:", ""));
+                                string VideoName = s.Replace("[[File:", "");
+                                if (VideoName.Contains('|'))
+                                    VideoName = VideoName.Remove(VideoName.IndexOf('|'));
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = await AssigningContent.Video(VideoName);
                             }
                             catch (Exception e)
                             {
@@ -2122,6 +2121,7 @@ namespace FateGrandOrderApi
                     #region Images
                     else if (GettingImages && !string.IsNullOrWhiteSpace(s) && s != "|-|" && s.Contains('|'))
                     {
+                        Console.WriteLine(s);
                         var image = await AssigningContent.Image(s, "");
                         if(image != null)
                             Servant.Images.Add(image);
@@ -2201,6 +2201,13 @@ namespace FateGrandOrderApi
                         GettingPassiveSkills = false;
                         GettingNoblePhantasm = false;
                         GettingImages = false;
+                        if (Servant.Images != null)
+                        {
+                            foreach (var image in Servant.Images)
+                            {
+                                Console.WriteLine($"Name: {image.Name}, Image Name: {image.FileName}, Image Uri: {image.Uri}, Image Hash: {image.ImageHash}");
+                            }
+                        }
                     }
                     else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement | GettingStats | GettingBondLevel | GettingBiography | GettingBasicInformation && s == @"}}")
                     {
@@ -2381,11 +2388,12 @@ namespace FateGrandOrderApi
 
                 var Image = new ImageInformation(s);
                 if (s.Contains("|"))
-                    Image.Name = s.Remove(0, s.IndexOf('|') + 1);
-                else if (s.Contains("."))
-                    Image.Name = s.Remove(s.LastIndexOf('.'));
+                    Image.FileName = s.Remove(s.IndexOf('|'));
                 else
-                    Image.Name = s;
+                    Image.FileName = s;
+
+                if (!s.Contains("."))
+                    Image.FileName = Image.FileName + ".png";
 
                 try
                 {
@@ -2422,13 +2430,11 @@ namespace FateGrandOrderApi
                 #endregion
 
                 if (s.Contains("|"))
-                    Image.FileName = s.Remove(s.IndexOf('|'));
+                    Image.Name = s.Remove(0, s.IndexOf('|') + 1);
+                else if (s.Contains("."))
+                    Image.Name = s.Remove(s.LastIndexOf('.'));
                 else
-                    Image.FileName = s;
-
-                if (!s.Contains("."))
-                    Image.FileName = Image.FileName + ".png";
-
+                    Image.Name = s;
 
                 if (string.IsNullOrWhiteSpace(Image.FileName) | Image.FileName == ".png")
                 {
@@ -2507,28 +2513,33 @@ namespace FateGrandOrderApi
                 VideoInformation video = null;
                 try
                 {
-                    while (VideoName.LastIndexOf("|") != -1)
-                        VideoName = VideoName.Remove(VideoName.LastIndexOf("|"));
-
-                    video = new VideoInformation(VideoName) { Name = VideoName, Uri = VideoName };
-                    //[ytp-title-link yt-uix-sessionlink]
-                    //foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/File:{VideoName}").DocumentNode.SelectNodes("//div"))
-                    //{
-                    //    //For in case we put the person in wrong
-                    //    if (string.IsNullOrEmpty(col.InnerText))
-                    //        break;
-
-                    //    var resultString = Regex.Split(col.InnerHtml, @"\n");
-
-                    //    foreach (string s in resultString)
-                    //    {
-                    //    }
-                    //}
+                    video = new VideoInformation { Title = VideoName };
+                    var VideoInfomation = new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/File:{VideoName}").GetElementbyId("mw-content-text");
+                    if (!string.IsNullOrWhiteSpace(VideoInfomation.InnerHtml))
+                    {
+                        var sometextlol = VideoInfomation.InnerHtml;
+                        sometextlol = sometextlol.Remove(sometextlol.IndexOf("</script>") - 1);
+                        sometextlol = sometextlol.Remove(0, sometextlol.IndexOf('{'));
+                        var JSON = JsonConvert.DeserializeObject<VideoJSON>(sometextlol.Replace("\\", "\\\\"));
+                        video.VideoProvider = JSON.Provider;
+                        if (JSON.Provider == "youtube")
+                        {
+                            video.Uri = $"http://youtu.be/{JSON.JsParams.VideoId}";
+                        }
+                        else
+                        {
+                            Logger.LogConsole(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
+                            Logger.LogFile(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
+                        }
+                        sometextlol = null;
+                        JSON = null;
+                    }
+                    VideoInfomation = null;
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Name}");
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Video name: {video.Name}");
+                    Logger.LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
+                    Logger.LogFile(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
                 }
                 VideoName = null;
                 return video;

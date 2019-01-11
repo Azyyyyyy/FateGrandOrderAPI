@@ -12,23 +12,52 @@ namespace FateGrandOrderApi.Logging
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write($"[{nameof(FateGrandOrderApi)}]: ");
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine($"{LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}");
+
+            if (e != null)
+                Console.WriteLine($"{LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}");
+            else if (!string.IsNullOrWhiteSpace(LogMessage))
+                Console.WriteLine(LogMessage);
+            else
+                Console.WriteLine("Something happened (No Exception or log message)");
+
             if(!string.IsNullOrWhiteSpace(AdditionalData))
                 Console.WriteLine($"Additional Data:\r\n{AdditionalData}");
+
             Console.ForegroundColor = consoleColor;
             if (ToThrow)
-                throw e;
+            {
+                if (e != null)
+                    throw e;
+                else if (!string.IsNullOrEmpty(LogMessage))
+                    throw new Exception(LogMessage);
+                else
+                    throw new Exception($"[{nameof(FateGrandOrderApi)}]: Something happened (No Exception or log message)");
+            }
         }
 
         public static void LogDebugger(Exception e, string LogMessage, string AdditionalData = "N/A", bool ToThrow = false)
         {
             if (Debugger.IsAttached)
             {
-                Debug.WriteLine($"[{nameof(FateGrandOrderApi)}]: {LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}");
+                if (e != null)
+                    Debugger.Log(0, nameof(FateGrandOrderApi), $"{LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}");
+                else if (!string.IsNullOrWhiteSpace(LogMessage))
+                    Debugger.Log(0, nameof(FateGrandOrderApi), LogMessage);
+                else
+                    Debugger.Log(0, nameof(FateGrandOrderApi), "Something happened (No Exception or log message)");
+
                 if (!string.IsNullOrWhiteSpace(AdditionalData))
                     Debug.WriteLine($"Additional Data:\r\n{AdditionalData}");
+
                 if (ToThrow)
-                    throw e;
+                {
+                    if (e != null)
+                        throw e;
+                    else if (!string.IsNullOrEmpty(LogMessage))
+                        throw new Exception(LogMessage);
+                    else
+                        throw new Exception($"[{nameof(FateGrandOrderApi)}]: Something happened (No Exception or log message)");
+                }
             }
             else
             {
@@ -38,22 +67,40 @@ namespace FateGrandOrderApi.Logging
 
         public static void LogFile(Exception e, string LogMessage, string AdditionalData = "N/A", bool ToThrow = false)
         {
-            string FileContent = $"[{nameof(FateGrandOrderApi)}]: {LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}Additional Data:\r\n{AdditionalData}";
+            string FileContent = null;
+            if (e != null)
+                FileContent = $"[{nameof(FateGrandOrderApi)}]: {LogMessage}\r\nException StackTrace:\r\n{e.StackTrace}\r\nException Message:\r\n{e.Message}Additional Data:\r\n{AdditionalData}";
+            else if (!string.IsNullOrWhiteSpace(LogMessage))
+                FileContent = $"[{nameof(FateGrandOrderApi)}]: {LogMessage}";
+            else
+                FileContent = $"[{nameof(FateGrandOrderApi)}]: Something happened (No Exception or log message)";
+
             File.AppendAllText("FateGrandOrderAPILog.txt", FileContent);
             if (ToThrow)
-                throw e;
+            {
+                if (e != null)
+                    throw e;
+                else if (!string.IsNullOrEmpty(LogMessage))
+                    throw new Exception(LogMessage);
+                else
+                    throw new Exception($"[{nameof(FateGrandOrderApi)}]: Something happened (No Exception or log message)");
+            }
         }
 
         public static void LogAll(Exception e, string LogMessage, string AdditionalData = "N/A", bool ToThrow = false)
         {
             LogConsole(e, LogMessage, AdditionalData, false);
-            if (!string.IsNullOrWhiteSpace(AdditionalData))
-                LogDebugger(e, LogMessage, AdditionalData, false);
-            else
-                LogDebugger(e, LogMessage, AdditionalData, false);
+            LogDebugger(e, LogMessage, AdditionalData, false);
             LogFile(e, LogMessage);
             if (ToThrow)
-                throw e;
+            {
+                if (e != null)
+                    throw e;
+                else if (!string.IsNullOrEmpty(LogMessage))
+                    throw new Exception(LogMessage);
+                else
+                    throw new Exception($"[{nameof(FateGrandOrderApi)}]: Something happened (No Exception or log message)");
+            }
         }
     }
 }

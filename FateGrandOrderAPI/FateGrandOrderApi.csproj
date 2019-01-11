@@ -3,21 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.3.5</Version>
+    <Version>0.3.6</Version>
     <PackageIconUrl>https://raw.githubusercontent.com/AzyIsCool/FateGrandOrderAPI/master/FateGrandOrderAPI/Assets/Icon.png</PackageIconUrl>
     <Authors>AzyIsCool, DatReki</Authors>
     <Company>AzyIsCool, DatReki</Company>
     <Description>The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order</Description>
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
     <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
-    <PackageReleaseNotes>Wew fixes are a thing and comments should not be as bad (they still bad, but not as bad as before)
-.
-
-GetPeople is now GetServant, FateGrandOrderPeople is now just Servant (because we're getting Servants so it made more sense for it to be called that) and EnemiesThatDroppedThis is now AnythingThatDropsThis because it now can get Servants that drop stuff
-
-and lastly you can disable caching (you can choose what is disabled) and you can now save the caching to disk (wouldn't do it right now as this is still a WIP so parts could change with this)</PackageReleaseNotes>
+    <PackageReleaseNotes>Servant name fixed, Images fixed and VideoInfomation now gets filled in (as long the video is from YT)</PackageReleaseNotes>
     <PackageId>Azy.FateGrandOrderAPI</PackageId>
-    <AssemblyVersion>0.3.5.0</AssemblyVersion>
+    <AssemblyVersion>0.3.6.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

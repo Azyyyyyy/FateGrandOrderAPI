@@ -63,7 +63,7 @@ namespace ApiTest
 #if !DEBUG
         static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
 #elif DEBUG
-        static readonly string[] Servants = { "Jeanne d'Arc (Alter) (Santa Lily)" };
+        static readonly string[] Servants = { "Jack_the_Ripper" };
 #endif
     }
 }

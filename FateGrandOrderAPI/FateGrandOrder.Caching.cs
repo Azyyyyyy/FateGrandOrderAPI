@@ -39,12 +39,13 @@ namespace FateGrandOrderApi.Caching
         /// Images that are currently in cache
         /// </summary>
         public static List<ImageInformation> Images { get; set; }
-        ///// <summary>
-        ///// Videos that are currently in cache
-        ///// </summary>
-        //public static List<VideoInformation> Videos { get; set; }
 
-        public static async Task SaveCache(dynamic CacheToSave)
+        /// <summary>
+        /// Save's Cache to Disk
+        /// </summary>
+        /// <param name="CacheToSave">Cache to save</param>
+        /// <returns></returns>
+        internal static async Task SaveCache(dynamic CacheToSave)
         {
             if (!Settings.Cache.SaveCachedPartsToDisk)
                 return;
@@ -66,8 +67,6 @@ namespace FateGrandOrderApi.Caching
                     File.WriteAllText(Path.Combine(CacheLocation, "Skills.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
                 else if (Settings.Cache.CacheImages && CacheToSave is List<ImageInformation>)
                     File.WriteAllText(Path.Combine(CacheLocation, "Images.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
-                //else if (Settings.Cache.CacheVideos && CacheToSave is List<VideoInformation>)
-                //    File.WriteAllText(Path.Combine(CacheLocation, "Videos.json"), JsonConvert.SerializeObject(CacheToSave, Settings.Cache.JsonSerializerSettings));
                 else
                     new Exception("Unable to find what type of cache this is ;-;");
             }

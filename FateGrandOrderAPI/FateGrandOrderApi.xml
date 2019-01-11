@@ -39,6 +39,13 @@
             Images that are currently in cache
             </summary>
         </member>
+        <member name="M:FateGrandOrderApi.Caching.FateGrandOrderApiCache.SaveCache(System.Object)">
+            <summary>
+            Save's Cache to Disk
+            </summary>
+            <param name="CacheToSave">Cache to save</param>
+            <returns></returns>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.Servant">
             <summary>
             A Fate/Grand Order Servant

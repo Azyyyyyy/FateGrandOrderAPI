@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace FateGrandOrderApi.Classes
 {
@@ -307,13 +308,11 @@ namespace FateGrandOrderApi.Classes
     /// <summary>
     ///  Contains a uri and name of a video
     /// </summary>
-    public class VideoInformation : ImageInformation
+    public class VideoInformation
     {
-        public VideoInformation(string generatedWith)
-        {
-            GeneratedWith = generatedWith;
-        }
-        public VideoInformation() { }
+        public string Title { get; set; }
+        public string Uri { get; set; }
+        public string VideoProvider { get; set; }
     }
     #endregion
 
@@ -926,6 +925,26 @@ namespace FateGrandOrderApi.Classes
         /// What the Biography is in English
         /// </summary>
         public string EnglishText { get; set; }
+    }
+    #endregion
+
+    #region Video JSON
+    internal partial class VideoJSON
+    {
+        [JsonProperty("jsParams")]
+        public JsParams JsParams { get; set; }
+
+        [JsonProperty("title")]
+        public string Title { get; set; }
+
+        [JsonProperty("provider")]
+        public string Provider { get; set; }
+    }
+
+    internal partial class JsParams
+    {
+        [JsonProperty("videoId")]
+        public string VideoId { get; set; }
     }
     #endregion
 
