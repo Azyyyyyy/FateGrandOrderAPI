@@ -986,6 +986,26 @@
             Not Set for what to get
             </summary>
         </member>
+        <member name="T:FateGrandOrderApi.Classes.ToGrab">
+            <summary>
+            If to grab some part of C O N T E N T 
+            </summary>
+        </member>
+        <member name="F:FateGrandOrderApi.Classes.ToGrab.DontGrab">
+            <summary>
+            Don't grab the content
+            </summary>
+        </member>
+        <member name="F:FateGrandOrderApi.Classes.ToGrab.Grab">
+            <summary>
+            Grab the content
+            </summary>
+        </member>
+        <member name="F:FateGrandOrderApi.Classes.ToGrab.NotSet">
+            <summary>
+            Hasn't been set if to grab or not to grab content
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.ItemDrops">
             <summary>
             Container for anything that drops items
@@ -1093,7 +1113,7 @@
             <param name="itemToNotLookFor">Item that already been found and is known for dropping this item</param>
             <returns></returns>
         </member>
-        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetServant(System.String,FateGrandOrderApi.Classes.PresetsForInformation,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+        <member name="M:FateGrandOrderApi.FateGrandOrderParsing.GetServant(System.String,FateGrandOrderApi.Classes.PresetsForInformation,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab,FateGrandOrderApi.Classes.ToGrab)">
             <summary>
             This will return the servant from the servant name (will return null if we are unable to find the person)
             </summary>

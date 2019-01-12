@@ -22,7 +22,7 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = FateGrandOrderParsing.GetServant(servant).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = FateGrandOrderParsing.GetServant(servant, PresetsForInformation.AllInformation, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab, ToGrab.DontGrab).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
                             Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");

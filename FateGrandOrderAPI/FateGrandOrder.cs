@@ -1006,30 +1006,56 @@ namespace FateGrandOrderApi
         /// <param name="GetTrivia">If to get Trivia</param>
         /// <param name="GetImages">If to get the servants Images</param>
         /// <returns></returns>
-        public static async Task<Servant> GetServant(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, bool GetBasicInformation = false, bool GetActiveSkills = false, bool GetPassiveSkills = false, bool GetNoblePhantasm = false, bool GetAscension = false, bool GetSkillReinforcement = false, bool GetStats = false, bool GetBondLevel = false, bool GetBiography = false, bool GetAvailability = false, bool GetTrivia = false, bool GetImages = false)
+        public static async Task<Servant> GetServant(string ServantName, PresetsForInformation presetsForInformation = PresetsForInformation.AllInformation, ToGrab GetBasicInformation = ToGrab.NotSet, ToGrab GetActiveSkills = ToGrab.NotSet, ToGrab GetPassiveSkills = ToGrab.NotSet, ToGrab GetNoblePhantasm = ToGrab.NotSet, ToGrab GetAscension = ToGrab.NotSet, ToGrab GetSkillReinforcement = ToGrab.NotSet, ToGrab GetStats = ToGrab.NotSet, ToGrab GetBondLevel = ToGrab.NotSet, ToGrab GetBiography = ToGrab.NotSet, ToGrab GetAvailability = ToGrab.NotSet, ToGrab GetTrivia = ToGrab.NotSet, ToGrab GetImages = ToGrab.NotSet)
         {
             Servant Servant = null;
 
             #region Toggles For GettingInformation
+            bool _GetBasicInformation = false;
+            bool _GetActiveSkills = false;
+            bool _GetPassiveSkills = false;
+            bool _GetNoblePhantasm = false;
+            bool _GetAscension = false;
+            bool _GetSkillReinforcement = false;
+            bool _GetStats = false;
+            bool _GetBondLevel = false;
+            bool _GetBiography = false;
+            bool _GetAvailability = false;
+            bool _GetTrivia = false;
+            bool _GetImages = false;
+
             if (presetsForInformation == PresetsForInformation.BasicInformation)
             {
-                GetBasicInformation = true;
+                _GetBasicInformation = true;
             }
             else if (presetsForInformation == PresetsForInformation.AllInformation)
             {
-                GetBasicInformation = true;
-                GetActiveSkills = true;
-                GetPassiveSkills = true;
-                GetNoblePhantasm = true;
-                GetAscension = true;
-                GetSkillReinforcement = true;
-                GetStats = true;
-                GetBondLevel = true;
-                GetBiography = true;
-                GetAvailability = true;
-                GetTrivia = true;
-                GetImages = true;
+                _GetBasicInformation = true;
+                _GetActiveSkills = true;
+                _GetPassiveSkills = true;
+                _GetNoblePhantasm = true;
+                _GetAscension = true;
+                _GetSkillReinforcement = true;
+                _GetStats = true;
+                _GetBondLevel = true;
+                _GetBiography = true;
+                _GetAvailability = true;
+                _GetTrivia = true;
+                _GetImages = true;
             }
+
+            if (GetBasicInformation != ToGrab.NotSet) _GetBasicInformation = AssigningContent.FromToGrabToBool(GetBasicInformation);
+            if (GetActiveSkills != ToGrab.NotSet) _GetActiveSkills = AssigningContent.FromToGrabToBool(GetActiveSkills);
+            if (GetPassiveSkills != ToGrab.NotSet) _GetPassiveSkills = AssigningContent.FromToGrabToBool(GetPassiveSkills);
+            if (GetNoblePhantasm != ToGrab.NotSet) _GetNoblePhantasm = AssigningContent.FromToGrabToBool(GetNoblePhantasm);
+            if (GetAscension != ToGrab.NotSet) _GetAscension = AssigningContent.FromToGrabToBool(GetAscension);
+            if (GetSkillReinforcement != ToGrab.NotSet) _GetSkillReinforcement = AssigningContent.FromToGrabToBool(GetSkillReinforcement);
+            if (GetStats != ToGrab.NotSet) _GetStats = AssigningContent.FromToGrabToBool(GetStats);
+            if (GetBondLevel != ToGrab.NotSet) _GetBondLevel = AssigningContent.FromToGrabToBool(GetBondLevel);
+            if (GetBiography != ToGrab.NotSet) _GetBiography = AssigningContent.FromToGrabToBool(GetBiography);
+            if (GetAvailability != ToGrab.NotSet) _GetAvailability = AssigningContent.FromToGrabToBool(GetAvailability);
+            if (GetTrivia != ToGrab.NotSet) _GetTrivia = AssigningContent.FromToGrabToBool(GetTrivia);
+            if (GetImages != ToGrab.NotSet) _GetImages = AssigningContent.FromToGrabToBool(GetImages);
             #endregion
 
             #region Getting bools
@@ -1065,7 +1091,7 @@ namespace FateGrandOrderApi
             #endregion
             #endregion
 
-            if (!GetBasicInformation)
+            if (!_GetBasicInformation)
                 GettingBasicInformation = false;
 
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantName}?action=edit").DocumentNode.SelectNodes("//textarea"))
@@ -1086,57 +1112,57 @@ namespace FateGrandOrderApi
                         {
                             if (fateGrandOrderPersonC.GeneratedWith == Servant.GeneratedWith && fateGrandOrderPersonC.EnglishNamePassed == Servant.EnglishNamePassed)
                             {
-                                if (GetBasicInformation && fateGrandOrderPersonC.BasicInformation != null)
+                                if (_GetBasicInformation && fateGrandOrderPersonC.BasicInformation != null)
                                 {
-                                    GetBasicInformation = false;
+                                    _GetBasicInformation = false;
                                     GettingBasicInformation = false;
                                 }
-                                if (GetActiveSkills && fateGrandOrderPersonC.ActiveSkills != null)
+                                if (_GetActiveSkills && fateGrandOrderPersonC.ActiveSkills != null)
                                 {
-                                    GetActiveSkills = false;
+                                    _GetActiveSkills = false;
                                 }
-                                if (GetPassiveSkills && fateGrandOrderPersonC.PassiveSkills != null)
+                                if (_GetPassiveSkills && fateGrandOrderPersonC.PassiveSkills != null)
                                 {
-                                    GetPassiveSkills = false;
+                                    _GetPassiveSkills = false;
                                 }
-                                if (GetNoblePhantasm && fateGrandOrderPersonC.NoblePhantasms != null)
+                                if (_GetNoblePhantasm && fateGrandOrderPersonC.NoblePhantasms != null)
                                 {
-                                    GetNoblePhantasm = false;
+                                    _GetNoblePhantasm = false;
                                 }
-                                if (GetAscension && fateGrandOrderPersonC.Ascension != null)
+                                if (_GetAscension && fateGrandOrderPersonC.Ascension != null)
                                 {
-                                    GetAscension = false;
+                                    _GetAscension = false;
                                 }
-                                if (GetSkillReinforcement && fateGrandOrderPersonC.SkillReinforcement != null)
+                                if (_GetSkillReinforcement && fateGrandOrderPersonC.SkillReinforcement != null)
                                 {
-                                    GetSkillReinforcement = false;
+                                    _GetSkillReinforcement = false;
                                 }
-                                if (GetStats && fateGrandOrderPersonC.Stats != null)
+                                if (_GetStats && fateGrandOrderPersonC.Stats != null)
                                 {
-                                    GetStats = false;
+                                    _GetStats = false;
                                 }
-                                if (GetBondLevel && fateGrandOrderPersonC.BondLevels != null)
+                                if (_GetBondLevel && fateGrandOrderPersonC.BondLevels != null)
                                 {
-                                    GetBondLevel = false;
+                                    _GetBondLevel = false;
                                 }
-                                if (GetBiography && fateGrandOrderPersonC.Biography != null)
+                                if (_GetBiography && fateGrandOrderPersonC.Biography != null)
                                 {
-                                    GetBiography = false;
+                                    _GetBiography = false;
                                 }
-                                if (GetAvailability && fateGrandOrderPersonC.Availability != null)
+                                if (_GetAvailability && fateGrandOrderPersonC.Availability != null)
                                 {
-                                    GetAvailability = false;
+                                    _GetAvailability = false;
                                 }
-                                if (GetTrivia && fateGrandOrderPersonC.Trivia != null)
+                                if (_GetTrivia && fateGrandOrderPersonC.Trivia != null)
                                 {
-                                    GetTrivia = false;
+                                    _GetTrivia = false;
                                 }
-                                if (GetImages && fateGrandOrderPersonC.Images != null)
+                                if (_GetImages && fateGrandOrderPersonC.Images != null)
                                 {
-                                    GetImages = false;
+                                    _GetImages = false;
                                 }
 
-                                if (GetBasicInformation == false && GetActiveSkills == false && GetPassiveSkills == false && GetNoblePhantasm == false && GetAscension == false && GetSkillReinforcement == false && GetStats == false && GetBondLevel == false && GetBiography == false && GetAvailability == false && GetImages == false && GetTrivia == false)
+                                if (_GetBasicInformation == false && _GetActiveSkills == false && _GetPassiveSkills == false && _GetNoblePhantasm == false && _GetAscension == false && _GetSkillReinforcement == false && _GetStats == false && _GetBondLevel == false && _GetBiography == false && _GetAvailability == false && _GetImages == false && _GetTrivia == false)
                                 {
                                     Servant = null;
                                     ServantName = null;
@@ -1173,7 +1199,7 @@ namespace FateGrandOrderApi
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
-                if (GetBasicInformation && Servant.BasicInformation == null)
+                if (_GetBasicInformation && Servant.BasicInformation == null)
                     Servant.BasicInformation = new FateGrandOrderServantBasic(ServantName);
 
                 foreach (string s in resultString)
@@ -2130,66 +2156,66 @@ namespace FateGrandOrderApi
                     #endregion
 
                     #region Trigger Skills Logic
-                    if (GetPassiveSkills && s == "== Passive Skills ==" | s == "==Passive Skills==")
+                    if (_GetPassiveSkills && s == "== Passive Skills ==" | s == "==Passive Skills==")
                     {
                         if (Servant.PassiveSkills == null)
                             Servant.PassiveSkills = new List<PassiveSkillList>() { new PassiveSkillList() };
                         GettingPassiveSkills = true;
                     }
-                    else if (GetActiveSkills && s == "== Active Skills ==" | s == "==Active Skills==")
+                    else if (_GetActiveSkills && s == "== Active Skills ==" | s == "==Active Skills==")
                     {
                         if (Servant.ActiveSkills == null)
                             Servant.ActiveSkills = new List<ActiveSkill>();
                         GettingActiveSkills = true;
                     }
-                    else if (GetAscension && s == "== Ascension ==" | s == "==Ascension==")
+                    else if (_GetAscension && s == "== Ascension ==" | s == "==Ascension==")
                     {
                         if (Servant.Ascension == null)
                             Servant.Ascension = new Ascension();
                         Servant.Ascension = new Ascension();
                         GettingAscension = true;
                     }
-                    else if (GetSkillReinforcement && s == "== Skill Reinforcement ==" | s == "==Skill Reinforcement==")
+                    else if (_GetSkillReinforcement && s == "== Skill Reinforcement ==" | s == "==Skill Reinforcement==")
                     {
                         if (Servant.SkillReinforcement == null)
                             Servant.SkillReinforcement = new SkillReinforcement();
                         Servant.SkillReinforcement = new SkillReinforcement();
                         GettingSkillReinforcement = true;
                     }
-                    else if (GetNoblePhantasm && s == "== Noble Phantasm ==" | s == "==Noble Phantasm==")
+                    else if (_GetNoblePhantasm && s == "== Noble Phantasm ==" | s == "==Noble Phantasm==")
                     {
                         if (Servant.NoblePhantasms == null)
                             Servant.NoblePhantasms = new List<NoblePhantasmList>();
                         GettingNoblePhantasm = true;
                         Servant.NoblePhantasms.Add(new NoblePhantasmList());
                     }
-                    else if (GetStats && s == "== Stats ==" | s == "==Stats==")
+                    else if (_GetStats && s == "== Stats ==" | s == "==Stats==")
                     {
                         if (Servant.Stats == null)
                             Servant.Stats = new Stats();
                         GettingStats = true;
                     }
-                    else if (GetBondLevel && s == "== Bond Level ==" | s == "==Bond Level==")
+                    else if (_GetBondLevel && s == "== Bond Level ==" | s == "==Bond Level==")
                     {
                         if (Servant.BondLevels == null)
                             Servant.BondLevels = new BondLevels();
                         GettingBondLevel = true;
                     }
-                    else if (GetBiography && s == "== Biography ==" | s == "==Biography==")
+                    else if (_GetBiography && s == "== Biography ==" | s == "==Biography==")
                     {
                         if (Servant.Biography == null)
                             Servant.Biography = new Biography();
                         GettingBiography = true;
                     }
-                    else if (GetAvailability && s == "== Availability ==" | s == "==Availability==")
+                    else if (_GetAvailability && s == "== Availability ==" | s == "==Availability==")
                     {
                         GettingAvailability = true;
                     }
-                    else if (GetTrivia && s == "== Trivia ==" | s == "==Trivia==")
+                    else if (_GetTrivia && s == "== Trivia ==" | s == "==Trivia==")
                     {
                         GettingTrivia = true;
                     }
-                    else if (GetImages && s == "== Images ==" | s == "==Images==")
+                    else if (_GetImages && s == "== Images ==" | s == "==Images==")
                     {
                         if (Servant.Images == null)
                             Servant.Images = new List<ImageInformation>();
@@ -2588,6 +2614,14 @@ namespace FateGrandOrderApi
                 ItemNumber = null;
                 AscensionSkillReinforcementNumber = null;
                 return WhatToFill;
+            }
+
+            public static bool FromToGrabToBool(ToGrab toGrab)
+            {
+                if (toGrab == ToGrab.Grab)
+                    return true;
+                else
+                    return false;
             }
         }
     }

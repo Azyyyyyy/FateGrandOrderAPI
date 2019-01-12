@@ -969,6 +969,25 @@ namespace FateGrandOrderApi.Classes
     }
 
     /// <summary>
+    /// If to grab some part of C O N T E N T 
+    /// </summary>
+    public enum ToGrab
+    {
+        /// <summary>
+        /// Don't grab the content
+        /// </summary>
+        DontGrab = 0,
+        /// <summary>
+        /// Grab the content
+        /// </summary>
+        Grab = 1,
+        /// <summary>
+        /// Hasn't been set if to grab or not to grab content
+        /// </summary>
+        NotSet = 2
+    }
+
+    /// <summary>
     /// Container for anything that drops items
     /// </summary>
     public class ItemDrops

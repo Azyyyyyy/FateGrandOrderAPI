@@ -25,3 +25,5 @@ ATK: 1,786/11,557
 Class: Assassin
 Cost: 16
 ```
+
+For more detail about what this API can offer then look at the [wiki](https://github.com/AzyIsCool/FateGrandOrderAPI/wiki)
