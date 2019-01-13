@@ -39,9 +39,21 @@
             Images that are currently in cache
             </summary>
         </member>
+        <member name="M:FateGrandOrderApi.Caching.FateGrandOrderApiCache.UpdateCache">
+            <summary>
+            This will make sure all the cache is up to date, updating any that isn't
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:FateGrandOrderApi.Caching.FateGrandOrderApiCache.CacheTimer">
+            <summary>
+            Updates the Cache after a set amount of time
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:FateGrandOrderApi.Caching.FateGrandOrderApiCache.SaveCache(System.Object)">
             <summary>
-            Save's Cache to Disk
+            Saves Cache to Disk
             </summary>
             <param name="CacheToSave">Cache to save</param>
             <returns></returns>
@@ -119,6 +131,11 @@
         <member name="P:FateGrandOrderApi.Classes.Servant.Images">
             <summary>
             Images of/with this servant
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Servant.FromCache">
+            <summary>
+            If the servant that was returned from cache
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.FateGrandOrderServantBasic">
@@ -336,6 +353,11 @@
             String that was used when generating this servant class, used for checking if in cache and if cache version is up to date
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.Enemy.FromCache">
+            <summary>
+            If the enemy that was returned from cache
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.Classes.ImageInformation">
             <summary>
             Contains a uri and name of a image
@@ -364,6 +386,11 @@
         <member name="P:FateGrandOrderApi.Classes.ImageInformation.GeneratedWith">
             <summary>
             String that was used when generating this servant class, used for checking if in cache and if cache version is up to date
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.ImageInformation.FromCache">
+            <summary>
+            If the enemy that was returned from cache
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.VideoInformation">
@@ -494,6 +521,11 @@
         <member name="P:FateGrandOrderApi.Classes.Skill.GeneratedWith">
             <summary>
             String that was passed when generating this, used for checking if in cache and if cache version is up to date
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Classes.Skill.FromCache">
+            <summary>
+            Is returned from cache
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.ActiveSkill">
@@ -1071,6 +1103,11 @@
             The servants that uses this
             </summary>
         </member>
+        <member name="P:FateGrandOrderApi.Classes.Item.FromCache">
+            <summary>
+            If from cache
+            </summary>
+        </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing">
             <summary>
             Class containing parsing logic (this is where you get what you need from the api)
@@ -1119,7 +1156,7 @@
             </summary>
             <param name="ServantName">The Servant's name</param>
             <param name="presetsForInformation">Preset to use</param>
-            <param name="GetBasicInformation">If to get the basic infomation</param>
+            <param name="GetBasicInformation">If to get the basic information</param>
             <param name="GetActiveSkills">If to get Active Skills</param>
             <param name="GetPassiveSkills">If to get Passive Skills</param>
             <param name="GetNoblePhantasm">If to get Noble Phantasm</param>
@@ -1241,6 +1278,11 @@
         <member name="P:FateGrandOrderApi.Settings.Cache.SaveCachedPartsToDisk">
             <summary>
             If we should save cached content to the user's disk 
+            </summary>
+        </member>
+        <member name="P:FateGrandOrderApi.Settings.Cache.CheckCacheTime">
+            <summary>
+            How long until the api will check the cache to make sure it's all up to date
             </summary>
         </member>
     </members>

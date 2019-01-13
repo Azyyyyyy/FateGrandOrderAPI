@@ -11,7 +11,6 @@ using FateGrandOrderApi.Caching;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
 
 namespace FateGrandOrderApi
 {
@@ -22,51 +21,19 @@ namespace FateGrandOrderApi
     {
         static FateGrandOrderParsing()
         {
-            if (!Directory.Exists(Settings.Cache.UserFilesLocation))
-                Directory.CreateDirectory(Settings.Cache.UserFilesLocation);
-            if (!Directory.Exists(Settings.Cache.GlobalFilesLocation))
-                Directory.CreateDirectory(Settings.Cache.GlobalFilesLocation);
-
-            if (!Settings.Cache.SaveCachedPartsToDisk)
-                goto End;
-
             try
             {
-                if (!Directory.Exists(FateGrandOrderApiCache.CacheLocation))
-                    goto End;
-
-                if (Settings.Cache.CacheServants && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Servants.json")))
-                    FateGrandOrderApiCache.Servants = JsonConvert.DeserializeObject<List<Servant>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Servants.json")));
-                if (Settings.Cache.CacheItems && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Items.json")))
-                    FateGrandOrderApiCache.Items = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Items.json")));
-                if (Settings.Cache.CacheEnemies && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Enemies.json")))
-                    FateGrandOrderApiCache.Enemies = JsonConvert.DeserializeObject<List<Enemy>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Enemies.json")));
-                if (Settings.Cache.CacheActiveSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Active Skills.json")))
-                    FateGrandOrderApiCache.ActiveSkills = JsonConvert.DeserializeObject<List<ActiveSkill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Active Skills.json")));
-                if (Settings.Cache.CacheSkills && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")))
-                    FateGrandOrderApiCache.Skills = JsonConvert.DeserializeObject<List<Skill>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Skills.json")));
-                if (Settings.Cache.CacheImages && File.Exists(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")))
-                    FateGrandOrderApiCache.Images = JsonConvert.DeserializeObject<List<ImageInformation>>(File.ReadAllText(Path.Combine(FateGrandOrderApiCache.CacheLocation, "Images.json")));
+                if (!Directory.Exists(Settings.Cache.UserFilesLocation))
+                    Directory.CreateDirectory(Settings.Cache.UserFilesLocation);
+                if (!Directory.Exists(Settings.Cache.GlobalFilesLocation))
+                    Directory.CreateDirectory(Settings.Cache.GlobalFilesLocation);
             }
             catch (Exception e)
             {
-                Logger.LogConsole(e, "Looks like something happened when accessing/editing the cache");
-                Logger.LogFile(e, "Looks like something happened when accessing/editing the cache");
-            }
+                Logger.LogConsole(e, "Looks like something happened when setting up directory's");
+                Logger.LogFile(e, "Looks like something happened when setting up directory's");
 
-            End:
-            if (FateGrandOrderApiCache.Skills == null && Settings.Cache.CacheSkills)
-                FateGrandOrderApiCache.Skills = new List<Skill>();
-            if (FateGrandOrderApiCache.ActiveSkills == null && Settings.Cache.CacheActiveSkills)
-                FateGrandOrderApiCache.ActiveSkills = new List<ActiveSkill>();
-            if (FateGrandOrderApiCache.Items == null && Settings.Cache.CacheItems)
-                FateGrandOrderApiCache.Items = new List<Item>();
-            if (FateGrandOrderApiCache.Enemies == null && Settings.Cache.CacheEnemies)
-                FateGrandOrderApiCache.Enemies = new List<Enemy>();
-            if (FateGrandOrderApiCache.Servants == null && Settings.Cache.CacheServants)
-                FateGrandOrderApiCache.Servants = new List<Servant>();
-            if (FateGrandOrderApiCache.Images == null && Settings.Cache.CacheImages)
-                FateGrandOrderApiCache.Images = new List<ImageInformation>();
+            }
         }
 
         internal static string FixString(string s)
