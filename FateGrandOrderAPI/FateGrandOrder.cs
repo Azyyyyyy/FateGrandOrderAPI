@@ -1728,6 +1728,7 @@ namespace FateGrandOrderApi
                     #region Bond Level
                     else if (GettingBondLevel)
                     {
+                        bool GettingBond10 = false;
                         if (s.Contains("|b1") && !s.Contains("|b10"))
                         {
                             Servant.BondLevels.BondLevel1.BondRequired = await AssigningContent.GenericAssigning(s, "|b1");
@@ -1812,9 +1813,16 @@ namespace FateGrandOrderApi
                         {
                             Servant.BondLevels.Bond10Reward.Image = await AssigningContent.Image(s, "|image");
                         }
-                        else if (s.Contains("|effect"))
+                        else if (s.Contains("|effect") || GettingBond10)
                         {
-                            Servant.BondLevels.Bond10Reward.Effect = await AssigningContent.GenericAssigning(FixString(s).Replace("<br/>", "\\").Split('\\').Last(), "|effect");
+                            //PART WAS WORKING ON FOR WHEN I GO ON LAPTOP
+                            GettingBond10 = true;
+                            //]]''' == Effect
+                            Servant.BondLevels.Bond10Reward.Effect += await AssigningContent.GenericAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", " " } }, OtherPartsToRemove: new string[] { "]]", "[[", "'''" });
+                        }
+                        else if (s == "}}" && GettingBond10)
+                        {
+                            GettingBond10 = false;
                         }
                     }
                     #endregion
@@ -1941,11 +1949,11 @@ namespace FateGrandOrderApi
                         }
                         else if (GettingExtraBioJap)
                         {
-                            Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingExtraBio)
                         {
-                            Servant.Biography.Extra.EnglishText = Servant.Biography.Extra.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Extra.EnglishText = Servant.Biography.Extra.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                     }
                     #endregion
@@ -2094,7 +2102,7 @@ namespace FateGrandOrderApi
                         }
                         else if (s.Contains("|aka"))
                         {
-                            Servant.BasicInformation.AKA = await AssigningContent.GenericArrayAssigning(s, "|aka", OtherPartsToRemove: new string[] { "'''", "''" });
+                            Servant.BasicInformation.AKA = await AssigningContent.GenericArrayAssigning(s, "|aka", OtherPartsToRemove: new string[] { "'''", "''", "{{", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "," }, new string[] { "|", "," } });
                         }
                         else if (s.Contains("|traits"))
                         {
@@ -2585,10 +2593,7 @@ namespace FateGrandOrderApi
 
             public static bool FromToGrabToBool(ToGrab toGrab)
             {
-                if (toGrab == ToGrab.Grab)
-                    return true;
-                else
-                    return false;
+                return toGrab == ToGrab.Grab;
             }
         }
     }

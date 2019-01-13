@@ -1156,7 +1156,7 @@
             </summary>
             <param name="ServantName">The Servant's name</param>
             <param name="presetsForInformation">Preset to use</param>
-            <param name="GetBasicInformation">If to get the basic information</param>
+            <param name="GetBasicInformation">If to get the basic infomation</param>
             <param name="GetActiveSkills">If to get Active Skills</param>
             <param name="GetPassiveSkills">If to get Passive Skills</param>
             <param name="GetNoblePhantasm">If to get Noble Phantasm</param>
