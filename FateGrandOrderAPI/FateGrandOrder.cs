@@ -6,11 +6,12 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using FateGrandOrderApi.Classes;
-using FateGrandOrderApi.Logging;
 using FateGrandOrderApi.Caching;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using static FateGrandOrderApi.Logging.Logger;
+using static FateGrandOrderApi.FateGrandOrderParsing.AssigningContent;
 
 namespace FateGrandOrderApi
 {
@@ -30,8 +31,8 @@ namespace FateGrandOrderApi
             }
             catch (Exception e)
             {
-                Logger.LogConsole(e, "Looks like something happened when setting up directory's");
-                Logger.LogFile(e, "Looks like something happened when setting up directory's");
+                LogConsole(e, "Looks like something happened when setting up directory's");
+                LogFile(e, "Looks like something happened when setting up directory's");
 
             }
         }
@@ -88,8 +89,8 @@ namespace FateGrandOrderApi
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
-                        Logger.LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
+                        LogConsole(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
+                        LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
                     }
                 }
                 
@@ -100,23 +101,23 @@ namespace FateGrandOrderApi
                 {
                     if (s.Contains("|img"))
                     {
-                        var image = await AssigningContent.Image(s);
+                        var image = await Image(s);
                         skill.Image = image;
                         image = null;
                     }
                     else if (s.Contains("|name"))
                     {
-                        skill.Name = await AssigningContent.GenericAssigning(s, "|name");
+                        skill.Name = await GenericAssigning(s, "|name");
                     }
                     else if (s.Contains("|rank"))
                     {
-                        skill.Rank = await AssigningContent.GenericAssigning(s, "|rank");
+                        skill.Rank = await GenericAssigning(s, "|rank");
                     }
                     else if (s.Contains("|effect"))
                     {
                         try
                         {
-                            var effects = await AssigningContent.GenericAssigning(s, "|effect", new string[] { "''" }, new string[][] { new string[] { "<br/>", "\\" }, new string[] { "<sup>", "(" }, new string[] { "</sup>", ")" } });
+                            var effects = await GenericAssigning(s, "|effect", new string[] { "''" }, new string[][] { new string[] { "<br/>", "\\" }, new string[] { "<sup>", "(" }, new string[] { "</sup>", ")" } });
                             while (effects.ToLower().Contains("]]"))
                             {
                                 int startpoint = 0;
@@ -142,8 +143,8 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}");
-                            Logger.LogFile(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}");
+                            LogConsole(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}");
+                            LogFile(e, $"Looks like something happened when filling up Effect in a skill called {skill.Name}", $"String used when doing this: {s}");
                         }
                         break;
                     }
@@ -206,8 +207,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when GetStartPart was called", $"What lastLevelEffect was when this ex happened: {lastLevelEffect}");
-                    Logger.LogFile(e, "Looks like something happened when GetStartPart was called", $"What lastLevelEffect was when this ex happened: {lastLevelEffect}");
+                    LogConsole(e, "Looks like something happened when GetStartPart was called", $"What lastLevelEffect was when this ex happened: {lastLevelEffect}");
+                    LogFile(e, "Looks like something happened when GetStartPart was called", $"What lastLevelEffect was when this ex happened: {lastLevelEffect}");
                     return "|";
                 }
             }
@@ -248,8 +249,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
+                    LogConsole(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
+                    LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
                 }
             }
 
@@ -279,7 +280,7 @@ namespace FateGrandOrderApi
                             servantIcons = servantIcons.Remove(startpoint, 2);
                         }
 
-                        var servants = await AssigningContent.GenericArrayAssigning(servantIcons, "|servanticons", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
+                        var servants = await GenericArrayAssigning(servantIcons, "|servanticons", '\\', new string[] { "{{" }, new string[][] { new string[] { "}}", "\\" } });
                         foreach (string servant in servants)
                         {
                             var servantP = await GetServant(servant, PresetsForInformation.BasicInformation);
@@ -297,8 +298,8 @@ namespace FateGrandOrderApi
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}");
-                        Logger.LogFile(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}");
+                        LogConsole(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}");
+                        LogFile(e, $"Looks like something happened when filling up ServantsThatHaveThisSkill in active skill {skill.Name}", $"String used when doing this: {s}");
                     }
                 }
                 else if (s.Contains($"leveleffect"))
@@ -331,93 +332,93 @@ namespace FateGrandOrderApi
                         }
                         if(skill.LevelEffects == null)
                             skill.LevelEffects = new List<LevelEffect10>();
-                        skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = await AssigningContent.GenericAssigning(lastLevelEffect, $"{GetStartPart()}leveleffect") });
+                        skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = await GenericAssigning(lastLevelEffect, $"{GetStartPart()}leveleffect") });
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}");
-                        Logger.LogFile(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}");
+                        LogConsole(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}");
+                        LogFile(e, $"Looks like something happened when making a LevelEffects in active skill {skill.Name}", $"String used when doing this: {s}");
                     }
                 }
                 else if (s.Contains($"{GetStartPart()}l1 "))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l1");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l1");
                 }
                 else if (s.Contains($"{GetStartPart()}l2"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l2");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l2");
                 }
                 else if (s.Contains($"{GetStartPart()}l3"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l3");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l3");
                 }
                 else if (s.Contains($"{GetStartPart()}l4"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l4");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l4");
                 }
                 else if (s.Contains($"{GetStartPart()}l5"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l5");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l5");
                 }
                 else if (s.Contains($"{GetStartPart()}l6"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l6");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l6");
                 }
                 else if (s.Contains($"{GetStartPart()}l7"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l7");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l7");
                 }
                 else if (s.Contains($"{GetStartPart()}l8"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l8");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l8");
                 }
                 else if (s.Contains($"{GetStartPart()}l9"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l9");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l9");
                 }
                 else if (s.Contains($"{GetStartPart()}l10"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.EffectStrength = await AssigningContent.GenericAssigning(s, $"{GetStartPart()}l10");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.EffectStrength = await GenericAssigning(s, $"{GetStartPart()}l10");
                 }
                 else if (s.Contains("|c1 "))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c1");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level1Effect.Cooldown = await GenericAssigning(s, "|c1");
                 }
                 else if (s.Contains("|c2"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c2");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level2Effect.Cooldown = await GenericAssigning(s, "|c2");
                 }
                 else if (s.Contains("|c3"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c3");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level3Effect.Cooldown = await GenericAssigning(s, "|c3");
                 }
                 else if (s.Contains("|c4"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c4");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level4Effect.Cooldown = await GenericAssigning(s, "|c4");
                 }
                 else if (s.Contains("|c5"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c5");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level5Effect.Cooldown = await GenericAssigning(s, "|c5");
                 }
                 else if (s.Contains("|c6"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c6");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level6Effect.Cooldown = await GenericAssigning(s, "|c6");
                 }
                 else if (s.Contains("|c7"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c7");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level7Effect.Cooldown = await GenericAssigning(s, "|c7");
                 }
                 else if (s.Contains("|c8"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c8");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level8Effect.Cooldown = await GenericAssigning(s, "|c8");
                 }
                 else if (s.Contains("|c9"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c9");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level9Effect.Cooldown = await GenericAssigning(s, "|c9");
                 }
                 else if (s.Contains("|c10"))
                 {
-                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.Cooldown = await AssigningContent.GenericAssigning(s, "|c10");
+                    skill.LevelEffects[skill.LevelEffects.Count - 1].Level10Effect.Cooldown = await GenericAssigning(s, "|c10");
                 }
                 else if (s == @"}}")
                 {
@@ -468,6 +469,7 @@ namespace FateGrandOrderApi
         public async static Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
         {
             bool DoingLocationLogic = false;
+            bool GettingItem = false;
             Item item = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{itemName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
@@ -501,8 +503,8 @@ namespace FateGrandOrderApi
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
-                        Logger.LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
+                        LogConsole(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
+                        LogFile(e, "Looks like something happened when accessing/using the cache for items", $"Item name: {item.EnglishName}");
                     }
                 }
                 if (item != null && !FateGrandOrderApiCache.Items.Contains(item))
@@ -512,150 +514,144 @@ namespace FateGrandOrderApi
 
                 foreach (string s in resultString)
                 {
-                    if (!string.IsNullOrWhiteSpace(s) && s == "}}" || FixString(s) == "}}</onlyinclude>" && DoingLocationLogic)
+                    if (resultString[0].Trim() == "{{ItemBox" || resultString[1].Trim() == "{{ItemBox")
                     {
-                        DoingLocationLogic = false;
-                    }
-                    else if (DoingLocationLogic)
-                    {
-                        await LocationLogic(s);
-                    }
-                    else if (s.Contains("|jpName"))
-                    {
-                        item.JapaneseName = await AssigningContent.GenericAssigning(s, "|jpName");
-                    }
-                    else if (s.Contains("|image"))
-                    {
-                        item.ItemImage = await AssigningContent.Image(s, "|image");
-                    }
-                    else if (s.Contains("|enemy"))
-                    {
-                        var enemys = await AssigningContent.GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" }, new string[] { " / ", "/" } });
-                        if (enemys != null && enemys.Length > 0)
-                            item.AnythingThatDropsThis = new ItemDrops();
-                        foreach (string enemy in enemys)
+                        if (!string.IsNullOrWhiteSpace(s) && s == "}}" || FixString(s) == "}}</onlyinclude>" && DoingLocationLogic)
                         {
-                            string enemyEdited = enemy;
-                            if (enemyEdited.Contains("Shadow Servant"))
-                                enemyEdited = "Shadow Servant";
-                            try
+                            DoingLocationLogic = false;
+                        }
+                        else if (DoingLocationLogic)
+                        {
+                            await LocationLogic(s);
+                        }
+                        else if (s.Contains("|jpName"))
+                        {
+                            item.JapaneseName = await GenericAssigning(s, "|jpName", PartsToReplace: new string[][] { new string[] { "<br/>", "\r\n" } });
+                        }
+                        else if (s.Contains("|image"))
+                        {
+                            item.ItemImage = await Image(s, "|image");
+                        }
+                        else if (s.Contains("|enemy"))
+                        {
+                            var enemys = await GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" }, new string[] { " / ", "/" } });
+                            if (enemys != null && enemys.Length > 0)
+                                item.AnythingThatDropsThis = new ItemDrops();
+                            foreach (string enemy in enemys)
                             {
-                                if (!enemyEdited.Contains("}}-class"))
+                                string enemyEdited = enemy;
+                                if (enemyEdited.Contains("Shadow Servant"))
+                                    enemyEdited = "Shadow Servant";
+                                try
                                 {
-                                    if (enemyEdited.IndexOf('|') != -1)
-                                        enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
+                                    if (!enemyEdited.Contains("}}-class"))
+                                    {
+                                        if (enemyEdited.IndexOf('|') != -1)
+                                            enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
 
-                                    if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
-                                    {
-                                        if (item.AnythingThatDropsThis.Enemies == null)
-                                            item.AnythingThatDropsThis.Enemies = new List<Enemy>();
-                                        item.AnythingThatDropsThis.Enemies.Add(enemyToNotLookFor);
-                                    }
-                                    else
-                                    {
-                                        var enemyP = await GetEnemy(enemyEdited, item);
-                                        if (enemyP != null)
+                                        if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
                                         {
                                             if (item.AnythingThatDropsThis.Enemies == null)
                                                 item.AnythingThatDropsThis.Enemies = new List<Enemy>();
-                                            item.AnythingThatDropsThis.Enemies.Add(enemyP);
+                                            item.AnythingThatDropsThis.Enemies.Add(enemyToNotLookFor);
                                         }
-                                        enemyP = null;
-                                    }
-                                }
-                                else if (enemyEdited.Contains("}}-class"))
-                                {
-                                    enemyEdited = enemyEdited.Replace("}}-class","").Replace("{{","");
-                                    string[] strings = enemyEdited.Split(' ');
-                                    foreach (HtmlNode col2 in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{strings[0]}?action=edit").DocumentNode.SelectNodes("//textarea"))
-                                    {
-                                        if (col2.InnerText == null)
-                                            break;
-
-                                        var resultString2 = Regex.Split(col2.InnerText, @"\n");
-
-                                        foreach (string ss in resultString2)
+                                        else
                                         {
-                                            if (ss.StartsWith("|[["))
+                                            var enemyP = await GetEnemy(enemyEdited, item);
+                                            if (enemyP != null)
                                             {
-                                                string thing = FixString(ss);
-                                                try
-                                                {
-                                                    if (!thing.EndsWith("]"))
-                                                        thing = thing.Remove(thing.LastIndexOf(']') + 1);
-                                                    thing = thing.Replace("|[[", "").Replace("]]", "");
-                                                    if (thing.Contains('|'))
-                                                        thing = thing.Remove(0, thing.IndexOf('|') + 1);
-                                                    if (strings[1] == "Servant")
-                                                    {
-                                                        var Servant = await GetServant(thing, PresetsForInformation.BasicInformation);
-                                                        if (Servant != null)
-                                                        {
-                                                            if (item.AnythingThatDropsThis.Servants == null)
-                                                                item.AnythingThatDropsThis.Servants = new List<Servant>();
-                                                            item.AnythingThatDropsThis.Servants.Add(Servant);
-                                                        }
-                                                        Servant = null;
-                                                    }
-                                                    else if (strings[1] == "Enemy")
-                                                    {
-                                                        var Enemy = await GetEnemy(thing);
-                                                        if (Enemy != null)
-                                                        {
-                                                            if (item.AnythingThatDropsThis.Enemies == null)
-                                                                item.AnythingThatDropsThis.Enemies = new List<Enemy>();
-                                                            item.AnythingThatDropsThis.Enemies.Add(Enemy);
-                                                        }
-                                                        Enemy = null;
-                                                    }
-                                                }
-                                                catch (Exception e)
-                                                {
-                                                    Logger.LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {thing}");
-                                                    Logger.LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {thing}");
-                                                }
+                                                if (item.AnythingThatDropsThis.Enemies == null)
+                                                    item.AnythingThatDropsThis.Enemies = new List<Enemy>();
+                                                item.AnythingThatDropsThis.Enemies.Add(enemyP);
                                             }
+                                            enemyP = null;
                                         }
-                                        resultString2 = null;
                                     }
-                                    strings = null;
+                                    else if (enemyEdited.Contains("}}-class"))
+                                    {
+                                        enemyEdited = enemyEdited.Replace("}}-class", "").Replace("{{", "");
+                                        string[] strings = enemyEdited.Split(' ');
+                                        await UsesLogic(strings);
+                                        strings = null;
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
+                                    LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
+                                }
+                                enemyEdited = null;
+                            }
+                            enemys = null;
+                        }
+                        else if (s.Contains("|jdesc"))
+                        {
+                            item.JapaneseDescription = await GenericAssigning(s, "|jdesc", OtherPartsToRemove: new string[] { "<br/>" });
+                        }
+                        else if (s.Contains("|desc"))
+                        {
+                            item.EnglishDescription = await GenericAssigning(s, "|desc");
+                        }
+                        else if (s.Contains("|location"))
+                        {
+                            string ss = await GenericAssigning(s, "|location");
+                            if (!string.IsNullOrWhiteSpace(ss))
+                                await LocationLogic(ss);
+                            else
+                                DoingLocationLogic = true;
+                            ss = null;
+                        }
+                        else if (s.Contains("|usedFor"))
+                        {
+                            if(item.Uses == null)
+                                item.Uses = new List<Servant>();
+                            foreach (string ss in (await GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
+                            {
+                                var servant = await GetServant(ss, PresetsForInformation.BasicInformation);
+                                if (servant != null)
+                                    item.Uses.Add(servant);
+                                servant = null;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (s == $"== {itemName} ==" || s == $"=={itemName}==")
+                        {
+                            GettingItem = true;
+                        }
+                        else if (s == "|}")
+                        {
+                            GettingItem = false;
+                        }
+                        else if (GettingItem)
+                        {
+                            if (s.Contains("style") && s != "{| style=\"width: 100%; text-align: center;\" class=\"wikitable\"")
+                            {
+                                string thing = s.Remove(0, 1);
+                                thing = thing.Remove(0, thing.IndexOf('|') + 1);
+                                if (thing.StartsWith("[["))
+                                {
+                                    item.ItemImage = await Image(thing.Replace("file", "File").Replace("|100px|link=]]",""));
+                                    item.ItemImage.Name = itemName;
+                                }
+                                else
+                                {
+                                    item.JapaneseName = thing;
                                 }
                             }
-                            catch (Exception e)
+                            else if (s.Contains("colspan=\"3\"") && s.Contains("[["))
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
-                                Logger.LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
+                                if(item.Uses == null)
+                                    item.Uses = new List<Servant>();
+                                string thing = s.Remove(0, 1);
+                                thing = thing.Remove(0, thing.IndexOf('|') + 1);
+                                var servants = thing.Replace("]] and [[", "\\").Replace("Every [[", "").Replace("]]", "").Split('\\');
+                                foreach (string ss in servants)
+                                {
+                                    await UsesLogic(new string[] { ss }, true);
+                                }
                             }
-                            enemyEdited = null;
-                        }
-                        enemys = null;
-                    }
-                    else if (s.Contains("|jdesc"))
-                    {
-                        item.JapaneseDescription = await AssigningContent.GenericAssigning(s, "|jdesc");
-                    }
-                    else if (s.Contains("|desc"))
-                    {
-                        item.EnglishDescription = await AssigningContent.GenericAssigning(s, "|desc");
-                    }
-                    else if (s.Contains("|location"))
-                    {
-                        string ss = await AssigningContent.GenericAssigning(s, "|location");
-                        if (!string.IsNullOrWhiteSpace(ss))
-                            await LocationLogic(ss);
-                        else
-                            DoingLocationLogic = true;
-                        ss = null;
-                    }
-                    else if (s.Contains("|usedFor"))
-                    {
-                        item.Uses = new List<Servant>();
-                        foreach (string ss in (await AssigningContent.GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
-                        {
-                            var servant = await GetServant(ss, PresetsForInformation.BasicInformation);
-                            if (servant != null)
-                                item.Uses.Add(servant);
-                            servant = null;
                         }
                     }
                 }
@@ -665,6 +661,71 @@ namespace FateGrandOrderApi
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Items);
             itemName = null;
             return item;
+
+            async Task UsesLogic(string[] ServantsPage, bool GoToUses = false)
+            {
+                foreach (HtmlNode col2 in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantsPage[0]}?action=edit").DocumentNode.SelectNodes("//textarea"))
+                {
+                    if (col2.InnerText == null)
+                        break;
+
+                    var resultString2 = Regex.Split(col2.InnerText, @"\n");
+
+                    foreach (string ss in resultString2)
+                    {
+                        if (ss.StartsWith("|[["))
+                        {
+                            string thing = FixString(ss);
+                            try
+                            {
+                                if (!thing.EndsWith("]"))
+                                    thing = thing.Remove(thing.LastIndexOf(']') + 1);
+                                thing = thing.Replace("|[[", "").Replace("]]", "");
+                                if (thing.Contains('|'))
+                                    thing = thing.Remove(0, thing.IndexOf('|') + 1);
+
+                                if (ServantsPage.Length == 1 || ServantsPage[1] == "Servant")
+                                {
+                                    var Servant = await GetServant(thing, PresetsForInformation.BasicInformation);
+                                    if (Servant != null)
+                                    {
+                                        if (!GoToUses)
+                                        {
+                                            if (item.AnythingThatDropsThis.Servants == null)
+                                                item.AnythingThatDropsThis.Servants = new List<Servant>();
+                                            item.AnythingThatDropsThis.Servants.Add(Servant);
+                                        }
+                                        else
+                                        {
+                                            if (item.Uses == null)
+                                                item.Uses = new List<Servant>();
+                                            item.Uses.Add(Servant);
+                                        }
+                                    }
+                                    Servant = null;
+                                }
+                                else if (ServantsPage[1] == "Enemy")
+                                {
+                                    var Enemy = await GetEnemy(thing);
+                                    if (Enemy != null)
+                                    {
+                                        if (item.AnythingThatDropsThis.Enemies == null)
+                                            item.AnythingThatDropsThis.Enemies = new List<Enemy>();
+                                        item.AnythingThatDropsThis.Enemies.Add(Enemy);
+                                    }
+                                    Enemy = null;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {thing}");
+                                LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {thing}");
+                            }
+                        }
+                    }
+                    resultString2 = null;
+                }
+            }
 
             async Task LocationLogic(string s)
             {
@@ -688,7 +749,7 @@ namespace FateGrandOrderApi
                             {
                                 foreach (string ss in FixString(s).Replace("<br/>", "\\").TrimEnd('\\').Split('\\'))
                                 {
-                                    var thing = await AssigningContent.GenericArrayAssigning(ss, "", ']', new string[] { "<br/>" }, new string[][] { new string[] { "[[", "[" }, new string[] { "]]", "]" } });
+                                    var thing = await GenericArrayAssigning(ss, "", ']', new string[] { "<br/>" }, new string[][] { new string[] { "[[", "[" }, new string[] { "]]", "]" } });
                                     if (thing.Length >= 3)
                                     {
                                         item.DropLocations[item.DropLocations.Count - 1].DropLocations.Add(new ItemDropLocation
@@ -710,16 +771,16 @@ namespace FateGrandOrderApi
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, "Looks like something happened while filling up a item stat", $"Item name: {item.EnglishName}");
-                                Logger.LogFile(e, "Looks like something happened while filling up a item stat", $"Item name: {item.EnglishName}");
+                                LogConsole(e, "Looks like something happened while filling up a item stat", $"Item name: {item.EnglishName}");
+                                LogFile(e, "Looks like something happened while filling up a item stat", $"Item name: {item.EnglishName}");
                             }
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when doing DoingLocationLogic if statement", $"Item name: {item.EnglishName}");
-                    Logger.LogFile(e, "Looks like something happened when doing DoingLocationLogic if statement", $"Item name: {item.EnglishName}");
+                    LogConsole(e, "Looks like something happened when doing DoingLocationLogic if statement", $"Item name: {item.EnglishName}");
+                    LogFile(e, "Looks like something happened when doing DoingLocationLogic if statement", $"Item name: {item.EnglishName}");
                 }
             }
         }
@@ -767,8 +828,8 @@ namespace FateGrandOrderApi
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
-                        Logger.LogFile(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
+                        LogConsole(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
+                        LogFile(e, "Looks like something happened when accessing/using the cache for enemy", $"Enemy name: {enemy.EnglishName}");
                     }
                 }
 
@@ -796,12 +857,12 @@ namespace FateGrandOrderApi
                                         {
                                             if (WhatToLookFor.Length > 1 && servants[i].Contains($"|{WhatToLookFor[1]}"))
                                             {
-                                                servants = new string[] { await AssigningContent.GenericAssigning(servants[i], $"|{WhatToLookFor[1]}") };
+                                                servants = new string[] { await GenericAssigning(servants[i], $"|{WhatToLookFor[1]}") };
                                                 break;
                                             }
                                             else if (servants[i].Contains("|#default"))
                                             {
-                                                servants = new string[] { await AssigningContent.GenericAssigning(servants[i], "|#default") };
+                                                servants = new string[] { await GenericAssigning(servants[i], "|#default") };
                                                 break;
                                             }
                                         }
@@ -821,8 +882,8 @@ namespace FateGrandOrderApi
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when assigning enemy.RecommendedServants", $"Enemy name: {enemy.EnglishName}");
-                                Logger.LogFile(e, $"Looks like something failed when assigning enemy.RecommendedServants", $"Enemy name: {enemy.EnglishName}");
+                                LogConsole(e, $"Looks like something failed when assigning enemy.RecommendedServants", $"Enemy name: {enemy.EnglishName}");
+                                LogFile(e, $"Looks like something failed when assigning enemy.RecommendedServants", $"Enemy name: {enemy.EnglishName}");
                             }
                         }
                     }
@@ -836,7 +897,7 @@ namespace FateGrandOrderApi
                             GettingImages = true;
                         else
                         {
-                            var image = await AssigningContent.Image(s, "|image");
+                            var image = await Image(s, "|image");
                             if (image != null)
                             {
                                 if(enemy.EnemyImage == null)
@@ -852,7 +913,7 @@ namespace FateGrandOrderApi
                     }
                     else if (GettingImages)
                     {
-                        var image = await AssigningContent.Image(s, "");
+                        var image = await Image(s, "");
                         if (image != null)
                         {
                             if (enemy.EnemyImage == null)
@@ -863,11 +924,11 @@ namespace FateGrandOrderApi
                     }
                     else if (s.Contains("|class"))
                     {
-                        enemy.Class = await AssigningContent.GenericArrayAssigning(s, "|class", '\\', new string[] { "{{", "}}" }, new string[][] { new string[] { "}}{{", "\\" } });
+                        enemy.Class = await GenericArrayAssigning(s, "|class", '\\', new string[] { "{{", "}}" }, new string[][] { new string[] { "}}{{", "\\" } });
                     }
                     else if (s.Contains("|area"))
                     {
-                        var thing = await AssigningContent.GenericArrayAssigning(s, "|area", OtherPartsToRemove: new string[] { "<br/>" });
+                        var thing = await GenericArrayAssigning(s, "|area", OtherPartsToRemove: new string[] { "<br/>" });
                         if (thing.Length > 0 && !string.IsNullOrWhiteSpace(thing[0]))
                         {
                             try
@@ -885,37 +946,37 @@ namespace FateGrandOrderApi
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
-                                Logger.LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
+                                LogConsole(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
+                                LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
                             }
                         }
                         thing = null;
                     }
                     else if (s.Contains("|jname"))
                     {
-                        enemy.JapaneseName = await AssigningContent.GenericAssigning(s, "|jname");
+                        enemy.JapaneseName = await GenericAssigning(s, "|jname");
                     }
                     else if (s.Contains("|rank"))
                     {
-                        enemy.Rank = await AssigningContent.GenericAssigning(s, "|rank");
+                        enemy.Rank = await GenericAssigning(s, "|rank");
                     }
                     else if (s.Contains("|gender"))
                     {
-                        await AssigningContent.Gender(s, enemy);
+                        await Gender(s, enemy);
                     }
                     else if (s.Contains("|attribute"))
                     {
-                        enemy.Attribute = await AssigningContent.GenericAssigning(s, "|attribute");
+                        enemy.Attribute = await GenericAssigning(s, "|attribute");
                     }
                     else if (s.Contains("|traits"))
                     {
-                        enemy.Traits = await AssigningContent.GenericArrayAssigning(s, "|traits");
+                        enemy.Traits = await GenericArrayAssigning(s, "|traits");
                     }
                     else if (s.Contains("|drop"))
                     {
                         try
                         {
-                            var items = await AssigningContent.GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{", "<br/>" }, new string[][] { new string[] { "}}", "\\" } });
+                            var items = await GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{", "<br/>" }, new string[][] { new string[] { "}}", "\\" } });
                             if(items.Length > 0 && !string.IsNullOrWhiteSpace(items[0]))
                                 enemy.WhatThisEnemyDrops = new List<Item>();
                             foreach (string item in items)
@@ -937,8 +998,8 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"Enemy name: {enemy.EnglishName}");
-                            Logger.LogFile(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"Enemy name: {enemy.EnglishName}");
+                            LogConsole(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"Enemy name: {enemy.EnglishName}");
+                            LogFile(e, $"Looks like something failed when assigning enemy.WhatThisEnemyDrops", $"Enemy name: {enemy.EnglishName}");
                         }
                     }
                     else if (s == "==Recommended Servants==" | s == "== Recommended Servants ==")
@@ -1011,18 +1072,18 @@ namespace FateGrandOrderApi
                 _GetImages = true;
             }
 
-            if (GetBasicInformation != ToGrab.NotSet) _GetBasicInformation = AssigningContent.FromToGrabToBool(GetBasicInformation);
-            if (GetActiveSkills != ToGrab.NotSet) _GetActiveSkills = AssigningContent.FromToGrabToBool(GetActiveSkills);
-            if (GetPassiveSkills != ToGrab.NotSet) _GetPassiveSkills = AssigningContent.FromToGrabToBool(GetPassiveSkills);
-            if (GetNoblePhantasm != ToGrab.NotSet) _GetNoblePhantasm = AssigningContent.FromToGrabToBool(GetNoblePhantasm);
-            if (GetAscension != ToGrab.NotSet) _GetAscension = AssigningContent.FromToGrabToBool(GetAscension);
-            if (GetSkillReinforcement != ToGrab.NotSet) _GetSkillReinforcement = AssigningContent.FromToGrabToBool(GetSkillReinforcement);
-            if (GetStats != ToGrab.NotSet) _GetStats = AssigningContent.FromToGrabToBool(GetStats);
-            if (GetBondLevel != ToGrab.NotSet) _GetBondLevel = AssigningContent.FromToGrabToBool(GetBondLevel);
-            if (GetBiography != ToGrab.NotSet) _GetBiography = AssigningContent.FromToGrabToBool(GetBiography);
-            if (GetAvailability != ToGrab.NotSet) _GetAvailability = AssigningContent.FromToGrabToBool(GetAvailability);
-            if (GetTrivia != ToGrab.NotSet) _GetTrivia = AssigningContent.FromToGrabToBool(GetTrivia);
-            if (GetImages != ToGrab.NotSet) _GetImages = AssigningContent.FromToGrabToBool(GetImages);
+            if (GetBasicInformation != ToGrab.NotSet) _GetBasicInformation = FromToGrabToBool(GetBasicInformation);
+            if (GetActiveSkills != ToGrab.NotSet) _GetActiveSkills = FromToGrabToBool(GetActiveSkills);
+            if (GetPassiveSkills != ToGrab.NotSet) _GetPassiveSkills = FromToGrabToBool(GetPassiveSkills);
+            if (GetNoblePhantasm != ToGrab.NotSet) _GetNoblePhantasm = FromToGrabToBool(GetNoblePhantasm);
+            if (GetAscension != ToGrab.NotSet) _GetAscension = FromToGrabToBool(GetAscension);
+            if (GetSkillReinforcement != ToGrab.NotSet) _GetSkillReinforcement = FromToGrabToBool(GetSkillReinforcement);
+            if (GetStats != ToGrab.NotSet) _GetStats = FromToGrabToBool(GetStats);
+            if (GetBondLevel != ToGrab.NotSet) _GetBondLevel = FromToGrabToBool(GetBondLevel);
+            if (GetBiography != ToGrab.NotSet) _GetBiography = FromToGrabToBool(GetBiography);
+            if (GetAvailability != ToGrab.NotSet) _GetAvailability = FromToGrabToBool(GetAvailability);
+            if (GetTrivia != ToGrab.NotSet) _GetTrivia = FromToGrabToBool(GetTrivia);
+            if (GetImages != ToGrab.NotSet) _GetImages = FromToGrabToBool(GetImages);
             #endregion
 
             #region Getting bools
@@ -1038,6 +1099,7 @@ namespace FateGrandOrderApi
             bool GettingAvailability = false;
             bool GettingTrivia = false;
             bool GettingBasicInformation = true;
+            bool GettingBond10 = false; //Will not need soon™
             int PassiveSkillsCount = 0;
 
             #region Getting Biography bools
@@ -1153,8 +1215,8 @@ namespace FateGrandOrderApi
                     }
                     catch (Exception e)
                     {
-                        Logger.LogConsole(e, $"Looks like something failed when accessing FateGrandOrderServant cache", $"Servant name: {Servant.EnglishNamePassed}");
-                        Logger.LogFile(e, $"Looks like something failed when accessing FateGrandOrderServant cache", $"Servant name: {Servant.EnglishNamePassed}");
+                        LogConsole(e, $"Looks like something failed when accessing FateGrandOrderServant cache", $"Servant name: {Servant.EnglishNamePassed}");
+                        LogFile(e, $"Looks like something failed when accessing FateGrandOrderServant cache", $"Servant name: {Servant.EnglishNamePassed}");
                     }
                 }
                 #endregion
@@ -1188,36 +1250,36 @@ namespace FateGrandOrderApi
                                 Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Add(new PassiveSkills());
                                 PassiveSkillsCount++;
                                 if (PassiveSkillsCount == 1)
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await AssigningContent.Image(s);
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await Image(s);
                                 else
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await AssigningContent.Image(s.Replace($"|img{PassiveSkillsCount}", "|img"));
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Image = await Image(s.Replace($"|img{PassiveSkillsCount}", "|img"));
                             }
                             else if (s.Contains("|name"))
                             {
                                 if (PassiveSkillsCount == 1)
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await AssigningContent.GenericAssigning(s, "|name");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await GenericAssigning(s, "|name");
                                 else
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await AssigningContent.GenericAssigning(s, $"|name{PassiveSkillsCount}");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Name = await GenericAssigning(s, $"|name{PassiveSkillsCount}");
                             }
                             else if (s.Contains("|rank"))
                             {
                                 if (PassiveSkillsCount == 1)
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await AssigningContent.GenericAssigning(s, "|rank");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await GenericAssigning(s, "|rank");
                                 else
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await AssigningContent.GenericAssigning(s, $"|rank{PassiveSkillsCount}");
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Rank = await GenericAssigning(s, $"|rank{PassiveSkillsCount}");
                             }
                             else if (s.Contains("|effect"))
                             {
                                 if (PassiveSkillsCount == 1)
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await AssigningContent.GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
                                 else
-                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await AssigningContent.GenericArrayAssigning(s, $"|effect{PassiveSkillsCount}", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
+                                    Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills[Servant.PassiveSkills[Servant.PassiveSkills.Count - 1].PassiveSkills.Count - 1].Effect = await GenericArrayAssigning(s, $"|effect{PassiveSkillsCount}", PartsToReplace: new string[][] { new string[] { "<br/>", "\\" } }, CharToSplitWith: '\\');
                             }
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
-                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
+                            LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
+                            LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.PassiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
                         }
                     }
                     #endregion
@@ -1248,8 +1310,8 @@ namespace FateGrandOrderApi
                         }
                         catch (Exception e)
                         {
-                            Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
-                            Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
+                            LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
+                            LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.ActiveSkills", $"Servant name: {Servant.EnglishNamePassed}");
                         }
                     }
                     #endregion
@@ -1269,12 +1331,12 @@ namespace FateGrandOrderApi
                                 string VideoName = s.Replace("[[File:", "");
                                 if (VideoName.Contains('|'))
                                     VideoName = VideoName.Remove(VideoName.IndexOf('|'));
-                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = await AssigningContent.Video(VideoName);
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation = await Video(VideoName);
                             }
                             catch (Exception e)
                             {
-                                Logger.LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {Servant.EnglishNamePassed}");
-                                Logger.LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {Servant.EnglishNamePassed}");
+                                LogConsole(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {Servant.EnglishNamePassed}");
+                                LogFile(e, $"Looks like something failed when assigning something in fateGrandOrderPerson.NoblePhantasms[fateGrandOrderPerson.NoblePhantasms.Count - 1].NoblePhantasm.VideoInformation", $"Servant name: {Servant.EnglishNamePassed}");
                             }
                         }
                         else if (s == "|-|")
@@ -1283,7 +1345,7 @@ namespace FateGrandOrderApi
                         }
                         else if (s.Contains("|name"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Name = await AssigningContent.GenericAssigning(s, "|name", PartsToReplace: new string[][] { new string[] { "<br/>", "\n" } });
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Name = await GenericAssigning(s, "|name", PartsToReplace: new string[][] { new string[] { "<br/>", "\n" } });
                             if (s.Contains("Video"))
                             {
                                 Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.IsVideo = true;
@@ -1292,75 +1354,80 @@ namespace FateGrandOrderApi
                         }
                         else if (s.Contains("|rank"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Rank = await AssigningContent.GenericAssigning(s, "|rank");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Rank = await GenericAssigning(s, "|rank");
                         }
                         else if (s.Contains("|classification"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Classification = await AssigningContent.GenericAssigning(s, "|classification");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Classification = await GenericAssigning(s, "|classification");
                         }
                         else if (s.Contains("|type"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Type = await AssigningContent.GenericAssigning(s, "|type");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Type = await GenericAssigning(s, "|type");
                         }
                         else if (s.Contains("|hitcount"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.HitCount = await AssigningContent.GenericAssigning(s, "|hitcount");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.HitCount = await GenericAssigning(s, "|hitcount");
                         }
                         else if (s.Contains("|effect"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Effects = await AssigningContent.GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.Effects = await GenericArrayAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
                         }
                         else if (s.Contains("|overchargeeffect"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.OverChargeEffect = await AssigningContent.GenericArrayAssigning(s, "|overchargeeffect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.OverChargeEffect = await GenericArrayAssigning(s, "|overchargeeffect", PartsToReplace: new string[][] { new string[] { "<br/>", "," } });
                         }
                         else if (s.Contains("|leveleffect"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect = new LevelEffect { Name = await AssigningContent.GenericAssigning(s, "|leveleffect") };
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect = new LevelEffect { Name = await GenericAssigning(s, "|leveleffect") };
                         }
                         else if (s.Contains("|l1"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel1 = await AssigningContent.GenericAssigning(s, "|l1");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel1 = await GenericAssigning(s, "|l1");
                         }
                         else if (s.Contains("|l2"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel2 = await AssigningContent.GenericAssigning(s, "|l2");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel2 = await GenericAssigning(s, "|l2");
                         }
                         else if (s.Contains("|l3"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel3 = await AssigningContent.GenericAssigning(s, "|l3");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel3 = await GenericAssigning(s, "|l3");
                         }
                         else if (s.Contains("|l4"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel4 = await AssigningContent.GenericAssigning(s, "|l4");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel4 = await GenericAssigning(s, "|l4");
                         }
                         else if (s.Contains("|l5"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel5 = await AssigningContent.GenericAssigning(s, "|l5");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.LevelEffect.NPLevel5 = await GenericAssigning(s, "|l5");
                         }
                         else if (s.Contains("|chargeeffect"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect = new ChargeEffect { Name = await AssigningContent.GenericAssigning(s, "|chargeeffect") };
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect = new ChargeEffect { Name = await GenericAssigning(s, "|chargeeffect") };
+                            while (Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name.Contains("[[:"))
+                            {
+                                Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name = Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name.Remove(Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name.IndexOf("[[:"), Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name.IndexOf("]]") - (Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name.IndexOf("[[:") - 2));
+                            }
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name = Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.Name.Replace("  ", " ");
                         }
                         else if (s.Contains("|c1"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel1 = await AssigningContent.GenericAssigning(s, "|c1");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel1 = await GenericAssigning(s, "|c1");
                         }
                         else if (s.Contains("|c2"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel2 = await AssigningContent.GenericAssigning(s, "|c2");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel2 = await GenericAssigning(s, "|c2");
                         }
                         else if (s.Contains("|c3"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel3 = await AssigningContent.GenericAssigning(s, "|c3");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel3 = await GenericAssigning(s, "|c3");
                         }
                         else if (s.Contains("|c4"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel4 = await AssigningContent.GenericAssigning(s, "|c4");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel4 = await GenericAssigning(s, "|c4");
                         }
                         else if (s.Contains("|c5"))
                         {
-                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel5 = await AssigningContent.GenericAssigning(s, "|c5");
+                            Servant.NoblePhantasms[Servant.NoblePhantasms.Count - 1].NoblePhantasm.ChargeEffect.NPLevel5 = await GenericAssigning(s, "|c5");
                         }
                     }
                     #endregion
@@ -1370,108 +1437,108 @@ namespace FateGrandOrderApi
                     {
                         if (s.Length >= 3 && s.Remove(3) == "|11")
                         {
-                            Servant.Ascension.Ascension1 = await AssigningContent.Item(null, null, null, true, "1", Servant.Ascension.Ascension1);
-                            Servant.Ascension.Ascension1.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item1, "11");
+                            Servant.Ascension.Ascension1 = await Item(null, null, null, true, "1", Servant.Ascension.Ascension1);
+                            Servant.Ascension.Ascension1.Item1 = await Item(s, Servant.Ascension.Ascension1.Item1, "11");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|12")
                         {
-                            Servant.Ascension.Ascension1.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item2, "12");
+                            Servant.Ascension.Ascension1.Item2 = await Item(s, Servant.Ascension.Ascension1.Item2, "12");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|13")
                         {
-                            Servant.Ascension.Ascension1.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item3, "13");
+                            Servant.Ascension.Ascension1.Item3 = await Item(s, Servant.Ascension.Ascension1.Item3, "13");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|14")
                         {
-                            Servant.Ascension.Ascension1.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension1.Item4, "14");
+                            Servant.Ascension.Ascension1.Item4 = await Item(s, Servant.Ascension.Ascension1.Item4, "14");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|21")
                         {
-                            Servant.Ascension.Ascension2 = await AssigningContent.Item(null, null, null, true, "2", Servant.Ascension.Ascension2);
-                            Servant.Ascension.Ascension2.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item2, "21");
+                            Servant.Ascension.Ascension2 = await Item(null, null, null, true, "2", Servant.Ascension.Ascension2);
+                            Servant.Ascension.Ascension2.Item1 = await Item(s, Servant.Ascension.Ascension2.Item2, "21");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|22")
                         {
-                            Servant.Ascension.Ascension2.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item2, "22");
+                            Servant.Ascension.Ascension2.Item2 = await Item(s, Servant.Ascension.Ascension2.Item2, "22");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|23")
                         {
-                            Servant.Ascension.Ascension2.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item3, "23");
+                            Servant.Ascension.Ascension2.Item3 = await Item(s, Servant.Ascension.Ascension2.Item3, "23");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|24")
                         {
-                            Servant.Ascension.Ascension2.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension2.Item4, "24");
+                            Servant.Ascension.Ascension2.Item4 = await Item(s, Servant.Ascension.Ascension2.Item4, "24");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|31")
                         {
-                            Servant.Ascension.Ascension3 = await AssigningContent.Item(null, null, null, true, "3", Servant.Ascension.Ascension3);
-                            Servant.Ascension.Ascension3.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item2, "31");
+                            Servant.Ascension.Ascension3 = await Item(null, null, null, true, "3", Servant.Ascension.Ascension3);
+                            Servant.Ascension.Ascension3.Item1 = await Item(s, Servant.Ascension.Ascension3.Item2, "31");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|32")
                         {
-                            Servant.Ascension.Ascension3.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item2, "32");
+                            Servant.Ascension.Ascension3.Item2 = await Item(s, Servant.Ascension.Ascension3.Item2, "32");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|33")
                         {
-                            Servant.Ascension.Ascension3.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item3, "33");
+                            Servant.Ascension.Ascension3.Item3 = await Item(s, Servant.Ascension.Ascension3.Item3, "33");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|34")
                         {
-                            Servant.Ascension.Ascension3.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension3.Item4, "34");
+                            Servant.Ascension.Ascension3.Item4 = await Item(s, Servant.Ascension.Ascension3.Item4, "34");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|41")
                         {
-                            Servant.Ascension.Ascension4 = await AssigningContent.Item(null, null, null, true, "4", Servant.Ascension.Ascension4);
-                            Servant.Ascension.Ascension4.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item2, "41");
+                            Servant.Ascension.Ascension4 = await Item(null, null, null, true, "4", Servant.Ascension.Ascension4);
+                            Servant.Ascension.Ascension4.Item1 = await Item(s, Servant.Ascension.Ascension4.Item2, "41");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|42")
                         {
-                            Servant.Ascension.Ascension4.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item2, "42");
+                            Servant.Ascension.Ascension4.Item2 = await Item(s, Servant.Ascension.Ascension4.Item2, "42");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|43")
                         {
-                            Servant.Ascension.Ascension4.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item3, "43");
+                            Servant.Ascension.Ascension4.Item3 = await Item(s, Servant.Ascension.Ascension4.Item3, "43");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|44")
                         {
-                            Servant.Ascension.Ascension4.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension4.Item4, "44");
+                            Servant.Ascension.Ascension4.Item4 = await Item(s, Servant.Ascension.Ascension4.Item4, "44");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|51")
                         {
-                            Servant.Ascension.Ascension5 = await AssigningContent.Item(null, null, null, true, "5", Servant.Ascension.Ascension5);
-                            Servant.Ascension.Ascension5.Item1 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item2, "51");
+                            Servant.Ascension.Ascension5 = await Item(null, null, null, true, "5", Servant.Ascension.Ascension5);
+                            Servant.Ascension.Ascension5.Item1 = await Item(s, Servant.Ascension.Ascension5.Item2, "51");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|52")
                         {
-                            Servant.Ascension.Ascension5.Item2 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item2, "52");
+                            Servant.Ascension.Ascension5.Item2 = await Item(s, Servant.Ascension.Ascension5.Item2, "52");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|53")
                         {
-                            Servant.Ascension.Ascension5.Item3 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item3, "53");
+                            Servant.Ascension.Ascension5.Item3 = await Item(s, Servant.Ascension.Ascension5.Item3, "53");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|54")
                         {
-                            Servant.Ascension.Ascension5.Item4 = await AssigningContent.Item(s, Servant.Ascension.Ascension5.Item4, "54");
+                            Servant.Ascension.Ascension5.Item4 = await Item(s, Servant.Ascension.Ascension5.Item4, "54");
                         }
                         else if (s.Contains("|1qp"))
                         {
-                            Servant.Ascension.Ascension1.QP = await AssigningContent.GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension1.QP = await GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|2qp"))
                         {
-                            Servant.Ascension.Ascension2.QP = await AssigningContent.GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension2.QP = await GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|3qp"))
                         {
-                            Servant.Ascension.Ascension3.QP = await AssigningContent.GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension3.QP = await GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|4qp"))
                         {
-                            Servant.Ascension.Ascension4.QP = await AssigningContent.GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension4.QP = await GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|5qp"))
                         {
-                            Servant.Ascension.Ascension5.QP = await AssigningContent.GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.Ascension.Ascension5.QP = await GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                     }
                     #endregion
@@ -1481,192 +1548,192 @@ namespace FateGrandOrderApi
                     {
                         if (s.Length >= 3 && s.Remove(3) == "|11")
                         {
-                            Servant.SkillReinforcement.Ascension1 = await AssigningContent.Item(null, null, null, true, "1", Servant.SkillReinforcement.Ascension1);
-                            Servant.SkillReinforcement.Ascension1.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item2, "11");
+                            Servant.SkillReinforcement.Ascension1 = await Item(null, null, null, true, "1", Servant.SkillReinforcement.Ascension1);
+                            Servant.SkillReinforcement.Ascension1.Item1 = await Item(s, Servant.SkillReinforcement.Ascension1.Item2, "11");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|12")
                         {
-                            Servant.SkillReinforcement.Ascension1.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item2, "12");
+                            Servant.SkillReinforcement.Ascension1.Item2 = await Item(s, Servant.SkillReinforcement.Ascension1.Item2, "12");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|13")
                         {
-                            Servant.SkillReinforcement.Ascension1.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item3, "13");
+                            Servant.SkillReinforcement.Ascension1.Item3 = await Item(s, Servant.SkillReinforcement.Ascension1.Item3, "13");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|14")
                         {
-                            Servant.SkillReinforcement.Ascension1.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension1.Item4, "14");
+                            Servant.SkillReinforcement.Ascension1.Item4 = await Item(s, Servant.SkillReinforcement.Ascension1.Item4, "14");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|21")
                         {
-                            Servant.SkillReinforcement.Ascension2 = await AssigningContent.Item(null, null, null, true, "2", Servant.SkillReinforcement.Ascension2);
-                            Servant.SkillReinforcement.Ascension2.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item2, "21");
+                            Servant.SkillReinforcement.Ascension2 = await Item(null, null, null, true, "2", Servant.SkillReinforcement.Ascension2);
+                            Servant.SkillReinforcement.Ascension2.Item1 = await Item(s, Servant.SkillReinforcement.Ascension2.Item2, "21");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|22")
                         {
-                            Servant.SkillReinforcement.Ascension2.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item2, "22");
+                            Servant.SkillReinforcement.Ascension2.Item2 = await Item(s, Servant.SkillReinforcement.Ascension2.Item2, "22");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|23")
                         {
-                            Servant.SkillReinforcement.Ascension2.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item3, "23");
+                            Servant.SkillReinforcement.Ascension2.Item3 = await Item(s, Servant.SkillReinforcement.Ascension2.Item3, "23");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|24")
                         {
-                            Servant.SkillReinforcement.Ascension2.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension2.Item4, "24");
+                            Servant.SkillReinforcement.Ascension2.Item4 = await Item(s, Servant.SkillReinforcement.Ascension2.Item4, "24");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|31")
                         {
-                            Servant.SkillReinforcement.Ascension3 = await AssigningContent.Item(null, null, null, true, "3", Servant.SkillReinforcement.Ascension3);
-                            Servant.SkillReinforcement.Ascension3.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item2, "31");
+                            Servant.SkillReinforcement.Ascension3 = await Item(null, null, null, true, "3", Servant.SkillReinforcement.Ascension3);
+                            Servant.SkillReinforcement.Ascension3.Item1 = await Item(s, Servant.SkillReinforcement.Ascension3.Item2, "31");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|32")
                         {
-                            Servant.SkillReinforcement.Ascension3.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item2, "32");
+                            Servant.SkillReinforcement.Ascension3.Item2 = await Item(s, Servant.SkillReinforcement.Ascension3.Item2, "32");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|33")
                         {
-                            Servant.SkillReinforcement.Ascension3.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item3, "33");
+                            Servant.SkillReinforcement.Ascension3.Item3 = await Item(s, Servant.SkillReinforcement.Ascension3.Item3, "33");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|34")
                         {
-                            Servant.SkillReinforcement.Ascension3.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension3.Item4, "34");
+                            Servant.SkillReinforcement.Ascension3.Item4 = await Item(s, Servant.SkillReinforcement.Ascension3.Item4, "34");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|41")
                         {
-                            Servant.SkillReinforcement.Ascension4 = await AssigningContent.Item(null, null, null, true, "4", Servant.SkillReinforcement.Ascension4);
-                            Servant.SkillReinforcement.Ascension4.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item2, "41");
+                            Servant.SkillReinforcement.Ascension4 = await Item(null, null, null, true, "4", Servant.SkillReinforcement.Ascension4);
+                            Servant.SkillReinforcement.Ascension4.Item1 = await Item(s, Servant.SkillReinforcement.Ascension4.Item2, "41");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|42")
                         {
-                            Servant.SkillReinforcement.Ascension4.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item2, "42");
+                            Servant.SkillReinforcement.Ascension4.Item2 = await Item(s, Servant.SkillReinforcement.Ascension4.Item2, "42");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|43")
                         {
-                            Servant.SkillReinforcement.Ascension4.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item3, "43");
+                            Servant.SkillReinforcement.Ascension4.Item3 = await Item(s, Servant.SkillReinforcement.Ascension4.Item3, "43");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|44")
                         {
-                            Servant.SkillReinforcement.Ascension4.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension4.Item4, "44");
+                            Servant.SkillReinforcement.Ascension4.Item4 = await Item(s, Servant.SkillReinforcement.Ascension4.Item4, "44");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|51")
                         {
-                            Servant.SkillReinforcement.Ascension5 = await AssigningContent.Item(null, null, null, true, "5", Servant.SkillReinforcement.Ascension5);
-                            Servant.SkillReinforcement.Ascension5.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item2, "51");
+                            Servant.SkillReinforcement.Ascension5 = await Item(null, null, null, true, "5", Servant.SkillReinforcement.Ascension5);
+                            Servant.SkillReinforcement.Ascension5.Item1 = await Item(s, Servant.SkillReinforcement.Ascension5.Item2, "51");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|52")
                         {
-                            Servant.SkillReinforcement.Ascension5.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item2, "52");
+                            Servant.SkillReinforcement.Ascension5.Item2 = await Item(s, Servant.SkillReinforcement.Ascension5.Item2, "52");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|53")
                         {
-                            Servant.SkillReinforcement.Ascension5.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item3, "53");
+                            Servant.SkillReinforcement.Ascension5.Item3 = await Item(s, Servant.SkillReinforcement.Ascension5.Item3, "53");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|54")
                         {
-                            Servant.SkillReinforcement.Ascension5.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension5.Item4, "54");
+                            Servant.SkillReinforcement.Ascension5.Item4 = await Item(s, Servant.SkillReinforcement.Ascension5.Item4, "54");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|61")
                         {
-                            Servant.SkillReinforcement.Ascension6 = await AssigningContent.Item(null, null, null, true, "6", Servant.SkillReinforcement.Ascension6);
-                            Servant.SkillReinforcement.Ascension6.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item2, "61");
+                            Servant.SkillReinforcement.Ascension6 = await Item(null, null, null, true, "6", Servant.SkillReinforcement.Ascension6);
+                            Servant.SkillReinforcement.Ascension6.Item1 = await Item(s, Servant.SkillReinforcement.Ascension6.Item2, "61");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|62")
                         {
-                            Servant.SkillReinforcement.Ascension6.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item2, "62");
+                            Servant.SkillReinforcement.Ascension6.Item2 = await Item(s, Servant.SkillReinforcement.Ascension6.Item2, "62");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|63")
                         {
-                            Servant.SkillReinforcement.Ascension6.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item3, "63");
+                            Servant.SkillReinforcement.Ascension6.Item3 = await Item(s, Servant.SkillReinforcement.Ascension6.Item3, "63");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|64")
                         {
-                            Servant.SkillReinforcement.Ascension6.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension6.Item4, "64");
+                            Servant.SkillReinforcement.Ascension6.Item4 = await Item(s, Servant.SkillReinforcement.Ascension6.Item4, "64");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|71")
                         {
-                            Servant.SkillReinforcement.Ascension7 = await AssigningContent.Item(null, null, null, true, "7", Servant.SkillReinforcement.Ascension7);
-                            Servant.SkillReinforcement.Ascension7.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item2, "71");
+                            Servant.SkillReinforcement.Ascension7 = await Item(null, null, null, true, "7", Servant.SkillReinforcement.Ascension7);
+                            Servant.SkillReinforcement.Ascension7.Item1 = await Item(s, Servant.SkillReinforcement.Ascension7.Item2, "71");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|72")
                         {
-                            Servant.SkillReinforcement.Ascension7.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item2, "72");
+                            Servant.SkillReinforcement.Ascension7.Item2 = await Item(s, Servant.SkillReinforcement.Ascension7.Item2, "72");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|73")
                         {
-                            Servant.SkillReinforcement.Ascension7.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item3, "73");
+                            Servant.SkillReinforcement.Ascension7.Item3 = await Item(s, Servant.SkillReinforcement.Ascension7.Item3, "73");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|74")
                         {
-                            Servant.SkillReinforcement.Ascension7.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension7.Item4, "74");
+                            Servant.SkillReinforcement.Ascension7.Item4 = await Item(s, Servant.SkillReinforcement.Ascension7.Item4, "74");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|81")
                         {
-                            Servant.SkillReinforcement.Ascension8 = await AssigningContent.Item(null, null, null, true, "8", Servant.SkillReinforcement.Ascension8);
-                            Servant.SkillReinforcement.Ascension8.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
+                            Servant.SkillReinforcement.Ascension8 = await Item(null, null, null, true, "8", Servant.SkillReinforcement.Ascension8);
+                            Servant.SkillReinforcement.Ascension8.Item1 = await Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|82")
                         {
-                            Servant.SkillReinforcement.Ascension8.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
+                            Servant.SkillReinforcement.Ascension8.Item2 = await Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|83")
                         {
-                            Servant.SkillReinforcement.Ascension8.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item3, "83");
+                            Servant.SkillReinforcement.Ascension8.Item3 = await Item(s, Servant.SkillReinforcement.Ascension8.Item3, "83");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|84")
                         {
-                            Servant.SkillReinforcement.Ascension8.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension8.Item4, "84");
+                            Servant.SkillReinforcement.Ascension8.Item4 = await Item(s, Servant.SkillReinforcement.Ascension8.Item4, "84");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|91")
                         {
-                            Servant.SkillReinforcement.Ascension9 = await AssigningContent.Item(null, null, null, true, "9", Servant.SkillReinforcement.Ascension9);
-                            Servant.SkillReinforcement.Ascension9.Item1 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
+                            Servant.SkillReinforcement.Ascension9 = await Item(null, null, null, true, "9", Servant.SkillReinforcement.Ascension9);
+                            Servant.SkillReinforcement.Ascension9.Item1 = await Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|92")
                         {
-                            Servant.SkillReinforcement.Ascension9.Item2 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
+                            Servant.SkillReinforcement.Ascension9.Item2 = await Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|93")
                         {
-                            Servant.SkillReinforcement.Ascension9.Item3 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item3, "93");
+                            Servant.SkillReinforcement.Ascension9.Item3 = await Item(s, Servant.SkillReinforcement.Ascension9.Item3, "93");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|94")
                         {
-                            Servant.SkillReinforcement.Ascension9.Item4 = await AssigningContent.Item(s, Servant.SkillReinforcement.Ascension9.Item4, "94");
+                            Servant.SkillReinforcement.Ascension9.Item4 = await Item(s, Servant.SkillReinforcement.Ascension9.Item4, "94");
                         }
                         else if (s.Contains("|1qp"))
                         {
-                            Servant.SkillReinforcement.Ascension1.QP = await AssigningContent.GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension1.QP = await GenericAssigning(s, "|1qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|2qp"))
                         {
-                            Servant.SkillReinforcement.Ascension2.QP = await AssigningContent.GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension2.QP = await GenericAssigning(s, "|2qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|3qp"))
                         {
-                            Servant.SkillReinforcement.Ascension3.QP = await AssigningContent.GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension3.QP = await GenericAssigning(s, "|3qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|4qp"))
                         {
-                            Servant.SkillReinforcement.Ascension4.QP = await AssigningContent.GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension4.QP = await GenericAssigning(s, "|4qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|5qp"))
                         {
-                            Servant.SkillReinforcement.Ascension5.QP = await AssigningContent.GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension5.QP = await GenericAssigning(s, "|5qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|6qp"))
                         {
-                            Servant.SkillReinforcement.Ascension6.QP = await AssigningContent.GenericAssigning(s, "|6qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension6.QP = await GenericAssigning(s, "|6qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|7qp"))
                         {
-                            Servant.SkillReinforcement.Ascension7.QP = await AssigningContent.GenericAssigning(s, "|7qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension7.QP = await GenericAssigning(s, "|7qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|8qp"))
                         {
-                            Servant.SkillReinforcement.Ascension8.QP = await AssigningContent.GenericAssigning(s, "|8qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension8.QP = await GenericAssigning(s, "|8qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                         else if (s.Contains("|9qp"))
                         {
-                            Servant.SkillReinforcement.Ascension9.QP = await AssigningContent.GenericAssigning(s, "|9qp", new string[] { "{{Inum|{{QP}}|", "}}" });
+                            Servant.SkillReinforcement.Ascension9.QP = await GenericAssigning(s, "|9qp", new string[] { "{{Inum|{{QP}}|", "}}" });
                         }
                     }
                     #endregion
@@ -1676,51 +1743,51 @@ namespace FateGrandOrderApi
                     {
                         if (s.Contains("|strength"))
                         {
-                            Servant.Stats.Strength.Grade = await AssigningContent.GenericAssigning(s, "|strength");
+                            Servant.Stats.Strength.Grade = await GenericAssigning(s, "|strength");
                         }
                         else if (s.Contains("|stbar"))
                         {
-                            Servant.Stats.Strength.BarNumber = await AssigningContent.GenericAssigning(s, "|stbar");
+                            Servant.Stats.Strength.BarNumber = await GenericAssigning(s, "|stbar");
                         }
                         else if (s.Contains("|endurance"))
                         {
-                            Servant.Stats.Endurance.Grade = await AssigningContent.GenericAssigning(s, "|endurance");
+                            Servant.Stats.Endurance.Grade = await GenericAssigning(s, "|endurance");
                         }
                         else if (s.Contains("|enbar"))
                         {
-                            Servant.Stats.Endurance.BarNumber = await AssigningContent.GenericAssigning(s, "|enbar");
+                            Servant.Stats.Endurance.BarNumber = await GenericAssigning(s, "|enbar");
                         }
                         else if (s.Contains("|agility"))
                         {
-                            Servant.Stats.Agility.Grade = await AssigningContent.GenericAssigning(s, "|agility");
+                            Servant.Stats.Agility.Grade = await GenericAssigning(s, "|agility");
                         }
                         else if (s.Contains("|agbar"))
                         {
-                            Servant.Stats.Agility.BarNumber = await AssigningContent.GenericAssigning(s, "|agbar");
+                            Servant.Stats.Agility.BarNumber = await GenericAssigning(s, "|agbar");
                         }
                         else if (s.Contains("|mana"))
                         {
-                            Servant.Stats.Mana.Grade = await AssigningContent.GenericAssigning(s, "|mana");
+                            Servant.Stats.Mana.Grade = await GenericAssigning(s, "|mana");
                         }
                         else if (s.Contains("|mabar"))
                         {
-                            Servant.Stats.Mana.BarNumber = await AssigningContent.GenericAssigning(s, "|mabar");
+                            Servant.Stats.Mana.BarNumber = await GenericAssigning(s, "|mabar");
                         }
                         else if (s.Contains("|luck"))
                         {
-                            Servant.Stats.Luck.Grade = await AssigningContent.GenericAssigning(s, "|luck");
+                            Servant.Stats.Luck.Grade = await GenericAssigning(s, "|luck");
                         }
                         else if (s.Contains("|lubar"))
                         {
-                            Servant.Stats.Luck.BarNumber = await AssigningContent.GenericAssigning(s, "|lubar");
+                            Servant.Stats.Luck.BarNumber = await GenericAssigning(s, "|lubar");
                         }
                         else if (s.Contains("|np") && !s.Contains("|npbar"))
                         {
-                            Servant.Stats.NP.Grade = await AssigningContent.GenericAssigning(s, "|np");
+                            Servant.Stats.NP.Grade = await GenericAssigning(s, "|np");
                         }
                         else if (s.Contains("|npbar"))
                         {
-                            Servant.Stats.NP.BarNumber = await AssigningContent.GenericAssigning(s, "|npbar");
+                            Servant.Stats.NP.BarNumber = await GenericAssigning(s, "|npbar");
                         }
                     }
                     #endregion
@@ -1728,101 +1795,102 @@ namespace FateGrandOrderApi
                     #region Bond Level
                     else if (GettingBondLevel)
                     {
-                        bool GettingBond10 = false;
                         if (s.Contains("|b1") && !s.Contains("|b10"))
                         {
-                            Servant.BondLevels.BondLevel1.BondRequired = await AssigningContent.GenericAssigning(s, "|b1");
+                            Servant.BondLevels.BondLevel1.BondRequired = await GenericAssigning(s, "|b1");
                         }
                         else if (s.Contains("|b2"))
                         {
-                            Servant.BondLevels.BondLevel2.BondRequired = await AssigningContent.GenericAssigning(s, "|b2");
+                            Servant.BondLevels.BondLevel2.BondRequired = await GenericAssigning(s, "|b2");
                         }
                         else if (s.Contains("|b3"))
                         {
-                            Servant.BondLevels.BondLevel3.BondRequired = await AssigningContent.GenericAssigning(s, "|b3");
+                            Servant.BondLevels.BondLevel3.BondRequired = await GenericAssigning(s, "|b3");
                         }
                         else if (s.Contains("|b4"))
                         {
-                            Servant.BondLevels.BondLevel4.BondRequired = await AssigningContent.GenericAssigning(s, "|b4");
+                            Servant.BondLevels.BondLevel4.BondRequired = await GenericAssigning(s, "|b4");
                         }
                         else if (s.Contains("|b5"))
                         {
-                            Servant.BondLevels.BondLevel5.BondRequired = await AssigningContent.GenericAssigning(s, "|b5");
+                            Servant.BondLevels.BondLevel5.BondRequired = await GenericAssigning(s, "|b5");
                         }
                         else if (s.Contains("|b6"))
                         {
-                            Servant.BondLevels.BondLevel6.BondRequired = await AssigningContent.GenericAssigning(s, "|b6");
+                            Servant.BondLevels.BondLevel6.BondRequired = await GenericAssigning(s, "|b6");
                         }
                         else if (s.Contains("|b7"))
                         {
-                            Servant.BondLevels.BondLevel7.BondRequired = await AssigningContent.GenericAssigning(s, "|b7");
+                            Servant.BondLevels.BondLevel7.BondRequired = await GenericAssigning(s, "|b7");
                         }
                         else if (s.Contains("|b8"))
                         {
-                            Servant.BondLevels.BondLevel8.BondRequired = await AssigningContent.GenericAssigning(s, "|b8");
+                            Servant.BondLevels.BondLevel8.BondRequired = await GenericAssigning(s, "|b8");
                         }
                         else if (s.Contains("|b9"))
                         {
-                            Servant.BondLevels.BondLevel9.BondRequired = await AssigningContent.GenericAssigning(s, "|b9");
+                            Servant.BondLevels.BondLevel9.BondRequired = await GenericAssigning(s, "|b9");
                         }
                         else if (s.Contains("|b10"))
                         {
-                            Servant.BondLevels.BondLevel10.BondRequired = await AssigningContent.GenericAssigning(s, "|b10");
+                            Servant.BondLevels.BondLevel10.BondRequired = await GenericAssigning(s, "|b10");
                         }
                         if (s.Contains("|2b1") && !s.Contains("|2b10"))
                         {
-                            Servant.BondLevels.BondLevel1.TotalBond = await AssigningContent.GenericAssigning(s, "|2b1");
+                            Servant.BondLevels.BondLevel1.TotalBond = await GenericAssigning(s, "|2b1");
                         }
                         else if (s.Contains("|2b2"))
                         {
-                            Servant.BondLevels.BondLevel2.TotalBond = await AssigningContent.GenericAssigning(s, "|2b2");
+                            Servant.BondLevels.BondLevel2.TotalBond = await GenericAssigning(s, "|2b2");
                         }
                         else if (s.Contains("|2b3"))
                         {
-                            Servant.BondLevels.BondLevel3.TotalBond = await AssigningContent.GenericAssigning(s, "|2b3");
+                            Servant.BondLevels.BondLevel3.TotalBond = await GenericAssigning(s, "|2b3");
                         }
                         else if (s.Contains("|2b4"))
                         {
-                            Servant.BondLevels.BondLevel4.TotalBond = await AssigningContent.GenericAssigning(s, "|2b4");
+                            Servant.BondLevels.BondLevel4.TotalBond = await GenericAssigning(s, "|2b4");
                         }
                         else if (s.Contains("|2b5"))
                         {
-                            Servant.BondLevels.BondLevel5.TotalBond = await AssigningContent.GenericAssigning(s, "|2b5");
+                            Servant.BondLevels.BondLevel5.TotalBond = await GenericAssigning(s, "|2b5");
                         }
                         else if (s.Contains("|2b6"))
                         {
-                            Servant.BondLevels.BondLevel6.TotalBond = await AssigningContent.GenericAssigning(s, "|2b6");
+                            Servant.BondLevels.BondLevel6.TotalBond = await GenericAssigning(s, "|2b6");
                         }
                         else if (s.Contains("|2b7"))
                         {
-                            Servant.BondLevels.BondLevel7.TotalBond = await AssigningContent.GenericAssigning(s, "|2b7");
+                            Servant.BondLevels.BondLevel7.TotalBond = await GenericAssigning(s, "|2b7");
                         }
                         else if (s.Contains("|2b8"))
                         {
-                            Servant.BondLevels.BondLevel8.TotalBond = await AssigningContent.GenericAssigning(s, "|2b8");
+                            Servant.BondLevels.BondLevel8.TotalBond = await GenericAssigning(s, "|2b8");
                         }
                         else if (s.Contains("|2b9"))
                         {
-                            Servant.BondLevels.BondLevel9.TotalBond = await AssigningContent.GenericAssigning(s, "|2b9");
+                            Servant.BondLevels.BondLevel9.TotalBond = await GenericAssigning(s, "|2b9");
                         }
                         else if (s.Contains("|2b10"))
                         {
-                            Servant.BondLevels.BondLevel10.TotalBond = await AssigningContent.GenericAssigning(s, "|2b10");
+                            Servant.BondLevels.BondLevel10.TotalBond = await GenericAssigning(s, "|2b10");
                         }
                         else if (s.Contains("|image"))
                         {
-                            Servant.BondLevels.Bond10Reward.Image = await AssigningContent.Image(s, "|image");
+                            Servant.BondLevels.Bond10Reward.Image = await Image(s, "|image");
                         }
-                        else if (s.Contains("|effect") || GettingBond10)
+                        else if (s.Contains("|effect") | GettingBond10)
                         {
-                            //PART WAS WORKING ON FOR WHEN I GO ON LAPTOP
-                            GettingBond10 = true;
-                            //]]''' == Effect
-                            Servant.BondLevels.Bond10Reward.Effect += await AssigningContent.GenericAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", " " } }, OtherPartsToRemove: new string[] { "]]", "[[", "'''" });
-                        }
-                        else if (s == "}}" && GettingBond10)
-                        {
-                            GettingBond10 = false;
+                            if (s == "}}" && GettingBond10)
+                            {
+                                GettingBond10 = false;
+                            }
+                            else
+                            {
+                                GettingBond10 = true;
+                                //'''[[SomeTextLol]]''' == Effect
+                                Servant.BondLevels.Bond10Reward.Effect += (await GenericAssigning(s, "|effect", PartsToReplace: new string[][] { new string[] { "<br/>", " " }, new string[] { ".", ". " }, new string[] { "  ", " " } }, OtherPartsToRemove: new string[] { "]]", "[[", "'''" })).Replace(",", ", ");
+                            }
                         }
                     }
                     #endregion
@@ -1838,122 +1906,174 @@ namespace FateGrandOrderApi
                         {
                             GettingDefaultBioJap = false;
                             GettingDefaultBio = true;
+                            while (Servant.Biography.Default.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Default.JapaneseText = Servant.Biography.Default.JapaneseText.Remove(Servant.Biography.Default.JapaneseText.IndexOf("<!--"), Servant.Biography.Default.JapaneseText.IndexOf("-->") - (Servant.Biography.Default.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|jb1"))
                         {
                             GettingDefaultBio = false;
                             GettingBond1BioJap = true;
+                            while (Servant.Biography.Default.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Default.EnglishText = Servant.Biography.Default.EnglishText.Remove(Servant.Biography.Default.EnglishText.IndexOf("<!--"), Servant.Biography.Default.EnglishText.IndexOf("-->") - (Servant.Biography.Default.EnglishText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|b1"))
                         {
                             GettingBond1BioJap = false;
                             GettingBond1Bio = true;
+                            while (Servant.Biography.Bond1.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond1.JapaneseText = Servant.Biography.Bond1.JapaneseText.Remove(Servant.Biography.Bond1.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond1.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond1.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|jb2"))
                         {
                             GettingBond1Bio = false;
                             GettingBond2BioJap = true;
+                            while (Servant.Biography.Bond1.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond1.EnglishText = Servant.Biography.Bond1.EnglishText.Remove(Servant.Biography.Bond1.EnglishText.IndexOf("<!--"), Servant.Biography.Bond1.EnglishText.IndexOf("-->") - (Servant.Biography.Bond1.EnglishText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|b2"))
                         {
                             GettingBond2BioJap = false;
                             GettingBond2Bio = true;
+                            while (Servant.Biography.Bond2.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond2.JapaneseText = Servant.Biography.Bond2.JapaneseText.Remove(Servant.Biography.Bond2.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond2.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond2.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|jb3"))
                         {
                             GettingBond2Bio = false;
                             GettingBond3BioJap = true;
+                            while (Servant.Biography.Bond2.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond2.EnglishText = Servant.Biography.Bond2.EnglishText.Remove(Servant.Biography.Bond2.EnglishText.IndexOf("<!--"), Servant.Biography.Bond2.EnglishText.IndexOf("-->") - (Servant.Biography.Bond2.EnglishText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|b3"))
                         {
                             GettingBond3BioJap = false;
                             GettingBond3Bio = true;
+                            while (Servant.Biography.Bond3.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond3.JapaneseText = Servant.Biography.Bond3.JapaneseText.Remove(Servant.Biography.Bond3.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond3.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond3.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|jb4"))
                         {
                             GettingBond3Bio = false;
                             GettingBond4BioJap = true;
+                            while (Servant.Biography.Bond3.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond3.EnglishText = Servant.Biography.Bond3.EnglishText.Remove(Servant.Biography.Bond3.EnglishText.IndexOf("<!--"), Servant.Biography.Bond3.EnglishText.IndexOf("-->") - (Servant.Biography.Bond3.EnglishText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|b4"))
                         {
                             GettingBond4BioJap = false;
                             GettingBond4Bio = true;
+                            while (Servant.Biography.Bond4.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond4.JapaneseText = Servant.Biography.Bond4.JapaneseText.Remove(Servant.Biography.Bond4.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond4.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond4.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|jb5"))
                         {
                             GettingBond4Bio = false;
                             GettingBond5BioJap = true;
+                            while (Servant.Biography.Bond4.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond4.EnglishText = Servant.Biography.Bond4.EnglishText.Remove(Servant.Biography.Bond4.EnglishText.IndexOf("<!--"), Servant.Biography.Bond4.EnglishText.IndexOf("-->") - (Servant.Biography.Bond4.EnglishText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|b5"))
                         {
                             GettingBond5BioJap = false;
                             GettingBond5Bio = true;
+                            while (Servant.Biography.Bond5.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond5.JapaneseText = Servant.Biography.Bond5.JapaneseText.Remove(Servant.Biography.Bond5.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond5.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond5.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|jex"))
                         {
                             GettingBond5Bio = false;
                             GettingExtraBioJap = true;
+                            while (Servant.Biography.Bond5.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond5.EnglishText = Servant.Biography.Bond5.EnglishText.Remove(Servant.Biography.Bond5.EnglishText.IndexOf("<!--"), Servant.Biography.Bond5.EnglishText.IndexOf("-->") - (Servant.Biography.Bond5.EnglishText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (s.Contains("|ex"))
                         {
                             GettingExtraBioJap = false;
                             GettingExtraBio = true;
+                            while (Servant.Biography.Extra.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText.Remove(Servant.Biography.Extra.JapaneseText.IndexOf("<!--"), Servant.Biography.Extra.JapaneseText.IndexOf("-->") - (Servant.Biography.Extra.JapaneseText.IndexOf("<!--") - 3));
+                            }
                         }
                         else if (GettingDefaultBioJap)
                         {
-                            Servant.Biography.Default.JapaneseText = Servant.Biography.Default.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Default.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingDefaultBio)
                         {
-                            Servant.Biography.Default.EnglishText = Servant.Biography.Default.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Default.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond1BioJap)
                         {
-                            Servant.Biography.Bond1.JapaneseText = Servant.Biography.Bond1.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond1.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond1Bio)
                         {
-                            Servant.Biography.Bond1.EnglishText = Servant.Biography.Bond1.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond1.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond2BioJap)
                         {
-                            Servant.Biography.Bond2.JapaneseText = Servant.Biography.Bond2.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond2.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond2Bio)
                         {
-                            Servant.Biography.Bond2.EnglishText = Servant.Biography.Bond2.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond2.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond3BioJap)
                         {
-                            Servant.Biography.Bond3.JapaneseText = Servant.Biography.Bond3.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond3.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond3Bio)
                         {
-                            Servant.Biography.Bond3.EnglishText = Servant.Biography.Bond3.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond3.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond4BioJap)
                         {
-                            Servant.Biography.Bond4.JapaneseText = Servant.Biography.Bond4.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond4.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond4Bio)
                         {
-                            Servant.Biography.Bond4.EnglishText = Servant.Biography.Bond4.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond4.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond5BioJap)
                         {
-                            Servant.Biography.Bond5.JapaneseText = Servant.Biography.Bond5.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond5.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingBond5Bio)
                         {
-                            Servant.Biography.Bond5.EnglishText = Servant.Biography.Bond5.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Bond5.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingExtraBioJap)
                         {
-                            Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Extra.JapaneseText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                         else if (GettingExtraBio)
                         {
-                            Servant.Biography.Extra.EnglishText = Servant.Biography.Extra.EnglishText + await AssigningContent.GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
+                            Servant.Biography.Extra.EnglishText += await GenericAssigning(s, "", OtherPartsToRemove: new string[] { "'''", "―――", "---", "[[", "]]", "''", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/r/n" } });
                         }
                     }
                     #endregion
@@ -1992,6 +2112,7 @@ namespace FateGrandOrderApi
                                 ToAdd = ToAdd.Remove(ToAdd.IndexOf('['), ToAdd.LastIndexOf('/') + 2 - ToAdd.IndexOf('['));
                                 ToAdd = ToAdd.Remove(ToAdd.IndexOf(']'), 1);
                             }
+                            ToAdd = ToAdd.Replace("'''", "");
                             if (Servant.Trivia == null)
                                 Servant.Trivia = new string[] { ToAdd };
                             else
@@ -2006,115 +2127,115 @@ namespace FateGrandOrderApi
                     {
                         if (s.Contains("|jname"))
                         {
-                            Servant.BasicInformation.JapaneseName = await AssigningContent.GenericAssigning(s, "|jname");
+                            Servant.BasicInformation.JapaneseName = await GenericAssigning(s, "|jname");
                         }
                         else if (s.Contains("|voicea"))
                         {
-                            Servant.BasicInformation.VoiceActor = await AssigningContent.GenericAssigning(s, "|voicea");
+                            Servant.BasicInformation.VoiceActor = await GenericAssigning(s, "|voicea");
                         }
                         else if (s.Contains("|illus"))
                         {
-                            Servant.BasicInformation.Illustrator = await AssigningContent.GenericAssigning(s, "|illus");
+                            Servant.BasicInformation.Illustrator = await GenericAssigning(s, "|illus");
                         }
                         else if (s.Contains("|class"))
                         {
-                            Servant.BasicInformation.Class = await AssigningContent.GenericAssigning(s, "|class");
+                            Servant.BasicInformation.Class = await GenericAssigning(s, "|class");
                         }
                         else if (s.Contains("|atk"))
                         {
-                            Servant.BasicInformation.ATK = await AssigningContent.GenericAssigning(s, "|atk");
+                            Servant.BasicInformation.ATK = await GenericAssigning(s, "|atk");
                         }
                         else if (s.Contains("|hp"))
                         {
-                            Servant.BasicInformation.HP = await AssigningContent.GenericAssigning(s, "|hp");
+                            Servant.BasicInformation.HP = await GenericAssigning(s, "|hp");
                         }
                         else if (s.Contains("|gatk"))
                         {
-                            Servant.BasicInformation.GrailATK = await AssigningContent.GenericAssigning(s, "|gatk");
+                            Servant.BasicInformation.GrailATK = await GenericAssigning(s, "|gatk");
                         }
                         else if (s.Contains("|ghp"))
                         {
-                            Servant.BasicInformation.GrailHP = await AssigningContent.GenericAssigning(s, "|ghp");
+                            Servant.BasicInformation.GrailHP = await GenericAssigning(s, "|ghp");
                         }
                         else if (s.Contains("|stars"))
                         {
-                            Servant.BasicInformation.Stars = await AssigningContent.GenericAssigning(s, "|stars");
+                            Servant.BasicInformation.Stars = await GenericAssigning(s, "|stars");
                         }
                         else if (s.Contains("|cost"))
                         {
-                            Servant.BasicInformation.Cost = await AssigningContent.GenericAssigning(s, "|cost");
+                            Servant.BasicInformation.Cost = await GenericAssigning(s, "|cost");
                         }
                         else if (s.Contains("|cc"))
                         {
-                            Servant.BasicInformation.CommandCode = await AssigningContent.GenericAssigning(s, "|cc");
+                            Servant.BasicInformation.CommandCode = await GenericAssigning(s, "|cc");
                         }
                         else if (s.Contains("|mlevel"))
                         {
-                            Servant.BasicInformation.MaxLevel = await AssigningContent.GenericAssigning(s, "|mlevel");
+                            Servant.BasicInformation.MaxLevel = await GenericAssigning(s, "|mlevel");
                         }
                         else if (s.Contains("|id"))
                         {
-                            Servant.BasicInformation.ID = await AssigningContent.GenericAssigning(s, "|id");
+                            Servant.BasicInformation.ID = await GenericAssigning(s, "|id");
                         }
                         else if (s.Contains("|attribute"))
                         {
-                            Servant.BasicInformation.Attribute = await AssigningContent.GenericAssigning(s, "|attribute");
+                            Servant.BasicInformation.Attribute = await GenericAssigning(s, "|attribute");
                         }
                         else if (s.Contains("|qhits"))
                         {
-                            Servant.BasicInformation.QuickHits = await AssigningContent.GenericAssigning(s, "|qhits");
+                            Servant.BasicInformation.QuickHits = await GenericAssigning(s, "|qhits");
                         }
                         else if (s.Contains("|ahits"))
                         {
-                            Servant.BasicInformation.ArtsHits = await AssigningContent.GenericAssigning(s, "|ahits");
+                            Servant.BasicInformation.ArtsHits = await GenericAssigning(s, "|ahits");
                         }
                         else if (s.Contains("|bhits"))
                         {
-                            Servant.BasicInformation.BusterHits = await AssigningContent.GenericAssigning(s, "|bhits");
+                            Servant.BasicInformation.BusterHits = await GenericAssigning(s, "|bhits");
                         }
                         else if (s.Contains("|ehits"))
                         {
-                            Servant.BasicInformation.ExtraHits = await AssigningContent.GenericAssigning(s, "|ehits");
+                            Servant.BasicInformation.ExtraHits = await GenericAssigning(s, "|ehits");
                         }
                         else if (s.Contains("|deathrate"))
                         {
-                            Servant.BasicInformation.DeathRate = await AssigningContent.GenericAssigning(s, "|deathrate");
+                            Servant.BasicInformation.DeathRate = await GenericAssigning(s, "|deathrate");
                         }
                         else if (s.Contains("|starabsorption"))
                         {
-                            Servant.BasicInformation.StarAbsorption = await AssigningContent.GenericAssigning(s, "|starabsorption");
+                            Servant.BasicInformation.StarAbsorption = await GenericAssigning(s, "|starabsorption");
                         }
                         else if (s.Contains("|stargeneration"))
                         {
-                            Servant.BasicInformation.StarGeneration = await AssigningContent.GenericAssigning(s, "|stargeneration");
+                            Servant.BasicInformation.StarGeneration = await GenericAssigning(s, "|stargeneration");
                         }
                         else if (s.Contains("|npchargeatk"))
                         {
-                            Servant.BasicInformation.NPChargeATK = await AssigningContent.GenericAssigning(s, "|npchargeatk");
+                            Servant.BasicInformation.NPChargeATK = await GenericAssigning(s, "|npchargeatk");
                         }
                         else if (s.Contains("|npchargedef"))
                         {
-                            Servant.BasicInformation.NPChargeDEF = await AssigningContent.GenericAssigning(s, "|npchargedef");
+                            Servant.BasicInformation.NPChargeDEF = await GenericAssigning(s, "|npchargedef");
                         }
                         else if (s.Contains("|growthc"))
                         {
-                            Servant.BasicInformation.GrowthCurve = await AssigningContent.GenericAssigning(s, "|growthc");
+                            Servant.BasicInformation.GrowthCurve = await GenericAssigning(s, "|growthc");
                         }
                         else if (s.Contains("|aka"))
                         {
-                            Servant.BasicInformation.AKA = await AssigningContent.GenericArrayAssigning(s, "|aka", OtherPartsToRemove: new string[] { "'''", "''", "{{", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "," }, new string[] { "|", "," } });
+                            Servant.BasicInformation.AKA = await GenericArrayAssigning(s, "|aka", OtherPartsToRemove: new string[] { "'''", "''", "{{", "}}" }, PartsToReplace: new string[][] { new string[] { "<br/>", "," }, new string[] { "|", "," } });
                         }
                         else if (s.Contains("|traits"))
                         {
-                            Servant.BasicInformation.Traits = await AssigningContent.GenericArrayAssigning(s, "|traits");
+                            Servant.BasicInformation.Traits = await GenericArrayAssigning(s, "|traits");
                         }
                         else if (s.Contains("|gender"))
                         {
-                            await AssigningContent.Gender(s, Servant.BasicInformation);
+                            await Gender(s, Servant.BasicInformation);
                         }
                         else if (s.Contains("|alignment"))
                         {
-                            Servant.BasicInformation.Alignment = await AssigningContent.GenericAssigning(s, "|alignment");
+                            Servant.BasicInformation.Alignment = await GenericAssigning(s, "|alignment");
                         }
                     }
                     #endregion
@@ -2122,8 +2243,7 @@ namespace FateGrandOrderApi
                     #region Images
                     else if (GettingImages && !string.IsNullOrWhiteSpace(s) && s != "|-|" && s.Contains('|'))
                     {
-                        Console.WriteLine(s);
-                        var image = await AssigningContent.Image(s, "");
+                        var image = await Image(s, "");
                         if(image != null)
                             Servant.Images.Add(image);
                         image = null;
@@ -2202,13 +2322,6 @@ namespace FateGrandOrderApi
                         GettingPassiveSkills = false;
                         GettingNoblePhantasm = false;
                         GettingImages = false;
-                        if (Servant.Images != null)
-                        {
-                            foreach (var image in Servant.Images)
-                            {
-                                Console.WriteLine($"Name: {image.Name}, Image Name: {image.FileName}, Image Uri: {image.Uri}, Image Hash: {image.ImageHash}");
-                            }
-                        }
                     }
                     else if (GettingPassiveSkills | GettingAscension | GettingSkillReinforcement | GettingStats | GettingBondLevel | GettingBiography | GettingBasicInformation && s == @"}}")
                     {
@@ -2220,6 +2333,13 @@ namespace FateGrandOrderApi
                         GettingBondLevel = false;
                         GettingBiography = false;
                         GettingBasicInformation = false;
+                        if (Servant.Biography != null && Servant.Biography.Extra.EnglishText != null && Servant.Biography.Extra.EnglishText.Contains("<!--"))
+                        {
+                            while (Servant.Biography.Extra.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Extra.EnglishText = Servant.Biography.Extra.EnglishText.Remove(Servant.Biography.Extra.EnglishText.IndexOf("-->"), Servant.Biography.Extra.JapaneseText.IndexOf("<!--") - 3);
+                            }
+                        }
                     }
                     else if (GettingAvailability && s == "|}")
                     {
@@ -2262,6 +2382,8 @@ namespace FateGrandOrderApi
             {
                 string[] ToReturn = null;
                 s = FixString(s);
+                if (!string.IsNullOrWhiteSpace(Assigning))
+                    s = s.Replace(Assigning, "").Replace("=", "");
                 try
                 {
                     if (PartsToReplace != null)
@@ -2276,15 +2398,12 @@ namespace FateGrandOrderApi
                         }
 
                     s = s.TrimEnd(CharToSplitWith);
-                    if (!string.IsNullOrWhiteSpace(Assigning))
-                        ToReturn = s.Replace(Assigning, "").Replace("=", "").Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
-                    else
-                        ToReturn = s.Replace("=", "").Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
+                    ToReturn = s.Trim().Replace($"{CharToSplitWith} ", CharToSplitWith.ToString()).Split(CharToSplitWith);
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
-                    Logger.LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
+                    LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
+                    LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
                 if (ToReturn == null)
                     ToReturn = s.Split(CharToSplitWith);
@@ -2326,8 +2445,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
-                    Logger.LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
+                    LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
+                    LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
                 Assigning = null;
                 OtherPartsToRemove = null;
@@ -2360,8 +2479,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}");
-                    Logger.LogFile(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}");
+                    LogConsole(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}");
+                    LogFile(e, $"Looks like something failed when assigning someone gender", $"String used for this: {s}");
                 }
                 if(WhatToFill.Gender == null)
                     WhatToFill.Gender = @"¯\_(ツ)_/¯";
@@ -2403,7 +2522,7 @@ namespace FateGrandOrderApi
                         if (s == ImageC.GeneratedWith && ImageC.Name == Image.Name)
                         {
 #if DEBUG
-                                ImageC.FromCache = true;
+                            ImageC.FromCache = true;
 #endif
                             OtherPartsToRemove = null;
                             baseUri = null;
@@ -2421,8 +2540,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened when accessing/using the cache for Images", $"Image name: {Image.Name}");
-                    Logger.LogFile(e, "Looks like something happened when accessing/using the cache for Images", $"Image name: {Image.Name}");
+                    LogConsole(e, "Looks like something happened when accessing/using the cache for Images", $"Image name: {Image.Name}");
+                    LogFile(e, "Looks like something happened when accessing/using the cache for Images", $"Image name: {Image.Name}");
                 }
 
                 #region Add/Remove to/from cache
@@ -2529,8 +2648,8 @@ namespace FateGrandOrderApi
                         }
                         else
                         {
-                            Logger.LogConsole(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
-                            Logger.LogFile(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
+                            LogConsole(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
+                            LogFile(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
                         }
                         sometextlol = null;
                         JSON = null;
@@ -2539,8 +2658,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
-                    Logger.LogFile(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
+                    LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
+                    LogFile(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
                 }
                 VideoName = null;
                 return video;
@@ -2582,8 +2701,8 @@ namespace FateGrandOrderApi
                 }
                 catch (Exception e)
                 {
-                    Logger.LogConsole(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
-                    Logger.LogFile(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
+                    LogConsole(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
+                    LogFile(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
                 }
                 s = null;
                 ItemNumber = null;

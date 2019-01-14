@@ -4,6 +4,7 @@ using FateGrandOrderApi;
 using System.Diagnostics;
 using FateGrandOrderApi.Classes;
 using System.Collections.Generic;
+using static FateGrandOrderApi.FateGrandOrderParsing;
 
 namespace ApiTest
 {
@@ -22,17 +23,17 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = FateGrandOrderParsing.GetServant(servant, PresetsForInformation.AllInformation).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = GetServant(servant, PresetsForInformation.AllInformation).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
-                            Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
+                                        Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
 #elif DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})");
 #endif
 #if DEBUG
                 Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})"));
 #elif !DEBUG
-                            Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
+                                        Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
 #endif
                 if (persondata.BasicInformation != null)
                 {

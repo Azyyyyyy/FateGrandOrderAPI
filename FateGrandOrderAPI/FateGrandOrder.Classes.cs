@@ -1042,7 +1042,7 @@ namespace FateGrandOrderApi.Classes
         /// </summary>
         public List<ItemDropLocationList> DropLocations { get; set; }
         /// <summary>
-        /// The servants that uses this
+        /// The servants that uses or needs this
         /// </summary>
         public List<Servant> Uses { get; set; }
 #if DEBUG

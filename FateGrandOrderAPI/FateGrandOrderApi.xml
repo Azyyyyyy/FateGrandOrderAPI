@@ -133,11 +133,6 @@
             Images of/with this servant
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.Servant.FromCache">
-            <summary>
-            If the servant that was returned from cache
-            </summary>
-        </member>
         <member name="T:FateGrandOrderApi.Classes.FateGrandOrderServantBasic">
             <summary>
             Basic information about a Fate/Grand Order servant
@@ -353,11 +348,6 @@
             String that was used when generating this servant class, used for checking if in cache and if cache version is up to date
             </summary>
         </member>
-        <member name="P:FateGrandOrderApi.Classes.Enemy.FromCache">
-            <summary>
-            If the enemy that was returned from cache
-            </summary>
-        </member>
         <member name="T:FateGrandOrderApi.Classes.ImageInformation">
             <summary>
             Contains a uri and name of a image
@@ -386,11 +376,6 @@
         <member name="P:FateGrandOrderApi.Classes.ImageInformation.GeneratedWith">
             <summary>
             String that was used when generating this servant class, used for checking if in cache and if cache version is up to date
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Classes.ImageInformation.FromCache">
-            <summary>
-            If the enemy that was returned from cache
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.VideoInformation">
@@ -521,11 +506,6 @@
         <member name="P:FateGrandOrderApi.Classes.Skill.GeneratedWith">
             <summary>
             String that was passed when generating this, used for checking if in cache and if cache version is up to date
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Classes.Skill.FromCache">
-            <summary>
-            Is returned from cache
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.Classes.ActiveSkill">
@@ -1100,12 +1080,7 @@
         </member>
         <member name="P:FateGrandOrderApi.Classes.Item.Uses">
             <summary>
-            The servants that uses this
-            </summary>
-        </member>
-        <member name="P:FateGrandOrderApi.Classes.Item.FromCache">
-            <summary>
-            If from cache
+            The servants that uses or needs this
             </summary>
         </member>
         <member name="T:FateGrandOrderApi.FateGrandOrderParsing">

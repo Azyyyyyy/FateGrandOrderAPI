@@ -3,16 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.3.6</Version>
+    <Version>0.3.7</Version>
     <PackageIconUrl>https://raw.githubusercontent.com/AzyIsCool/FateGrandOrderAPI/master/FateGrandOrderAPI/Assets/Icon.png</PackageIconUrl>
     <Authors>AzyIsCool, DatReki</Authors>
     <Company>AzyIsCool, DatReki</Company>
-    <Description>The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order</Description>
+    <Description>The FateGrandOrderAPI NuGet lib is a small lib that allows you to get information about servants from the game Fate/Grand Order (for help using this look at the wiki: https://github.com/AzyIsCool/FateGrandOrderAPI/wiki and join the discord server: http://discordapp.com/invite/F5RhrBs)</Description>
     <RepositoryUrl>https://github.com/AzyIsCool/FateGrandOrderAPI</RepositoryUrl>
     <PackageTags>Fate-Grand-Order Api WIP</PackageTags>
-    <PackageReleaseNotes>Servant name fixed, Images fixed and VideoInfomation now gets filled in (as long the video is from YT)</PackageReleaseNotes>
+    <PackageReleaseNotes>More fixes here and there</PackageReleaseNotes>
     <PackageId>Azy.FateGrandOrderAPI</PackageId>
-    <AssemblyVersion>0.3.6.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
