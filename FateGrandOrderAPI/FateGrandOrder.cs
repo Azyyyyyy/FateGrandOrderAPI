@@ -51,17 +51,29 @@ namespace FateGrandOrderApi
         /// </summary>
         /// <param name="skillName">The Skill name to look for</param>
         /// <returns></returns>
-        public static async Task<Tuple<Skill, string[]>> GetSkill(string skillName)
+        public static async Task<Skill> GetSkill(string skillName)
+        {
+            return (await GetSkill(new Skill { Name = skillName })).Item1;
+        }
+
+        /// <summary>
+        /// Returns a Skill (will return null if the skill isn't found)
+        /// </summary>
+        /// <param name="skill">The Skill to look for</param>
+        /// <returns></returns>
+        internal static async Task<Tuple<Skill, string[]>> GetSkill(Skill skill)
         {
             string[] resultString = null;
-            Skill skill = null;
-            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skillName}?action=edit").DocumentNode.SelectNodes("//textarea"))
+            if (skill.NamePassed == null)
+                skill.NamePassed = skill.Name;
+            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skill.NamePassed}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 //For in case we put the person in wrong
                 if (string.IsNullOrEmpty(col.InnerText))
                     return null;
 
-                skill = new Skill(skillName, col.InnerText);
+                if (skill.GeneratedWith == null)
+                    skill.GeneratedWith = col.InnerText;
                 resultString = Regex.Split(col.InnerText, @"\n");
 
                 if (Settings.Cache.CacheSkills)
@@ -76,7 +88,6 @@ namespace FateGrandOrderApi
                                 skillC.FromCache = true;
 #endif
                                 skill = null;
-                                skillName = null;
                                 resultString = null;
                                 return Tuple.Create(skillC, skillC.GeneratedWith.Split('\n'));
                             }
@@ -93,7 +104,7 @@ namespace FateGrandOrderApi
                         LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
                     }
                 }
-                
+
                 if (skill != null && !FateGrandOrderApiCache.Skills.Contains(skill))
                     FateGrandOrderApiCache.Skills.Add(skill);
 
@@ -153,13 +164,11 @@ namespace FateGrandOrderApi
                 await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Skills);
                 if (skill != null)
                 {
-                    skillName = null;
                     return Tuple.Create(skill, resultString);
                 }
                 else
                     return null;
             }
-            skillName = null;
             return Tuple.Create(skill, resultString);
         }
 
@@ -178,14 +187,14 @@ namespace FateGrandOrderApi
         /// </summary>
         /// <param name="skill">The ActiveSkill to put all the content into</param>
         /// <returns></returns>
-        public static async Task<ActiveSkill> GetActiveSkill(ActiveSkill skill)
+        internal static async Task<ActiveSkill> GetActiveSkill(ActiveSkill skill)
         {
             Tuple<Skill, string[]> content = null;
             string lastLevelEffect = "";
             if (skill.NamePassed != null)
-                content = await GetSkill(skill.NamePassed);
+                content = await GetSkill(new Skill { Name = skill.NamePassed });
             else
-                content = await GetSkill(skill.Name);
+                content = await GetSkill(new Skill { Name = skill.Name });
             var basicSkillContent = content.Item1;
             string[] resultString = content.Item2;
             if (string.IsNullOrWhiteSpace(skill.GeneratedWith))
@@ -286,7 +295,7 @@ namespace FateGrandOrderApi
                             var servantP = await GetServant(servant, PresetsForInformation.BasicInformation);
                             if (servantP != null && servantP.BasicInformation != null)
                             {
-                                if(skill.ServantsThatHaveThisSkill == null)
+                                if (skill.ServantsThatHaveThisSkill == null)
                                     skill.ServantsThatHaveThisSkill = new List<Servant>();
 
                                 skill.ServantsThatHaveThisSkill.Add(servantP);
@@ -330,7 +339,7 @@ namespace FateGrandOrderApi
                                 lastLevelEffect = lastLevelEffect.Remove(startpoint, 2);
                             }
                         }
-                        if(skill.LevelEffects == null)
+                        if (skill.LevelEffects == null)
                             skill.LevelEffects = new List<LevelEffect10>();
                         skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = await GenericAssigning(lastLevelEffect, $"{GetStartPart()}leveleffect") });
                     }
@@ -464,9 +473,19 @@ namespace FateGrandOrderApi
         /// Returns a item in the Fate/Grand Order (will return null if the item is not found)
         /// </summary>
         /// <param name="itemName">The item's name</param>
+        /// <returns></returns>
+        public async static Task<Item> GetItem(string itemName)
+        {
+            return await GetItem(itemName, null);
+        }
+
+        /// <summary>
+        /// Returns a item in the Fate/Grand Order (will return null if the item is not found)
+        /// </summary>
+        /// <param name="itemName">The item's name</param>
         /// <param name="enemyToNotLookFor">enemy that been found already and is known to drop this item</param>
         /// <returns></returns>
-        public async static Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
+        internal async static Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
         {
             bool DoingLocationLogic = false;
             bool GettingItem = false;
@@ -603,7 +622,7 @@ namespace FateGrandOrderApi
                         }
                         else if (s.Contains("|usedFor"))
                         {
-                            if(item.Uses == null)
+                            if (item.Uses == null)
                                 item.Uses = new List<Servant>();
                             foreach (string ss in (await GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
                             {
@@ -632,7 +651,7 @@ namespace FateGrandOrderApi
                                 thing = thing.Remove(0, thing.IndexOf('|') + 1);
                                 if (thing.StartsWith("[["))
                                 {
-                                    item.ItemImage = await Image(thing.Replace("file", "File").Replace("|100px|link=]]",""));
+                                    item.ItemImage = await Image(thing.Replace("file", "File").Replace("|100px|link=]]", ""));
                                     item.ItemImage.Name = itemName;
                                 }
                                 else
@@ -642,7 +661,7 @@ namespace FateGrandOrderApi
                             }
                             else if (s.Contains("colspan=\"3\"") && s.Contains("[["))
                             {
-                                if(item.Uses == null)
+                                if (item.Uses == null)
                                     item.Uses = new List<Servant>();
                                 string thing = s.Remove(0, 1);
                                 thing = thing.Remove(0, thing.IndexOf('|') + 1);
@@ -657,7 +676,7 @@ namespace FateGrandOrderApi
                 }
                 resultString = null;
             }
-            
+
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Items);
             itemName = null;
             return item;
@@ -763,7 +782,7 @@ namespace FateGrandOrderApi
                                     {
                                         item.DropLocations[item.DropLocations.Count - 1].DropLocations.Add(new ItemDropLocation
                                         {
-                                            Location = thing[0].Replace("[","").Split('|').First()
+                                            Location = thing[0].Replace("[", "").Split('|').First()
                                         });
                                     }
                                     thing = null;
@@ -789,9 +808,19 @@ namespace FateGrandOrderApi
         /// Return a enemy in Fate/Grand Order (will return null if not found)
         /// </summary>
         /// <param name="enemyName">The enemy's name</param>
+        /// <returns></returns>
+        public async static Task<Enemy> GetEnemy(string enemyName)
+        {
+            return await GetEnemy(enemyName, null);
+        }
+
+        /// <summary>
+        /// Return a enemy in Fate/Grand Order (will return null if not found)
+        /// </summary>
+        /// <param name="enemyName">The enemy's name</param>
         /// <param name="itemToNotLookFor">Item that already been found and is known for dropping this item</param>
         /// <returns></returns>
-        public async static Task<Enemy> GetEnemy(string enemyName, Item itemToNotLookFor = null)
+        internal async static Task<Enemy> GetEnemy(string enemyName, Item itemToNotLookFor = null)
         {
             bool GettingImages = false;
             bool GettingRecommendedServants = false;
@@ -900,7 +929,7 @@ namespace FateGrandOrderApi
                             var image = await Image(s, "|image");
                             if (image != null)
                             {
-                                if(enemy.EnemyImage == null)
+                                if (enemy.EnemyImage == null)
                                     enemy.EnemyImage = new List<ImageInformation>();
                                 enemy.EnemyImage.Add(image);
                             }
@@ -977,7 +1006,7 @@ namespace FateGrandOrderApi
                         try
                         {
                             var items = await GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{", "<br/>" }, new string[][] { new string[] { "}}", "\\" } });
-                            if(items.Length > 0 && !string.IsNullOrWhiteSpace(items[0]))
+                            if (items.Length > 0 && !string.IsNullOrWhiteSpace(items[0]))
                                 enemy.WhatThisEnemyDrops = new List<Item>();
                             foreach (string item in items)
                             {
@@ -988,7 +1017,7 @@ namespace FateGrandOrderApi
                                     else
                                     {
                                         var itemP = await GetItem(item, enemy);
-                                        if(itemP != null)
+                                        if (itemP != null)
                                             enemy.WhatThisEnemyDrops.Add(itemP);
                                         itemP = null;
                                     }
@@ -1014,6 +1043,49 @@ namespace FateGrandOrderApi
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Enemies);
             enemyName = null;
             return enemy;
+        }
+
+        /// <summary>
+        /// This will return the servant from the servant name (will return null if we are unable to find the person)
+        /// </summary>
+        /// <param name="ServantName">The Servant's name</param>
+        /// <returns></returns>
+        public static async Task<Servant> GetServant(string ServantName)
+        {
+            return await GetServant(ServantName, PresetsForInformation.AllInformation, GetBasicInformation: ToGrab.Grab);
+        }
+
+        /// <summary>
+        /// This will return the servant from the servant name (will return null if we are unable to find the person)
+        /// </summary>
+        /// <param name="ServantName">The Servant's name</param>
+        /// <param name="presetsForInformation">Preset to use</param>
+        /// <returns></returns>
+        public static async Task<Servant> GetServant(string ServantName, PresetsForInformation presetsForInformation)
+        {
+            return await GetServant(ServantName, presetsForInformation, GetBasicInformation: ToGrab.NotSet);
+        }
+
+        /// <summary>
+        /// This will return the servant from the servant name (will return null if we are unable to find the person) (This would be used to not grab parts of information)
+        /// </summary>
+        /// <param name="ServantName">The Servant's name</param>
+        /// <param name="GetBasicInformation">If to get the basic infomation</param>
+        /// <param name="GetActiveSkills">If to get Active Skills</param>
+        /// <param name="GetPassiveSkills">If to get Passive Skills</param>
+        /// <param name="GetNoblePhantasm">If to get Noble Phantasm</param>
+        /// <param name="GetAscension">If to get Ascension</param>
+        /// <param name="GetSkillReinforcement">If to get the Skill Reinforcement</param>
+        /// <param name="GetStats">If to get the Stats</param>
+        /// <param name="GetBondLevel">If to get the Bond Levels</param>
+        /// <param name="GetBiography">If to get the servant's Biography</param>
+        /// <param name="GetAvailability">If to get when this servants been available</param>
+        /// <param name="GetTrivia">If to get Trivia</param>
+        /// <param name="GetImages">If to get the servants Images</param>
+        /// <returns></returns>
+        public static async Task<Servant> GetServant(string ServantName, ToGrab GetBasicInformation = ToGrab.NotSet, ToGrab GetActiveSkills = ToGrab.NotSet, ToGrab GetPassiveSkills = ToGrab.NotSet, ToGrab GetNoblePhantasm = ToGrab.NotSet, ToGrab GetAscension = ToGrab.NotSet, ToGrab GetSkillReinforcement = ToGrab.NotSet, ToGrab GetStats = ToGrab.NotSet, ToGrab GetBondLevel = ToGrab.NotSet, ToGrab GetBiography = ToGrab.NotSet, ToGrab GetAvailability = ToGrab.NotSet, ToGrab GetTrivia = ToGrab.NotSet, ToGrab GetImages = ToGrab.NotSet)
+        {
+            return await GetServant(ServantName, PresetsForInformation.AllInformation, GetBasicInformation, GetActiveSkills, GetPassiveSkills, GetNoblePhantasm, GetAscension, GetSkillReinforcement, GetStats, GetBondLevel, GetBiography, GetAvailability, GetTrivia, GetImages);
         }
 
         /// <summary>

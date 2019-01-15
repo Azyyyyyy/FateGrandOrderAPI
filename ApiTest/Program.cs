@@ -15,6 +15,7 @@ namespace ApiTest
         static void Main(string[] args)
         {
             Console.WriteLine("Api Tester - AzyIsCool");
+            GetServant("",);
             FateGrandOrderApi.Settings.Cache.SaveCachedPartsToDisk = false;
             Stopwatch stopwatch = new Stopwatch();
             foreach (var servant in Servants)
@@ -23,7 +24,7 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = GetServant(servant, PresetsForInformation.AllInformation).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = GetServant(servant).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
                                         Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
