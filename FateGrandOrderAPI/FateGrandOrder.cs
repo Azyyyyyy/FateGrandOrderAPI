@@ -68,13 +68,13 @@ namespace FateGrandOrderApi
                 skill.NamePassed = skill.Name;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skill.NamePassed}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
-                //For in case we put the person in wrong
-                if (string.IsNullOrEmpty(col.InnerText))
-                    return null;
+                if (!await ProductHere(skill.NamePassed, col.InnerText)) { return null; }
 
                 if (skill.GeneratedWith == null)
                     skill.GeneratedWith = col.InnerText;
                 resultString = Regex.Split(col.InnerText, @"\n");
+
+                if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Skill", "{{activeskillpage", "{{skillpage")) { return null; }
 
                 if (Settings.Cache.CacheSkills)
                 {
@@ -262,6 +262,8 @@ namespace FateGrandOrderApi
                     LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
                 }
             }
+
+            if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Skill", "{{activeskillpage")) { return skill; }
 
             if (skill != null && !FateGrandOrderApiCache.ActiveSkills.Contains(skill))
                 FateGrandOrderApiCache.ActiveSkills.Add(skill);
@@ -479,6 +481,18 @@ namespace FateGrandOrderApi
             return await GetItem(itemName, null);
         }
 
+        internal static bool IsWhatWeWantToParse(List<string> stringoneandtwo, string WhatWeWantToParse, params string[] WhatItsCalled)
+        {
+            string WhatItsTryingToParse = stringoneandtwo[0].Contains("{{") && !stringoneandtwo[0].Contains(".") ? stringoneandtwo[0] : stringoneandtwo[1];
+            foreach (string s in WhatItsCalled)
+            {
+                if (s == stringoneandtwo[0] || s == stringoneandtwo[1]) { return true; }
+            }
+            LogConsole(null, $"This is not what we want to parse, we want to parse an {WhatWeWantToParse}, not a {WhatItsTryingToParse}");
+            LogFile(null, $"This is not what we want to parse, we want to parse an {WhatWeWantToParse}, not a {WhatItsTryingToParse}");
+            return false;
+        }
+
         /// <summary>
         /// Returns a item in the Fate/Grand Order (will return null if the item is not found)
         /// </summary>
@@ -492,9 +506,7 @@ namespace FateGrandOrderApi
             Item item = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{itemName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
-                //For in case we put the person in wrong
-                if (string.IsNullOrEmpty(col.InnerText))
-                    return null;
+                if (!await ProductHere(itemName, col.InnerText)) { return null; }
 
                 item = new Item(col.InnerText, itemName);
 
@@ -530,6 +542,8 @@ namespace FateGrandOrderApi
                     FateGrandOrderApiCache.Items.Add(item);
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
+
+                if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Item", "{{ItemBox", "{{ItemPageHeader}}")) { return null; }
 
                 foreach (string s in resultString)
                 {
@@ -827,9 +841,7 @@ namespace FateGrandOrderApi
             Enemy enemy = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{enemyName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
-                //For in case we put the person in wrong or it doesn't have a webpage
-                if (string.IsNullOrEmpty(col.InnerText))
-                    return null;
+                if (!await ProductHere(enemyName, col.InnerText)) { return null; }
 
                 enemy = new Enemy(enemyName, col.InnerHtml);
 
@@ -863,6 +875,8 @@ namespace FateGrandOrderApi
                 }
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
+
+                if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Enemy", "{{Enemies")) { return null; }
 
                 foreach (string s in resultString)
                 {
@@ -1045,6 +1059,30 @@ namespace FateGrandOrderApi
             return enemy;
         }
 
+        internal static async Task<bool> ProductHere(string Name, string InnerText)
+        {
+            //For in case we put the product in wrong
+            if (string.IsNullOrEmpty(InnerText))
+            {
+                var ErrorPage = new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{Name}");
+                var servantThatsLikeWhatWasPassed = ErrorPage.DocumentNode.SelectSingleNode("/html[1]/body[1]/div[2]/section[1]/div[2]/article[1]/div[1]/div[1]/div[2]/div[1]/h3[1]/span[1]/b[1]/a[1]");
+                if (servantThatsLikeWhatWasPassed != null && servantThatsLikeWhatWasPassed.InnerText != null)
+                {
+                    LogConsole(null, $"Can't find {Name}, did you mean {servantThatsLikeWhatWasPassed.InnerText}?");
+                    LogFile(null, $"Can't find {Name}, did you mean {servantThatsLikeWhatWasPassed.InnerText}?");
+                }
+                else
+                {
+                    LogConsole(null, $"Can't find {Name} :(");
+                    LogFile(null, $"Can't find {Name} :(");
+                }
+                ErrorPage = null;
+                servantThatsLikeWhatWasPassed = null;
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// This will return the servant from the servant name (will return null if we are unable to find the person)
         /// </summary>
@@ -1195,11 +1233,10 @@ namespace FateGrandOrderApi
             if (!_GetBasicInformation)
                 GettingBasicInformation = false;
 
-            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantName}?action=edit").DocumentNode.SelectNodes("//textarea"))
+            var Web = new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantName}?action=edit");
+            foreach (HtmlNode col in Web.DocumentNode.SelectNodes("//textarea"))
             {
-                //For in case we put the person in wrong
-                if (string.IsNullOrEmpty(col.InnerText))
-                    return null;
+                if (!await ProductHere(ServantName, col.InnerText)) { return null; }
 
                 ServantName = FixString(ServantName.Replace("_", " "));
                 Servant = new Servant(col.InnerText, ServantName);
@@ -1293,12 +1330,18 @@ namespace FateGrandOrderApi
                 }
                 #endregion
 
+                var resultString = Regex.Split(col.InnerText, @"\n");
+
+                var thingstolookfor = new string[] { "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}" };
+                bool one = thingstolookfor.Contains(resultString[0]);
+                bool two = thingstolookfor.Contains(resultString[1]);
+                var CONTENT = one || two ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                if (!IsWhatWeWantToParse(CONTENT, "Servants", "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}")) { return null; }
+
                 #region Add/Remove to/from cache
                 if (Servant != null && !FateGrandOrderApiCache.Servants.Contains(Servant))
                     FateGrandOrderApiCache.Servants.Add(Servant);
                 #endregion
-
-                var resultString = Regex.Split(col.InnerText, @"\n");
 
                 if (_GetBasicInformation && Servant.BasicInformation == null)
                     Servant.BasicInformation = new FateGrandOrderServantBasic(ServantName);
@@ -2388,7 +2431,7 @@ namespace FateGrandOrderApi
                             Servant.Images = new List<ImageInformation>();
                         GettingImages = true;
                     }
-                    else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm | GettingImages && FixString(s) == "</tabber>")
+                    else if (GettingActiveSkills | GettingPassiveSkills | GettingNoblePhantasm | GettingImages && FixString(s).Contains("</tabber>"))
                     {
                         GettingActiveSkills = false;
                         GettingPassiveSkills = false;

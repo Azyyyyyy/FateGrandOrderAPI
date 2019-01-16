@@ -15,7 +15,6 @@ namespace ApiTest
         static void Main(string[] args)
         {
             Console.WriteLine("Api Tester - AzyIsCool");
-            GetServant("",);
             FateGrandOrderApi.Settings.Cache.SaveCachedPartsToDisk = false;
             Stopwatch stopwatch = new Stopwatch();
             foreach (var servant in Servants)
@@ -24,19 +23,20 @@ namespace ApiTest
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = GetServant(servant).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = GetServant(servant, PresetsForInformation.BasicInformation, GetSkillReinforcement: ToGrab.Grab, GetImages: ToGrab.Grab, GetNoblePhantasm: ToGrab.Grab).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
-                                        Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
+                Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
 #elif DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})");
 #endif
 #if DEBUG
                 Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data (Is cached: {persondata.FromCache})"));
 #elif !DEBUG
-                                        Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
+                Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
 #endif
-                if (persondata.BasicInformation != null)
+
+                if (persondata != null && persondata.BasicInformation != null)
                 {
                     StringBuilder servantInfo = new StringBuilder();
                     servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
@@ -63,9 +63,9 @@ namespace ApiTest
         }
 
 #if !DEBUG
-        static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky" };
+        static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky", "Atalanta" };
 #elif DEBUG
-        static readonly string[] Servants = { "Jack_the_Ripper" };
+        static readonly string[] Servants = { "Atalanta" };
 #endif
     }
 }

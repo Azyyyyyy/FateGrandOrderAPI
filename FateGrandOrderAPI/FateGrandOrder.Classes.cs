@@ -67,6 +67,10 @@ namespace FateGrandOrderApi.Classes
         /// Images of/with this servant
         /// </summary>
         public List<ImageInformation> Images { get; set; }
+        /// <summary>
+        /// Thr Uri to the servants information
+        /// </summary>
+        public string ServantsUri { get { return $"https://fategrandorder.fandom.com/wiki/{EnglishNamePassed}"; } }
 #if DEBUG
         /// <summary>
         /// If the servant that was returned from cache
