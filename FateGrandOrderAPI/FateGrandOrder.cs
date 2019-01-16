@@ -74,7 +74,10 @@ namespace FateGrandOrderApi
                     skill.GeneratedWith = col.InnerText;
                 resultString = Regex.Split(col.InnerText, @"\n");
 
-                if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Skill", "{{activeskillpage", "{{skillpage")) { return null; }
+                var thingstolookfor = new[] { "{{activeskillpage", "{{skillpage", "{{activeskill2page" };
+                var CONTENT = thingstolookfor.Contains(resultString[0]) | thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                if (!IsWhatWeWantToParse(CONTENT, "Skill", thingstolookfor)) 
+                { return null; }
 
                 if (Settings.Cache.CacheSkills)
                 {
@@ -263,7 +266,10 @@ namespace FateGrandOrderApi
                 }
             }
 
-            if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Skill", "{{activeskillpage")) { return skill; }
+            var thingstolookfor = new[] { "{{activeskillpage" };
+            var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+            if (!IsWhatWeWantToParse(CONTENT, "Active Skill", thingstolookfor)) 
+            { return skill; }
 
             if (skill != null && !FateGrandOrderApiCache.ActiveSkills.Contains(skill))
                 FateGrandOrderApiCache.ActiveSkills.Add(skill);
@@ -543,7 +549,10 @@ namespace FateGrandOrderApi
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
-                if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Item", "{{ItemBox", "{{ItemPageHeader}}")) { return null; }
+                var thingstolookfor = new[] { "{{ItemBox", "{{ItemPageHeader}}" };
+                var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                if (!IsWhatWeWantToParse(CONTENT, "Item", thingstolookfor)) 
+                { return null; }
 
                 foreach (string s in resultString)
                 {
@@ -580,7 +589,7 @@ namespace FateGrandOrderApi
                                     if (!enemyEdited.Contains("}}-class"))
                                     {
                                         if (enemyEdited.IndexOf('|') != -1)
-                                            enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
+                                            enemyEdited = enemyEdited.Remove(enemyEdited.IndexOf('|'));
 
                                         if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
                                         {
@@ -589,7 +598,7 @@ namespace FateGrandOrderApi
                                             item.AnythingThatDropsThis.Enemies.Add(enemyToNotLookFor);
                                         }
                                         else
-                                        {
+                                        {                                            
                                             var enemyP = await GetEnemy(enemyEdited, item);
                                             if (enemyP != null)
                                             {
@@ -876,7 +885,10 @@ namespace FateGrandOrderApi
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
-                if (!IsWhatWeWantToParse(new List<string> { resultString[0], resultString[1] }, "Enemy", "{{Enemies")) { return null; }
+                var thingstolookfor = new[] { "{{Enemies" };
+                var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                if (!IsWhatWeWantToParse(CONTENT, "Enemy", thingstolookfor)) 
+                { return null; }
 
                 foreach (string s in resultString)
                 {
@@ -1332,11 +1344,10 @@ namespace FateGrandOrderApi
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
-                var thingstolookfor = new string[] { "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}" };
-                bool one = thingstolookfor.Contains(resultString[0]);
-                bool two = thingstolookfor.Contains(resultString[1]);
-                var CONTENT = one || two ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
-                if (!IsWhatWeWantToParse(CONTENT, "Servants", "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}")) { return null; }
+                var thingstolookfor = new[] { "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}" };
+                var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                if (!IsWhatWeWantToParse(CONTENT, "Servants", thingstolookfor))
+                { return null; }
 
                 #region Add/Remove to/from cache
                 if (Servant != null && !FateGrandOrderApiCache.Servants.Contains(Servant))
@@ -1783,7 +1794,7 @@ namespace FateGrandOrderApi
                         else if (s.Length >= 3 && s.Remove(3) == "|81")
                         {
                             Servant.SkillReinforcement.Ascension8 = await Item(null, null, null, true, "8", Servant.SkillReinforcement.Ascension8);
-                            Servant.SkillReinforcement.Ascension8.Item1 = await Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
+                            Servant.SkillReinforcement.Ascension8.Item1 = await Item(s, Servant.SkillReinforcement.Ascension8.Item2, "81");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|82")
                         {
@@ -1800,7 +1811,7 @@ namespace FateGrandOrderApi
                         else if (s.Length >= 3 && s.Remove(3) == "|91")
                         {
                             Servant.SkillReinforcement.Ascension9 = await Item(null, null, null, true, "9", Servant.SkillReinforcement.Ascension9);
-                            Servant.SkillReinforcement.Ascension9.Item1 = await Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
+                            Servant.SkillReinforcement.Ascension9.Item1 = await Item(s, Servant.SkillReinforcement.Ascension9.Item2, "91");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|92")
                         {
