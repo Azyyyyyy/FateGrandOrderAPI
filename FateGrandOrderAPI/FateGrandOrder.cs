@@ -697,7 +697,10 @@ namespace FateGrandOrderApi
                                         ssedit = ss;
                                         if (ssedit.Contains("|"))
                                         {
-                                            ssedit = ssedit.Remove(ssedit.IndexOf("[["), ssedit.IndexOf("|") - ssedit.IndexOf("[[") + 1);
+                                            if (ssedit.Contains("[["))
+                                                ssedit = ssedit.Remove(ssedit.IndexOf("[["), ssedit.IndexOf("|") - ssedit.IndexOf("[[") + 1);
+                                            else
+                                                ssedit = ssedit.Remove(0, ssedit.IndexOf("|") + 1);
                                         }
                                         await UsesLogic(new string[] { ssedit }, true);
                                     }
