@@ -74,8 +74,8 @@ namespace FateGrandOrderApi
                     skill.GeneratedWith = col.InnerText;
                 resultString = Regex.Split(col.InnerText, @"\n");
 
-                var thingstolookfor = new[] { "{{activeskillpage", "{{skillpage", "{{activeskill2page" };
-                var CONTENT = thingstolookfor.Contains(resultString[0]) | thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                var thingstolookfor = new[] { "{{activeskillpage", "{{skillpage", "{{activeskill2page", "{{activeskill3page" };
+                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
                 if (!IsWhatWeWantToParse(CONTENT, "Skill", thingstolookfor)) 
                 { return null; }
 
@@ -266,8 +266,8 @@ namespace FateGrandOrderApi
                 }
             }
 
-            var thingstolookfor = new[] { "{{activeskillpage" };
-            var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+            var thingstolookfor = new[] { "{{activeskillpage", "{{activeskill2page", "{{activeskill3page" };
+            var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
             if (!IsWhatWeWantToParse(CONTENT, "Active Skill", thingstolookfor)) 
             { return skill; }
 
@@ -492,7 +492,7 @@ namespace FateGrandOrderApi
             string WhatItsTryingToParse = stringoneandtwo[0].Contains("{{") && !stringoneandtwo[0].Contains(".") ? stringoneandtwo[0] : stringoneandtwo[1];
             foreach (string s in WhatItsCalled)
             {
-                if (s == stringoneandtwo[0] || s == stringoneandtwo[1]) { return true; }
+                if (s == stringoneandtwo[0].Trim() || s == stringoneandtwo[1].Trim()) { return true; }
             }
             LogConsole(null, $"This is not what we want to parse, we want to parse an {WhatWeWantToParse}, not a {WhatItsTryingToParse}");
             LogFile(null, $"This is not what we want to parse, we want to parse an {WhatWeWantToParse}, not a {WhatItsTryingToParse}");
@@ -550,7 +550,7 @@ namespace FateGrandOrderApi
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
                 var thingstolookfor = new[] { "{{ItemBox", "{{ItemPageHeader}}" };
-                var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
                 if (!IsWhatWeWantToParse(CONTENT, "Item", thingstolookfor)) 
                 { return null; }
 
@@ -689,9 +689,22 @@ namespace FateGrandOrderApi
                                 string thing = s.Remove(0, 1);
                                 thing = thing.Remove(0, thing.IndexOf('|') + 1);
                                 var servants = thing.Replace("]] and [[", "\\").Replace("Every [[", "").Replace("]]", "").Split('\\');
+                                var ssedit = "";
                                 foreach (string ss in servants)
                                 {
-                                    await UsesLogic(new string[] { ss }, true);
+                                    try
+                                    {
+                                        ssedit = ss;
+                                        if (ssedit.Contains("|"))
+                                        {
+                                            ssedit = ssedit.Remove(ssedit.IndexOf("[["), ssedit.IndexOf("|") - ssedit.IndexOf("[[") + 1);
+                                        }
+                                        await UsesLogic(new string[] { ssedit }, true);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        System.Diagnostics.Debugger.Break();
+                                    }
                                 }
                             }
                         }
@@ -886,7 +899,7 @@ namespace FateGrandOrderApi
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
                 var thingstolookfor = new[] { "{{Enemies" };
-                var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
                 if (!IsWhatWeWantToParse(CONTENT, "Enemy", thingstolookfor)) 
                 { return null; }
 
@@ -1345,7 +1358,7 @@ namespace FateGrandOrderApi
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
                 var thingstolookfor = new[] { "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}" };
-                var CONTENT = thingstolookfor.Contains(resultString[0]) || thingstolookfor.Contains(resultString[1]) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
+                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
                 if (!IsWhatWeWantToParse(CONTENT, "Servants", thingstolookfor))
                 { return null; }
 
