@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ApiTest")]
 namespace FateGrandOrderApi.Classes
 {
 
@@ -604,7 +606,7 @@ namespace FateGrandOrderApi.Classes
     /// <summary>
     /// Contains all the information about the level effect that has 10 levels
     /// </summary>
-    public class LevelEffect10 : LevelEffect5 
+    public class LevelEffect10 : LevelEffect5
     {
         public LevelEffect10()
         {

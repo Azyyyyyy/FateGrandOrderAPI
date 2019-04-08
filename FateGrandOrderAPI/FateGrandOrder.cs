@@ -10,9 +10,11 @@ using FateGrandOrderApi.Caching;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using static FateGrandOrderApi.Logging.Logger;
 using static FateGrandOrderApi.FateGrandOrderParsing.AssigningContent;
 
+[assembly: InternalsVisibleTo("ApiTest")]
 namespace FateGrandOrderApi
 {
     /// <summary>
@@ -51,33 +53,18 @@ namespace FateGrandOrderApi
         /// </summary>
         /// <param name="skillName">The Skill name to look for</param>
         /// <returns></returns>
-        public static async Task<Skill> GetSkill(string skillName)
-        {
-            return (await GetSkill(new Skill { Name = skillName })).Item1;
-        }
-
-        /// <summary>
-        /// Returns a Skill (will return null if the skill isn't found)
-        /// </summary>
-        /// <param name="skill">The Skill to look for</param>
-        /// <returns></returns>
-        internal static async Task<Tuple<Skill, string[]>> GetSkill(Skill skill)
+        public static async Task<Tuple<Skill, string[]>> GetSkill(string skillName)
         {
             string[] resultString = null;
-            if (skill.NamePassed == null)
-                skill.NamePassed = skill.Name;
-            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skill.NamePassed}?action=edit").DocumentNode.SelectNodes("//textarea"))
+            Skill skill = null;
+            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{skillName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
-                if (!await ProductHere(skill.NamePassed, col.InnerText)) { return null; }
+                //For in case we put the person in wrong
+                if (string.IsNullOrEmpty(col.InnerText))
+                    return null;
 
-                if (skill.GeneratedWith == null)
-                    skill.GeneratedWith = col.InnerText;
+                skill = new Skill(skillName, col.InnerText);
                 resultString = Regex.Split(col.InnerText, @"\n");
-
-                var thingstolookfor = new[] { "{{activeskillpage", "{{skillpage", "{{activeskill2page", "{{activeskill3page" };
-                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
-                if (!IsWhatWeWantToParse(CONTENT, "Skill", thingstolookfor)) 
-                { return null; }
 
                 if (Settings.Cache.CacheSkills)
                 {
@@ -107,8 +94,8 @@ namespace FateGrandOrderApi
                         LogFile(e, "Looks like something happened when accessing/using the cache for skills", $"Skill name: {skill.Name}");
                     }
                 }
-
-                if (skill != null && !FateGrandOrderApiCache.Skills.Contains(skill))
+                
+                if (!FateGrandOrderApiCache.Skills.Contains(skill))
                     FateGrandOrderApiCache.Skills.Add(skill);
 
                 foreach (string s in resultString)
@@ -117,7 +104,6 @@ namespace FateGrandOrderApi
                     {
                         var image = await Image(s);
                         skill.Image = image;
-                        image = null;
                     }
                     else if (s.Contains("|name"))
                     {
@@ -141,10 +127,19 @@ namespace FateGrandOrderApi
                                         break;
                                     startpoint++;
                                 }
-                                while (effects[startpoint] != '|')
+
+                                if (effects.Contains('|'))
+                                {
+                                    while (effects[startpoint] != '|')
+                                    {
+                                        effects = effects.Remove(startpoint, 1);
+                                    }
+                                }
+                                else
                                 {
                                     effects = effects.Remove(startpoint, 1);
                                 }
+
                                 effects = effects.Remove(startpoint, 1);
                                 while (effects[startpoint] != ']')
                                 {
@@ -153,7 +148,6 @@ namespace FateGrandOrderApi
                                 effects = effects.Remove(startpoint, 2);
                             }
                             skill.Effect = effects.Split('\\');
-                            effects = null;
                         }
                         catch (Exception e)
                         {
@@ -165,12 +159,7 @@ namespace FateGrandOrderApi
                 }
 
                 await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Skills);
-                if (skill != null)
-                {
-                    return Tuple.Create(skill, resultString);
-                }
-                else
-                    return null;
+                return Tuple.Create(skill, resultString);
             }
             return Tuple.Create(skill, resultString);
         }
@@ -190,14 +179,14 @@ namespace FateGrandOrderApi
         /// </summary>
         /// <param name="skill">The ActiveSkill to put all the content into</param>
         /// <returns></returns>
-        internal static async Task<ActiveSkill> GetActiveSkill(ActiveSkill skill)
+        public static async Task<ActiveSkill> GetActiveSkill(ActiveSkill skill)
         {
             Tuple<Skill, string[]> content = null;
             string lastLevelEffect = "";
             if (skill.NamePassed != null)
-                content = await GetSkill(new Skill { Name = skill.NamePassed });
+                content = await GetSkill(skill.NamePassed);
             else
-                content = await GetSkill(new Skill { Name = skill.Name });
+                content = await GetSkill(skill.Name);
             var basicSkillContent = content.Item1;
             string[] resultString = content.Item2;
             if (string.IsNullOrWhiteSpace(skill.GeneratedWith))
@@ -211,8 +200,7 @@ namespace FateGrandOrderApi
                 {
                     if (string.IsNullOrWhiteSpace(lastLevelEffect))
                         return "|";
-                    else
-                        if (int.TryParse(lastLevelEffect[1].ToString(), out int a))
+                    else if (int.TryParse(lastLevelEffect[1].ToString(), out int a))
                         return $"|{a}";
                     else
                         return "|";
@@ -227,12 +215,7 @@ namespace FateGrandOrderApi
 
             //For in case we put the person in wrong
             if (resultString == null)
-            {
-                content = null;
-                basicSkillContent = null;
-                resultString = null;
                 return skill;
-            }
 
             if (Settings.Cache.CacheActiveSkills)
             {
@@ -247,7 +230,6 @@ namespace FateGrandOrderApi
 #endif
                             skill = null;
                             lastLevelEffect = null;
-                            content = null;
                             basicSkillContent = null;
                             resultString = null;
                             return activeSkillC;
@@ -265,11 +247,6 @@ namespace FateGrandOrderApi
                     LogFile(e, "Looks like something happened when accessing/using the cache for active skill", $"Active skill name: {skill.Name}");
                 }
             }
-
-            var thingstolookfor = new[] { "{{activeskillpage", "{{activeskill2page", "{{activeskill3page" };
-            var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
-            if (!IsWhatWeWantToParse(CONTENT, "Active Skill", thingstolookfor)) 
-            { return skill; }
 
             if (skill != null && !FateGrandOrderApiCache.ActiveSkills.Contains(skill))
                 FateGrandOrderApiCache.ActiveSkills.Add(skill);
@@ -303,15 +280,12 @@ namespace FateGrandOrderApi
                             var servantP = await GetServant(servant, PresetsForInformation.BasicInformation);
                             if (servantP != null && servantP.BasicInformation != null)
                             {
-                                if (skill.ServantsThatHaveThisSkill == null)
+                                if(skill.ServantsThatHaveThisSkill == null)
                                     skill.ServantsThatHaveThisSkill = new List<Servant>();
 
                                 skill.ServantsThatHaveThisSkill.Add(servantP);
                             }
-                            servantP = null;
                         }
-                        servantIcons = null;
-                        servants = null;
                     }
                     catch (Exception e)
                     {
@@ -324,9 +298,16 @@ namespace FateGrandOrderApi
                     try
                     {
                         lastLevelEffect = s;
-                        if (int.TryParse(s[1].ToString(), out int a))
+                        if (int.TryParse(s[1].ToString(), out int number))
                         {
-                            while (lastLevelEffect.ToLower().Contains("]]"))
+                            lastLevelEffect = await GenericAssigning(lastLevelEffect, $"|{number}leveleffect");
+                            if (lastLevelEffect.Contains("{{"))
+                            {
+                                lastLevelEffect = lastLevelEffect.Remove(lastLevelEffect.IndexOf("{{"),
+                                    lastLevelEffect.IndexOf("}}") - lastLevelEffect.IndexOf("{{") + 2);
+                            }
+
+                            while (lastLevelEffect.Contains("]]"))
                             {
                                 int startpoint = 0;
                                 foreach (char c in lastLevelEffect)
@@ -335,11 +316,18 @@ namespace FateGrandOrderApi
                                         break;
                                     startpoint++;
                                 }
-                                while (lastLevelEffect[startpoint] != '|')
+                                lastLevelEffect = lastLevelEffect.Remove(startpoint, 2);
+
+                                if (lastLevelEffect.Contains("|"))
                                 {
+                                    while (lastLevelEffect.Contains("|"))
+                                    {
+                                        lastLevelEffect = lastLevelEffect.Remove(startpoint, 1);
+                                    }
+
                                     lastLevelEffect = lastLevelEffect.Remove(startpoint, 1);
                                 }
-                                lastLevelEffect = lastLevelEffect.Remove(startpoint, 1);
+
                                 while (lastLevelEffect[startpoint] != ']')
                                 {
                                     startpoint++;
@@ -347,7 +335,7 @@ namespace FateGrandOrderApi
                                 lastLevelEffect = lastLevelEffect.Remove(startpoint, 2);
                             }
                         }
-                        if (skill.LevelEffects == null)
+                        if(skill.LevelEffects == null)
                             skill.LevelEffects = new List<LevelEffect10>();
                         skill.LevelEffects.Add(new LevelEffect10 { LevelEffectName = await GenericAssigning(lastLevelEffect, $"{GetStartPart()}leveleffect") });
                     }
@@ -439,7 +427,7 @@ namespace FateGrandOrderApi
                 }
                 else if (s == @"}}")
                 {
-                    //This is becasuse there can be pages with different ranks, we just want the first one
+                    //This is because there can be pages with different ranks, we just want the first one
                     break;
                 }
             }
@@ -467,11 +455,6 @@ namespace FateGrandOrderApi
                 skill.Image = basicSkillContent.Image;
                 skill.Rank = basicSkillContent.Rank;
             }
-
-            resultString = null;
-            lastLevelEffect = null;
-            content = null;
-            basicSkillContent = null;
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.ActiveSkills);
             return skill;
         }
@@ -481,38 +464,18 @@ namespace FateGrandOrderApi
         /// Returns a item in the Fate/Grand Order (will return null if the item is not found)
         /// </summary>
         /// <param name="itemName">The item's name</param>
-        /// <returns></returns>
-        public async static Task<Item> GetItem(string itemName)
-        {
-            return await GetItem(itemName, null);
-        }
-
-        internal static bool IsWhatWeWantToParse(List<string> stringoneandtwo, string WhatWeWantToParse, params string[] WhatItsCalled)
-        {
-            string WhatItsTryingToParse = stringoneandtwo[0].Contains("{{") && !stringoneandtwo[0].Contains(".") ? stringoneandtwo[0] : stringoneandtwo[1];
-            foreach (string s in WhatItsCalled)
-            {
-                if (s == stringoneandtwo[0].Trim() || s == stringoneandtwo[1].Trim()) { return true; }
-            }
-            LogConsole(null, $"This is not what we want to parse, we want to parse an {WhatWeWantToParse}, not a {WhatItsTryingToParse}");
-            LogFile(null, $"This is not what we want to parse, we want to parse an {WhatWeWantToParse}, not a {WhatItsTryingToParse}");
-            return false;
-        }
-
-        /// <summary>
-        /// Returns a item in the Fate/Grand Order (will return null if the item is not found)
-        /// </summary>
-        /// <param name="itemName">The item's name</param>
         /// <param name="enemyToNotLookFor">enemy that been found already and is known to drop this item</param>
         /// <returns></returns>
-        internal async static Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
+        public static async Task<Item> GetItem(string itemName, Enemy enemyToNotLookFor = null)
         {
             bool DoingLocationLogic = false;
             bool GettingItem = false;
             Item item = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{itemName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
-                if (!await ProductHere(itemName, col.InnerText)) { return null; }
+                //For in case we put the person in wrong
+                if (string.IsNullOrEmpty(col.InnerText))
+                    return null;
 
                 item = new Item(col.InnerText, itemName);
 
@@ -549,11 +512,6 @@ namespace FateGrandOrderApi
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
 
-                var thingstolookfor = new[] { "{{ItemBox", "{{ItemPageHeader}}" };
-                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
-                if (!IsWhatWeWantToParse(CONTENT, "Item", thingstolookfor)) 
-                { return null; }
-
                 foreach (string s in resultString)
                 {
                     if (resultString[0].Trim() == "{{ItemBox" || resultString[1].Trim() == "{{ItemBox")
@@ -576,10 +534,10 @@ namespace FateGrandOrderApi
                         }
                         else if (s.Contains("|enemy"))
                         {
-                            var enemys = await GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" }, new string[] { " / ", "/" } });
-                            if (enemys != null && enemys.Length > 0)
+                            var enemies = await GenericArrayAssigning(s, "|enemy", '/', OtherPartsToRemove: new string[] { "[[", "]]" }, PartsToReplace: new string[][] { new string[] { "<br/>", "/" }, new string[] { " / ", "/" } });
+                            if (enemies != null && enemies.Length > 0)
                                 item.AnythingThatDropsThis = new ItemDrops();
-                            foreach (string enemy in enemys)
+                            foreach (string enemy in enemies)
                             {
                                 string enemyEdited = enemy;
                                 if (enemyEdited.Contains("Shadow Servant"))
@@ -589,7 +547,7 @@ namespace FateGrandOrderApi
                                     if (!enemyEdited.Contains("}}-class"))
                                     {
                                         if (enemyEdited.IndexOf('|') != -1)
-                                            enemyEdited = enemyEdited.Remove(enemyEdited.IndexOf('|'));
+                                            enemyEdited = enemyEdited.Remove(0, enemyEdited.IndexOf('|') + 1);
 
                                         if (enemyToNotLookFor != null && enemyToNotLookFor.EnglishName == enemyEdited)
                                         {
@@ -598,7 +556,7 @@ namespace FateGrandOrderApi
                                             item.AnythingThatDropsThis.Enemies.Add(enemyToNotLookFor);
                                         }
                                         else
-                                        {                                            
+                                        {
                                             var enemyP = await GetEnemy(enemyEdited, item);
                                             if (enemyP != null)
                                             {
@@ -606,7 +564,6 @@ namespace FateGrandOrderApi
                                                     item.AnythingThatDropsThis.Enemies = new List<Enemy>();
                                                 item.AnythingThatDropsThis.Enemies.Add(enemyP);
                                             }
-                                            enemyP = null;
                                         }
                                     }
                                     else if (enemyEdited.Contains("}}-class"))
@@ -614,7 +571,6 @@ namespace FateGrandOrderApi
                                         enemyEdited = enemyEdited.Replace("}}-class", "").Replace("{{", "");
                                         string[] strings = enemyEdited.Split(' ');
                                         await UsesLogic(strings);
-                                        strings = null;
                                     }
                                 }
                                 catch (Exception e)
@@ -622,9 +578,7 @@ namespace FateGrandOrderApi
                                     LogConsole(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
                                     LogFile(e, $"Looks like something failed when getting the enemys that drop {item.EnglishName}", $"Item name: {item.EnglishName}\r\nEnemy name: {enemyEdited}");
                                 }
-                                enemyEdited = null;
                             }
-                            enemys = null;
                         }
                         else if (s.Contains("|jdesc"))
                         {
@@ -641,18 +595,16 @@ namespace FateGrandOrderApi
                                 await LocationLogic(ss);
                             else
                                 DoingLocationLogic = true;
-                            ss = null;
                         }
                         else if (s.Contains("|usedFor"))
                         {
-                            if (item.Uses == null)
+                            if(item.Uses == null)
                                 item.Uses = new List<Servant>();
                             foreach (string ss in (await GenericAssigning(s, "|usedFor")).Replace(" {{", "\\").Replace("{{", "\\").Replace("}}", "").Split('\\'))
                             {
                                 var servant = await GetServant(ss, PresetsForInformation.BasicInformation);
                                 if (servant != null)
                                     item.Uses.Add(servant);
-                                servant = null;
                             }
                         }
                     }
@@ -674,7 +626,7 @@ namespace FateGrandOrderApi
                                 thing = thing.Remove(0, thing.IndexOf('|') + 1);
                                 if (thing.StartsWith("[["))
                                 {
-                                    item.ItemImage = await Image(thing.Replace("file", "File").Replace("|100px|link=]]", ""));
+                                    item.ItemImage = await Image(thing.Replace("file", "File").Replace("|100px|link=]]",""));
                                     item.ItemImage.Name = itemName;
                                 }
                                 else
@@ -684,40 +636,22 @@ namespace FateGrandOrderApi
                             }
                             else if (s.Contains("colspan=\"3\"") && s.Contains("[["))
                             {
-                                if (item.Uses == null)
+                                if(item.Uses == null)
                                     item.Uses = new List<Servant>();
                                 string thing = s.Remove(0, 1);
                                 thing = thing.Remove(0, thing.IndexOf('|') + 1);
                                 var servants = thing.Replace("]] and [[", "\\").Replace("Every [[", "").Replace("]]", "").Split('\\');
-                                var ssedit = "";
                                 foreach (string ss in servants)
                                 {
-                                    try
-                                    {
-                                        ssedit = ss;
-                                        if (ssedit.Contains("|"))
-                                        {
-                                            if (ssedit.Contains("[["))
-                                                ssedit = ssedit.Remove(ssedit.IndexOf("[["), ssedit.IndexOf("|") - ssedit.IndexOf("[[") + 1);
-                                            else
-                                                ssedit = ssedit.Remove(0, ssedit.IndexOf("|") + 1);
-                                        }
-                                        await UsesLogic(new string[] { ssedit }, true);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        System.Diagnostics.Debugger.Break();
-                                    }
+                                    await UsesLogic(new string[] { ss }, true);
                                 }
                             }
                         }
                     }
                 }
-                resultString = null;
             }
-
+            
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Items);
-            itemName = null;
             return item;
 
             async Task UsesLogic(string[] ServantsPage, bool GoToUses = false)
@@ -760,7 +694,6 @@ namespace FateGrandOrderApi
                                             item.Uses.Add(Servant);
                                         }
                                     }
-                                    Servant = null;
                                 }
                                 else if (ServantsPage[1] == "Enemy")
                                 {
@@ -771,7 +704,6 @@ namespace FateGrandOrderApi
                                             item.AnythingThatDropsThis.Enemies = new List<Enemy>();
                                         item.AnythingThatDropsThis.Enemies.Add(Enemy);
                                     }
-                                    Enemy = null;
                                 }
                             }
                             catch (Exception e)
@@ -781,7 +713,6 @@ namespace FateGrandOrderApi
                             }
                         }
                     }
-                    resultString2 = null;
                 }
             }
 
@@ -821,10 +752,9 @@ namespace FateGrandOrderApi
                                     {
                                         item.DropLocations[item.DropLocations.Count - 1].DropLocations.Add(new ItemDropLocation
                                         {
-                                            Location = thing[0].Replace("[", "").Split('|').First()
+                                            Location = thing[0].Replace("[","").Split('|').First()
                                         });
                                     }
-                                    thing = null;
                                 }
                             }
                             catch (Exception e)
@@ -847,26 +777,18 @@ namespace FateGrandOrderApi
         /// Return a enemy in Fate/Grand Order (will return null if not found)
         /// </summary>
         /// <param name="enemyName">The enemy's name</param>
-        /// <returns></returns>
-        public async static Task<Enemy> GetEnemy(string enemyName)
-        {
-            return await GetEnemy(enemyName, null);
-        }
-
-        /// <summary>
-        /// Return a enemy in Fate/Grand Order (will return null if not found)
-        /// </summary>
-        /// <param name="enemyName">The enemy's name</param>
         /// <param name="itemToNotLookFor">Item that already been found and is known for dropping this item</param>
         /// <returns></returns>
-        internal async static Task<Enemy> GetEnemy(string enemyName, Item itemToNotLookFor = null)
+        public async static Task<Enemy> GetEnemy(string enemyName, Item itemToNotLookFor = null)
         {
             bool GettingImages = false;
             bool GettingRecommendedServants = false;
             Enemy enemy = null;
             foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{enemyName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
-                if (!await ProductHere(enemyName, col.InnerText)) { return null; }
+                //For in case we put the person in wrong or it doesn't have a webpage
+                if (string.IsNullOrEmpty(col.InnerText))
+                    return null;
 
                 enemy = new Enemy(enemyName, col.InnerHtml);
 
@@ -900,11 +822,7 @@ namespace FateGrandOrderApi
                 }
 
                 var resultString = Regex.Split(col.InnerText, @"\n");
-
-                var thingstolookfor = new[] { "{{Enemies" };
-                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
-                if (!IsWhatWeWantToParse(CONTENT, "Enemy", thingstolookfor)) 
-                { return null; }
+                bool GettingGuide = false;
 
                 foreach (string s in resultString)
                 {
@@ -914,7 +832,15 @@ namespace FateGrandOrderApi
                     }
                     else if (GettingRecommendedServants)
                     {
-                        if (s.Contains("|{{") && !s.Contains("!!"))
+                        if (GettingGuide)
+                        {
+                            GettingGuide = false;
+                        }
+                        else if (s == "!rowspan=\"2\"|Guide")
+                        {
+                            GettingGuide = true;
+                        }
+                        else if (s.Contains("|{{") && !s.Contains("!!"))
                         {
                             try
                             {
@@ -944,12 +870,8 @@ namespace FateGrandOrderApi
                                         var servant = await GetServant(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
                                         if (servant != null && servant.BasicInformation != null)
                                             enemy.RecommendedServants.Add(servant);
-                                        personcontent = null;
-                                        servant = null;
                                     }
-                                    servants = null;
                                 }
-                                WhatToLookFor = null;
                             }
                             catch (Exception e)
                             {
@@ -971,11 +893,10 @@ namespace FateGrandOrderApi
                             var image = await Image(s, "|image");
                             if (image != null)
                             {
-                                if (enemy.EnemyImage == null)
+                                if(enemy.EnemyImage == null)
                                     enemy.EnemyImage = new List<ImageInformation>();
                                 enemy.EnemyImage.Add(image);
                             }
-                            image = null;
                         }
                     }
                     if (GettingImages && FixString(s).Contains("</gallery>"))
@@ -991,7 +912,6 @@ namespace FateGrandOrderApi
                                 enemy.EnemyImage = new List<ImageInformation>();
                             enemy.EnemyImage.Add(image);
                         }
-                        image = null;
                     }
                     else if (s.Contains("|class"))
                     {
@@ -1021,7 +941,6 @@ namespace FateGrandOrderApi
                                 LogFile(e, $"Looks like something failed when assigning enemy.Areas", $"Enemy name: {enemy.EnglishName}");
                             }
                         }
-                        thing = null;
                     }
                     else if (s.Contains("|jname"))
                     {
@@ -1048,7 +967,7 @@ namespace FateGrandOrderApi
                         try
                         {
                             var items = await GenericArrayAssigning(s, "|drop", '\\', new string[] { "{{", "<br/>" }, new string[][] { new string[] { "}}", "\\" } });
-                            if (items.Length > 0 && !string.IsNullOrWhiteSpace(items[0]))
+                            if(items.Length > 0 && !string.IsNullOrWhiteSpace(items[0]))
                                 enemy.WhatThisEnemyDrops = new List<Item>();
                             foreach (string item in items)
                             {
@@ -1059,13 +978,12 @@ namespace FateGrandOrderApi
                                     else
                                     {
                                         var itemP = await GetItem(item, enemy);
-                                        if (itemP != null)
+                                        if(itemP != null)
                                             enemy.WhatThisEnemyDrops.Add(itemP);
                                         itemP = null;
                                     }
                                 }
                             }
-                            items = null;
                         }
                         catch (Exception e)
                         {
@@ -1079,11 +997,9 @@ namespace FateGrandOrderApi
                         enemy.RecommendedServants = new List<Servant>();
                     }
                 }
-                resultString = null;
             }
 
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Enemies);
-            enemyName = null;
             return enemy;
         }
 
@@ -1092,67 +1008,31 @@ namespace FateGrandOrderApi
             //For in case we put the product in wrong
             if (string.IsNullOrEmpty(InnerText))
             {
-                var ErrorPage = new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{Name}");
-                var servantThatsLikeWhatWasPassed = ErrorPage.DocumentNode.SelectSingleNode("/html[1]/body[1]/div[2]/section[1]/div[2]/article[1]/div[1]/div[1]/div[2]/div[1]/h3[1]/span[1]/b[1]/a[1]");
-                if (servantThatsLikeWhatWasPassed != null && servantThatsLikeWhatWasPassed.InnerText != null)
+                try
                 {
-                    LogConsole(null, $"Can't find {Name}, did you mean {servantThatsLikeWhatWasPassed.InnerText}?");
-                    LogFile(null, $"Can't find {Name}, did you mean {servantThatsLikeWhatWasPassed.InnerText}?");
+                    var ErrorPage = new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{Name}");
+                    var servantThatsLikeWhatWasPassed = ErrorPage.DocumentNode.SelectSingleNode("/html[1]/body[1]/div[2]/section[1]/div[2]/article[1]/div[1]/div[1]/div[2]/div[1]/h3[1]/span[1]/b[1]/a[1]");
+                    if (servantThatsLikeWhatWasPassed != null && servantThatsLikeWhatWasPassed.InnerText != null)
+                    {
+                        LogConsole(null, $"Can't find {Name}, did you mean {servantThatsLikeWhatWasPassed.InnerText}?");
+                        LogFile(null, $"Can't find {Name}, did you mean {servantThatsLikeWhatWasPassed.InnerText}?");
+                    }
+                    else
+                    {
+                        LogConsole(null, $"Can't find {Name} :(");
+                        LogFile(null, $"Can't find {Name} :(");
+                    }
                 }
-                else
+                catch
                 {
                     LogConsole(null, $"Can't find {Name} :(");
                     LogFile(null, $"Can't find {Name} :(");
                 }
-                ErrorPage = null;
-                servantThatsLikeWhatWasPassed = null;
                 return false;
             }
             return true;
         }
 
-        /// <summary>
-        /// This will return the servant from the servant name (will return null if we are unable to find the person)
-        /// </summary>
-        /// <param name="ServantName">The Servant's name</param>
-        /// <returns></returns>
-        public static async Task<Servant> GetServant(string ServantName)
-        {
-            return await GetServant(ServantName, PresetsForInformation.AllInformation, GetBasicInformation: ToGrab.Grab);
-        }
-
-        /// <summary>
-        /// This will return the servant from the servant name (will return null if we are unable to find the person)
-        /// </summary>
-        /// <param name="ServantName">The Servant's name</param>
-        /// <param name="presetsForInformation">Preset to use</param>
-        /// <returns></returns>
-        public static async Task<Servant> GetServant(string ServantName, PresetsForInformation presetsForInformation)
-        {
-            return await GetServant(ServantName, presetsForInformation, GetBasicInformation: ToGrab.NotSet);
-        }
-
-        /// <summary>
-        /// This will return the servant from the servant name (will return null if we are unable to find the person) (This would be used to not grab parts of information)
-        /// </summary>
-        /// <param name="ServantName">The Servant's name</param>
-        /// <param name="GetBasicInformation">If to get the basic infomation</param>
-        /// <param name="GetActiveSkills">If to get Active Skills</param>
-        /// <param name="GetPassiveSkills">If to get Passive Skills</param>
-        /// <param name="GetNoblePhantasm">If to get Noble Phantasm</param>
-        /// <param name="GetAscension">If to get Ascension</param>
-        /// <param name="GetSkillReinforcement">If to get the Skill Reinforcement</param>
-        /// <param name="GetStats">If to get the Stats</param>
-        /// <param name="GetBondLevel">If to get the Bond Levels</param>
-        /// <param name="GetBiography">If to get the servant's Biography</param>
-        /// <param name="GetAvailability">If to get when this servants been available</param>
-        /// <param name="GetTrivia">If to get Trivia</param>
-        /// <param name="GetImages">If to get the servants Images</param>
-        /// <returns></returns>
-        public static async Task<Servant> GetServant(string ServantName, ToGrab GetBasicInformation = ToGrab.NotSet, ToGrab GetActiveSkills = ToGrab.NotSet, ToGrab GetPassiveSkills = ToGrab.NotSet, ToGrab GetNoblePhantasm = ToGrab.NotSet, ToGrab GetAscension = ToGrab.NotSet, ToGrab GetSkillReinforcement = ToGrab.NotSet, ToGrab GetStats = ToGrab.NotSet, ToGrab GetBondLevel = ToGrab.NotSet, ToGrab GetBiography = ToGrab.NotSet, ToGrab GetAvailability = ToGrab.NotSet, ToGrab GetTrivia = ToGrab.NotSet, ToGrab GetImages = ToGrab.NotSet)
-        {
-            return await GetServant(ServantName, PresetsForInformation.AllInformation, GetBasicInformation, GetActiveSkills, GetPassiveSkills, GetNoblePhantasm, GetAscension, GetSkillReinforcement, GetStats, GetBondLevel, GetBiography, GetAvailability, GetTrivia, GetImages);
-        }
 
         /// <summary>
         /// This will return the servant from the servant name (will return null if we are unable to find the person)
@@ -1261,10 +1141,13 @@ namespace FateGrandOrderApi
             if (!_GetBasicInformation)
                 GettingBasicInformation = false;
 
-            var Web = new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantName}?action=edit");
-            foreach (HtmlNode col in Web.DocumentNode.SelectNodes("//textarea"))
+            foreach (HtmlNode col in new HtmlWeb().Load($"https://fategrandorder.fandom.com/wiki/{ServantName}?action=edit").DocumentNode.SelectNodes("//textarea"))
             {
                 if (!await ProductHere(ServantName, col.InnerText)) { return null; }
+
+                //For in case we put the person in wrong
+                if (string.IsNullOrEmpty(col.InnerText))
+                    return null;
 
                 ServantName = FixString(ServantName.Replace("_", " "));
                 Servant = new Servant(col.InnerText, ServantName);
@@ -1358,17 +1241,12 @@ namespace FateGrandOrderApi
                 }
                 #endregion
 
-                var resultString = Regex.Split(col.InnerText, @"\n");
-
-                var thingstolookfor = new[] { "{{CharactersNew", "{{Limitedservant}}", "__NOTOC__", "{{Eventcard}}" };
-                var CONTENT = thingstolookfor.Any(x => x.Trim() == resultString[0].Trim()) || thingstolookfor.Any(x => x == resultString[1].Trim()) ? new List<string> { resultString[0], resultString[1] } : new List<string> { resultString[2], resultString[3] };
-                if (!IsWhatWeWantToParse(CONTENT, "Servants", thingstolookfor))
-                { return null; }
-
                 #region Add/Remove to/from cache
                 if (Servant != null && !FateGrandOrderApiCache.Servants.Contains(Servant))
                     FateGrandOrderApiCache.Servants.Add(Servant);
                 #endregion
+
+                var resultString = Regex.Split(col.InnerText, @"\n");
 
                 if (_GetBasicInformation && Servant.BasicInformation == null)
                     Servant.BasicInformation = new FateGrandOrderServantBasic(ServantName);
@@ -1810,7 +1688,7 @@ namespace FateGrandOrderApi
                         else if (s.Length >= 3 && s.Remove(3) == "|81")
                         {
                             Servant.SkillReinforcement.Ascension8 = await Item(null, null, null, true, "8", Servant.SkillReinforcement.Ascension8);
-                            Servant.SkillReinforcement.Ascension8.Item1 = await Item(s, Servant.SkillReinforcement.Ascension8.Item2, "81");
+                            Servant.SkillReinforcement.Ascension8.Item1 = await Item(s, Servant.SkillReinforcement.Ascension8.Item2, "82");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|82")
                         {
@@ -1827,7 +1705,7 @@ namespace FateGrandOrderApi
                         else if (s.Length >= 3 && s.Remove(3) == "|91")
                         {
                             Servant.SkillReinforcement.Ascension9 = await Item(null, null, null, true, "9", Servant.SkillReinforcement.Ascension9);
-                            Servant.SkillReinforcement.Ascension9.Item1 = await Item(s, Servant.SkillReinforcement.Ascension9.Item2, "91");
+                            Servant.SkillReinforcement.Ascension9.Item1 = await Item(s, Servant.SkillReinforcement.Ascension9.Item2, "92");
                         }
                         else if (s.Length >= 3 && s.Remove(3) == "|92")
                         {
@@ -2048,118 +1926,66 @@ namespace FateGrandOrderApi
                         {
                             GettingDefaultBioJap = false;
                             GettingDefaultBio = true;
-                            while (Servant.Biography.Default.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Default.JapaneseText = Servant.Biography.Default.JapaneseText.Remove(Servant.Biography.Default.JapaneseText.IndexOf("<!--"), Servant.Biography.Default.JapaneseText.IndexOf("-->") - (Servant.Biography.Default.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|jb1"))
                         {
                             GettingDefaultBio = false;
                             GettingBond1BioJap = true;
-                            while (Servant.Biography.Default.EnglishText.Contains("<!--"))
-                            {
-                                Servant.Biography.Default.EnglishText = Servant.Biography.Default.EnglishText.Remove(Servant.Biography.Default.EnglishText.IndexOf("<!--"), Servant.Biography.Default.EnglishText.IndexOf("-->") - (Servant.Biography.Default.EnglishText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|b1"))
                         {
                             GettingBond1BioJap = false;
                             GettingBond1Bio = true;
-                            while (Servant.Biography.Bond1.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond1.JapaneseText = Servant.Biography.Bond1.JapaneseText.Remove(Servant.Biography.Bond1.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond1.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond1.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|jb2"))
                         {
                             GettingBond1Bio = false;
                             GettingBond2BioJap = true;
-                            while (Servant.Biography.Bond1.EnglishText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond1.EnglishText = Servant.Biography.Bond1.EnglishText.Remove(Servant.Biography.Bond1.EnglishText.IndexOf("<!--"), Servant.Biography.Bond1.EnglishText.IndexOf("-->") - (Servant.Biography.Bond1.EnglishText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|b2"))
                         {
                             GettingBond2BioJap = false;
                             GettingBond2Bio = true;
-                            while (Servant.Biography.Bond2.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond2.JapaneseText = Servant.Biography.Bond2.JapaneseText.Remove(Servant.Biography.Bond2.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond2.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond2.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|jb3"))
                         {
                             GettingBond2Bio = false;
                             GettingBond3BioJap = true;
-                            while (Servant.Biography.Bond2.EnglishText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond2.EnglishText = Servant.Biography.Bond2.EnglishText.Remove(Servant.Biography.Bond2.EnglishText.IndexOf("<!--"), Servant.Biography.Bond2.EnglishText.IndexOf("-->") - (Servant.Biography.Bond2.EnglishText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|b3"))
                         {
                             GettingBond3BioJap = false;
                             GettingBond3Bio = true;
-                            while (Servant.Biography.Bond3.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond3.JapaneseText = Servant.Biography.Bond3.JapaneseText.Remove(Servant.Biography.Bond3.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond3.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond3.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|jb4"))
                         {
                             GettingBond3Bio = false;
                             GettingBond4BioJap = true;
-                            while (Servant.Biography.Bond3.EnglishText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond3.EnglishText = Servant.Biography.Bond3.EnglishText.Remove(Servant.Biography.Bond3.EnglishText.IndexOf("<!--"), Servant.Biography.Bond3.EnglishText.IndexOf("-->") - (Servant.Biography.Bond3.EnglishText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|b4"))
                         {
                             GettingBond4BioJap = false;
                             GettingBond4Bio = true;
-                            while (Servant.Biography.Bond4.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond4.JapaneseText = Servant.Biography.Bond4.JapaneseText.Remove(Servant.Biography.Bond4.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond4.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond4.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|jb5"))
                         {
                             GettingBond4Bio = false;
                             GettingBond5BioJap = true;
-                            while (Servant.Biography.Bond4.EnglishText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond4.EnglishText = Servant.Biography.Bond4.EnglishText.Remove(Servant.Biography.Bond4.EnglishText.IndexOf("<!--"), Servant.Biography.Bond4.EnglishText.IndexOf("-->") - (Servant.Biography.Bond4.EnglishText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|b5"))
                         {
                             GettingBond5BioJap = false;
                             GettingBond5Bio = true;
-                            while (Servant.Biography.Bond5.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond5.JapaneseText = Servant.Biography.Bond5.JapaneseText.Remove(Servant.Biography.Bond5.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond5.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond5.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|jex"))
                         {
                             GettingBond5Bio = false;
                             GettingExtraBioJap = true;
-                            while (Servant.Biography.Bond5.EnglishText.Contains("<!--"))
-                            {
-                                Servant.Biography.Bond5.EnglishText = Servant.Biography.Bond5.EnglishText.Remove(Servant.Biography.Bond5.EnglishText.IndexOf("<!--"), Servant.Biography.Bond5.EnglishText.IndexOf("-->") - (Servant.Biography.Bond5.EnglishText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (s.Contains("|ex"))
                         {
                             GettingExtraBioJap = false;
                             GettingExtraBio = true;
-                            while (Servant.Biography.Extra.JapaneseText.Contains("<!--"))
-                            {
-                                Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText.Remove(Servant.Biography.Extra.JapaneseText.IndexOf("<!--"), Servant.Biography.Extra.JapaneseText.IndexOf("-->") - (Servant.Biography.Extra.JapaneseText.IndexOf("<!--") - 3));
-                            }
                         }
                         else if (GettingDefaultBioJap)
                         {
@@ -2232,7 +2058,6 @@ namespace FateGrandOrderApi
                                 Servant.Availability = new string[] { ToAdd };
                             else
                                 Servant.Availability = new string[] { $"{Servant.Availability[0]}\\{ToAdd}" };
-                            ToAdd = null;
                         }
                     }
                     #endregion
@@ -2259,7 +2084,6 @@ namespace FateGrandOrderApi
                                 Servant.Trivia = new string[] { ToAdd };
                             else
                                 Servant.Trivia = new string[] { $"{Servant.Trivia[0]}\\{ToAdd}" };
-                            ToAdd = null;
                         }
                     }
                     #endregion
@@ -2475,9 +2299,61 @@ namespace FateGrandOrderApi
                         GettingBondLevel = false;
                         GettingBiography = false;
                         GettingBasicInformation = false;
-                        if (Servant.Biography != null && Servant.Biography.Extra.EnglishText != null && Servant.Biography.Extra.EnglishText.Contains("<!--"))
+                        if (Servant.Biography != null)
                         {
-                            while (Servant.Biography.Extra.EnglishText.Contains("<!--"))
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Default.JapaneseText) && Servant.Biography.Default.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Default.JapaneseText = Servant.Biography.Default.JapaneseText.Remove(Servant.Biography.Default.JapaneseText.IndexOf("<!--"), Servant.Biography.Default.JapaneseText.IndexOf("-->") - (Servant.Biography.Default.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Default.EnglishText) && Servant.Biography.Default.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Default.EnglishText = Servant.Biography.Default.EnglishText.Remove(Servant.Biography.Default.EnglishText.IndexOf("<!--"), Servant.Biography.Default.EnglishText.IndexOf("-->") - (Servant.Biography.Default.EnglishText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond1.JapaneseText) && Servant.Biography.Bond1.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond1.JapaneseText = Servant.Biography.Bond1.JapaneseText.Remove(Servant.Biography.Bond1.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond1.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond1.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond1.EnglishText) && Servant.Biography.Bond1.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond1.EnglishText = Servant.Biography.Bond1.EnglishText.Remove(Servant.Biography.Bond1.EnglishText.IndexOf("<!--"), Servant.Biography.Bond1.EnglishText.IndexOf("-->") - (Servant.Biography.Bond1.EnglishText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond2.JapaneseText) && Servant.Biography.Bond2.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond2.JapaneseText = Servant.Biography.Bond2.JapaneseText.Remove(Servant.Biography.Bond2.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond2.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond2.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond2.EnglishText) && Servant.Biography.Bond2.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond2.EnglishText = Servant.Biography.Bond2.EnglishText.Remove(Servant.Biography.Bond2.EnglishText.IndexOf("<!--"), Servant.Biography.Bond2.EnglishText.IndexOf("-->") - (Servant.Biography.Bond2.EnglishText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond3.JapaneseText) && Servant.Biography.Bond3.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond3.JapaneseText = Servant.Biography.Bond3.JapaneseText.Remove(Servant.Biography.Bond3.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond3.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond3.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond3.EnglishText) && Servant.Biography.Bond3.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond3.EnglishText = Servant.Biography.Bond3.EnglishText.Remove(Servant.Biography.Bond3.EnglishText.IndexOf("<!--"), Servant.Biography.Bond3.EnglishText.IndexOf("-->") - (Servant.Biography.Bond3.EnglishText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond4.JapaneseText) && Servant.Biography.Bond4.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond4.JapaneseText = Servant.Biography.Bond4.JapaneseText.Remove(Servant.Biography.Bond4.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond4.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond4.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond4.EnglishText) && Servant.Biography.Bond4.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond4.EnglishText = Servant.Biography.Bond4.EnglishText.Remove(Servant.Biography.Bond4.EnglishText.IndexOf("<!--"), Servant.Biography.Bond4.EnglishText.IndexOf("-->") - (Servant.Biography.Bond4.EnglishText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond5.JapaneseText) && Servant.Biography.Bond5.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond5.JapaneseText = Servant.Biography.Bond5.JapaneseText.Remove(Servant.Biography.Bond5.JapaneseText.IndexOf("<!--"), Servant.Biography.Bond5.JapaneseText.IndexOf("-->") - (Servant.Biography.Bond5.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Bond5.EnglishText) && Servant.Biography.Bond5.EnglishText.Contains("<!--"))
+                            {
+                                Servant.Biography.Bond5.EnglishText = Servant.Biography.Bond5.EnglishText.Remove(Servant.Biography.Bond5.EnglishText.IndexOf("<!--"), Servant.Biography.Bond5.EnglishText.IndexOf("-->") - (Servant.Biography.Bond5.EnglishText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Extra.JapaneseText) && Servant.Biography.Extra.JapaneseText.Contains("<!--"))
+                            {
+                                Servant.Biography.Extra.JapaneseText = Servant.Biography.Extra.JapaneseText.Remove(Servant.Biography.Extra.JapaneseText.IndexOf("<!--"), Servant.Biography.Extra.JapaneseText.IndexOf("-->") - (Servant.Biography.Extra.JapaneseText.IndexOf("<!--") - 3));
+                            }
+                            while (!string.IsNullOrWhiteSpace(Servant.Biography.Extra.EnglishText) && Servant.Biography.Extra.EnglishText.Contains("<!--"))
                             {
                                 Servant.Biography.Extra.EnglishText = Servant.Biography.Extra.EnglishText.Remove(Servant.Biography.Extra.EnglishText.IndexOf("-->"), Servant.Biography.Extra.JapaneseText.IndexOf("<!--") - 3);
                             }
@@ -2495,14 +2371,12 @@ namespace FateGrandOrderApi
                     }
                     #endregion
                 }
-                resultString = null;
             }
 
             if (Servant != null && Servant.BasicInformation != null && string.IsNullOrWhiteSpace(Servant.BasicInformation.Cost))
                 Servant.BasicInformation.Cost = "16";
 
             await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Servants);
-            ServantName = null;
             return Servant;
         }
 
@@ -2549,10 +2423,6 @@ namespace FateGrandOrderApi
                 }
                 if (ToReturn == null)
                     ToReturn = s.Split(CharToSplitWith);
-                s = null;
-                Assigning = null;
-                OtherPartsToRemove = null;
-                PartsToReplace = null;
                 return ToReturn;
             }
 
@@ -2580,19 +2450,25 @@ namespace FateGrandOrderApi
                             s = s.Replace(PartToRemove, "");
                         }
 
-                    if (!string.IsNullOrWhiteSpace(Assigning))
-                        s = s.Replace(Assigning, "").Replace("=", "").Trim().Replace("/r/n","\r\n");
-                    else
-                        s = s.Replace("=", "").Trim().Replace("/r/n", "\r\n");
+                    //Comment removing code
+                    bool inComment = false;
+                    while (s.Contains("<!--"))
+                    {
+                        int a = s.IndexOf("<!--");
+                        int b = s.IndexOf("-->") + 3;
+                        int c = b - a;
+                        s = s.Remove(a, c);
+                    }
+
+                    s = !string.IsNullOrWhiteSpace(Assigning) ?
+                            s.Replace(Assigning, "").Replace("=", "").Trim().Replace("/r/n","\r\n") :
+                            s.Replace("=", "").Trim().Replace("/r/n", "\r\n");                    
                 }
                 catch (Exception e)
                 {
                     LogConsole(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                     LogFile(e, $"Looks like something failed when assigning something", $"Assigning string: {Assigning}");
                 }
-                Assigning = null;
-                OtherPartsToRemove = null;
-                PartsToReplace = null;
                 return s;
             }
 
@@ -2617,7 +2493,6 @@ namespace FateGrandOrderApi
                     {
                         WhatToFill.Gender = "none";
                     }
-                    gender = null;
                 }
                 catch (Exception e)
                 {
@@ -2666,7 +2541,6 @@ namespace FateGrandOrderApi
 #if DEBUG
                             ImageC.FromCache = true;
 #endif
-                            OtherPartsToRemove = null;
                             baseUri = null;
                             hashPartToUse = null;
                             s = null;
@@ -2725,10 +2599,6 @@ namespace FateGrandOrderApi
                 }
 
                 Image.Uri = $"{baseUri}/{Image.FileName}";
-                OtherPartsToRemove = null;
-                baseUri = null;
-                hashPartToUse = null;
-                s = null;
                 await FateGrandOrderApiCache.SaveCache(FateGrandOrderApiCache.Images);
                 return Image;
             }
@@ -2755,11 +2625,7 @@ namespace FateGrandOrderApi
                 {
                     sBuilder.Append(data[i].ToString("x2"));
                 }
-                data = null;
                 string ToReturn = sBuilder.ToString();
-                sBuilder = null;
-                md5Hash = null;
-                input = null;
 
                 // Return the hexadecimal string.
                 return ToReturn;
@@ -2793,17 +2659,13 @@ namespace FateGrandOrderApi
                             LogConsole(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
                             LogFile(null, "Don't know Video Provider Uri", $"Video name: {video.Title}\r\nVideo Provider: {JSON.Provider}");
                         }
-                        sometextlol = null;
-                        JSON = null;
                     }
-                    VideoInfomation = null;
                 }
                 catch (Exception e)
                 {
                     LogConsole(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
                     LogFile(e, "Looks like something happened in GetVideo Logic", $"Video name: {video.Title}");
                 }
-                VideoName = null;
                 return video;
             }
 
@@ -2825,9 +2687,6 @@ namespace FateGrandOrderApi
                     {
                         AscensionToMake = new AscensionSkillReinforcement();
                         AscensionToMake.AscensionNumber = AscensionSkillReinforcementNumber;
-                        s = null;
-                        ItemNumber = null;
-                        AscensionSkillReinforcementNumber = null;
                         return AscensionToMake;
                     }
                     else
@@ -2838,7 +2697,6 @@ namespace FateGrandOrderApi
                             WhatToFill = await GetItem(name.Remove(name.IndexOf('|')));
                         else
                             WhatToFill = await GetItem(name);
-                        name = null;
                     }
                 }
                 catch (Exception e)
@@ -2846,9 +2704,6 @@ namespace FateGrandOrderApi
                     LogConsole(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
                     LogFile(e, $"Looks like something failed when assigning an Item", $"WhatToFill.EnglishName: {WhatToFill.EnglishName}");
                 }
-                s = null;
-                ItemNumber = null;
-                AscensionSkillReinforcementNumber = null;
                 return WhatToFill;
             }
 

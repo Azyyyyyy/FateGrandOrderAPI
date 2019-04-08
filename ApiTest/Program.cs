@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using FateGrandOrderApi;
 using System.Diagnostics;
 using FateGrandOrderApi.Classes;
 using System.Collections.Generic;
@@ -15,15 +14,19 @@ namespace ApiTest
         static void Main(string[] args)
         {
             Console.WriteLine("Api Tester - AzyIsCool");
+
             FateGrandOrderApi.Settings.Cache.SaveCachedPartsToDisk = false;
             Stopwatch stopwatch = new Stopwatch();
+
+            var s = GetActiveSkill("Galaxy Meteor Sword");
+
             foreach (var servant in Servants)
             {
                 stopwatch.Reset();
                 Console.WriteLine(Line($"Getting {servant} data"));
                 Console.WriteLine($"Getting {servant} data");
                 stopwatch.Start();
-                var persondata = GetServant(servant, PresetsForInformation.BasicInformation, GetSkillReinforcement: ToGrab.Grab, GetImages: ToGrab.Grab, GetNoblePhantasm: ToGrab.Grab).ConfigureAwait(true).GetAwaiter().GetResult();
+                var persondata = GetServant(servant, PresetsForInformation.AllInformation).ConfigureAwait(true).GetAwaiter().GetResult();
                 stopwatch.Stop();
 #if !DEBUG
                 Console.WriteLine($"It took {stopwatch.Elapsed} to get {servant} data");
@@ -35,8 +38,7 @@ namespace ApiTest
 #elif !DEBUG
                 Console.WriteLine(Line($"It took {stopwatch.Elapsed} to get {servant} data"));
 #endif
-
-                if (persondata != null && persondata.BasicInformation != null)
+                if (persondata.BasicInformation != null)
                 {
                     StringBuilder servantInfo = new StringBuilder();
                     servantInfo.AppendLine($"Name: {persondata.BasicInformation.EnglishName}");
@@ -55,17 +57,13 @@ namespace ApiTest
         static string Line(string person)
         {
             StringBuilder b = new StringBuilder();
-            foreach (var charc in person)
-            {
-                b.Append('-');
-            }
-            return b.ToString();
+            return b.Append('-', person.Length).ToString();
         }
 
 #if !DEBUG
-        static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky", "Atalanta" };
+        static readonly string[] Servants = { "Jeanne d'Arc (Alter)", "Lancelot (Saber)", "Sigurd", "Artoria Pendragon (Alter)", "Medb (Saber)", "Diarmuid Ua Duibhne (Saber)", "Jack the Ripper", "Helena Blavatsky", "Atalanta", "Enkidu" };
 #elif DEBUG
-        static readonly string[] Servants = { "Atalanta" };
+        static readonly string[] Servants = { "Enkidu" };
 #endif
     }
 }

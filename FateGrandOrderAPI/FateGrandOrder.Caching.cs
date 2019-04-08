@@ -6,7 +6,9 @@ using FateGrandOrderApi.Classes;
 using FateGrandOrderApi.Logging;
 using System.Collections.Generic;
 using FateGrandOrderApi.Settings;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ApiTest")]
 namespace FateGrandOrderApi.Caching
 {
     /// <summary>

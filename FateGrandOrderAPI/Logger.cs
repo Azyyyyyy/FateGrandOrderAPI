@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ApiTest")]
 namespace FateGrandOrderApi.Logging
 {
     internal class Logger
@@ -92,15 +94,13 @@ namespace FateGrandOrderApi.Logging
             LogConsole(e, LogMessage, AdditionalData, false);
             LogDebugger(e, LogMessage, AdditionalData, false);
             LogFile(e, LogMessage);
-            if (ToThrow)
-            {
-                if (e != null)
-                    throw e;
+            if (ToThrow) { return; }
+            if (e != null)
+                throw e;
                 else if (!string.IsNullOrEmpty(LogMessage))
                     throw new Exception(LogMessage);
                 else
                     throw new Exception($"[{nameof(FateGrandOrderApi)}]: Something happened (No Exception or log message)");
-            }
         }
     }
 }

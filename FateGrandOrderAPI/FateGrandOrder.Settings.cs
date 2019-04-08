@@ -2,7 +2,9 @@
 using System.IO;
 using Newtonsoft.Json;
 using FateGrandOrderApi.Logging;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("ApiTest")]
 namespace FateGrandOrderApi.Settings
 {
     /// <summary>
