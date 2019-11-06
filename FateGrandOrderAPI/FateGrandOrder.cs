@@ -867,9 +867,12 @@ namespace FateGrandOrderApi
                                     foreach (var ss in Regex.Split(servants[0], "}}}} "))
                                     {
                                         var personcontent = ss.Split('|');
-                                        var servant = await GetServant(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
-                                        if (servant != null && servant.BasicInformation != null)
-                                            enemy.RecommendedServants.Add(servant);
+                                        if (personcontent.Length >= 2) 
+                                        {
+                                            var servant = await GetServant(personcontent[1].Replace("{{", "").Replace("}}", ""), PresetsForInformation.BasicInformation);
+                                            if (servant != null && servant.BasicInformation != null)
+                                                enemy.RecommendedServants.Add(servant);
+                                        }
                                     }
                                 }
                             }
@@ -2648,6 +2651,10 @@ namespace FateGrandOrderApi
                         var sometextlol = VideoInfomation.InnerHtml;
                         sometextlol = sometextlol.Remove(sometextlol.IndexOf("</script>") - 1);
                         sometextlol = sometextlol.Remove(0, sometextlol.IndexOf('{'));
+                        while (sometextlol.Contains(@"\u"))
+                        {
+                            sometextlol = sometextlol.Remove(sometextlol.IndexOf(@"\u"), 6);
+                        }
                         var JSON = JsonConvert.DeserializeObject<VideoJSON>(sometextlol.Replace("\\", "\\\\"));
                         video.VideoProvider = JSON.Provider;
                         if (JSON.Provider == "youtube")
